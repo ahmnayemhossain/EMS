@@ -248,6 +248,30 @@
     @apply bg-background text-foreground overflow-hidden;
   }
 
+  /* Thin scrollbar for sidebar only */
+  [data-sidebar="content"] {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, hsl(var(--sidebar-foreground)) 30%, hsl(var(--sidebar)) 70%) hsl(var(--sidebar));
+  }
+
+  [data-sidebar="content"]::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  [data-sidebar="content"]::-webkit-scrollbar-track {
+    background: hsl(var(--sidebar));
+  }
+
+  [data-sidebar="content"]::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, hsl(var(--sidebar-foreground)) 22%, hsl(var(--sidebar)) 78%);
+    border-radius: 999px;
+  }
+
+  [data-sidebar="content"]::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in oklab, hsl(var(--sidebar-foreground)) 34%, hsl(var(--sidebar)) 66%);
+  }
+
   /**
   * Default typography styles for HTML elements (h1-h4, p, label, button, input).
   * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.

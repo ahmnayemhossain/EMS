@@ -15,7 +15,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
-import { Separator } from "@/app/components/ui/separator";
 import { SidebarTrigger } from "@/app/components/ui/sidebar";
 import { facilities } from "@/data/mock";
 import { useSelectedFactory } from "@/app/state/factory";
@@ -31,9 +30,9 @@ export function AppTopbar() {
   return (
     <header className="bg-background/90 supports-[backdrop-filter]:bg-background/75 sticky top-0 z-40 border-b backdrop-blur">
       <div className="mx-auto flex h-14 max-w-[1800px] items-center gap-3 px-4 md:px-6">
-        <SidebarTrigger />
-        <Separator orientation="vertical" className="h-6" />
-
+        <div className="md:hidden">
+          <SidebarTrigger />
+        </div>
         <div className="flex flex-1 items-center gap-3">
           <div className="relative max-w-[520px] flex-1">
             <Search className="text-muted-foreground absolute left-2.5 top-2.5 size-4" />
@@ -116,7 +115,7 @@ export function AppTopbar() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="gap-2">
-                <span className="bg-primary/10 text-primary grid size-8 place-items-center rounded-full text-xs font-semibold">
+                <span className="bg-primary/10 text-primary grid shrink-0 size-8 place-items-center rounded-full text-xs font-semibold leading-none">
                   N
                 </span>
                 <span className="hidden text-sm font-medium md:inline">

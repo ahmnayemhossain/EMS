@@ -19,8 +19,8 @@ export function EmptyState({
   return (
       <Card className="shadow-xs">
       <CardContent className="grid place-items-center gap-2 p-10 text-center">
-        <div className="bg-muted text-muted-foreground grid shrink-0 size-12 place-items-center rounded-2xl border">
-          <Icon className="size-5" />
+        <div className="bg-muted text-muted-foreground grid shrink-0 size-11 md:size-12 place-items-center rounded-2xl border">
+          <Icon className="size-5 md:size-6" />
         </div>
         <div className="mt-2 text-base font-semibold">{title}</div>
         {description ? (

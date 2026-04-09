@@ -37,7 +37,7 @@ export function AlertCard({
         <div className="flex items-start gap-3">
           <div
             className={cn(
-              "grid shrink-0 size-9 place-items-center rounded-lg border",
+              "grid shrink-0 size-9 md:size-10 place-items-center rounded-lg border",
               tone === "compliant" && "border-[var(--success-100)] bg-[var(--success-50)]",
               tone === "warning" && "border-[var(--warning-100)] bg-[var(--warning-50)]",
               tone === "critical" && "border-[var(--critical-100)] bg-[var(--critical-50)]",
@@ -45,7 +45,7 @@ export function AlertCard({
               tone === "neutral" && "bg-muted border-border",
             )}
           >
-            <Icon className="size-4" />
+            <Icon className="size-4 md:size-5" />
           </div>
 
           <div className="min-w-0 flex-1">

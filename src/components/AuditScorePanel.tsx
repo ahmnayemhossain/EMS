@@ -22,12 +22,12 @@ export function AuditScorePanel({
   return (
     <div className={cn("flex items-center gap-3", className)}>
       <div
-        className="grid shrink-0 size-12 place-items-center rounded-full border"
+        className="grid shrink-0 size-11 md:size-12 place-items-center rounded-full border"
         style={{
           background: `conic-gradient(var(--ring) ${pct}%, var(--muted) 0)`,
         }}
       >
-        <div className="bg-background grid size-9 place-items-center rounded-full border text-xs font-semibold">
+        <div className="bg-background grid size-8 md:size-9 place-items-center rounded-full border text-xs font-semibold">
           {pct}
         </div>
       </div>

@@ -29,11 +29,11 @@ export function ActivityList({
         <div className="space-y-3">
           {items.map((item) => (
             <div key={item.id} className="flex items-start gap-3">
-              <div className="bg-muted text-muted-foreground grid shrink-0 size-9 place-items-center rounded-lg border">
+              <div className="bg-muted text-muted-foreground grid shrink-0 size-9 md:size-10 place-items-center rounded-lg border">
                 {item.type === "upload" ? (
-                  <Upload className="size-4" />
+                  <Upload className="size-4 md:size-5" />
                 ) : (
-                  <FileText className="size-4" />
+                  <FileText className="size-4 md:size-5" />
                 )}
               </div>
               <div className="min-w-0 flex-1">

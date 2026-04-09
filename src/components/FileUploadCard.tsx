@@ -24,8 +24,8 @@ export function FileUploadCard({
         ) : null}
         <div className="bg-muted/40 flex items-center justify-between gap-3 rounded-xl border p-4">
           <div className="flex items-center gap-3">
-            <div className="bg-background grid shrink-0 size-10 place-items-center rounded-xl border">
-              <Upload className="size-5" />
+            <div className="bg-background grid shrink-0 size-10 md:size-11 place-items-center rounded-xl border">
+              <Upload className="size-5 md:size-6" />
             </div>
             <div>
               <div className="text-sm font-medium">Drop files here</div>

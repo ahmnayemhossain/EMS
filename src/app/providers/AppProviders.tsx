@@ -6,7 +6,7 @@ import { FactoryProvider } from "@/app/state/factory";
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider defaultTheme="system" storageKey="ems-theme">
+    <ThemeProvider defaultTheme="dark" storageKey="ems-theme">
       <FactoryProvider>{children}</FactoryProvider>
       <Toaster richColors closeButton />
     </ThemeProvider>

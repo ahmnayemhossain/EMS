@@ -73,11 +73,11 @@ export function KPIStatCard({
           {Icon ? (
             <div
               className={cn(
-                "bg-muted/40 text-muted-foreground grid size-11 place-items-center rounded-xl border",
+                "bg-muted/40 text-muted-foreground grid shrink-0 size-10 md:size-11 place-items-center rounded-xl border",
                 toneStyles.icon,
               )}
             >
-              <Icon className="size-5" />
+              <Icon className="size-5 md:size-6" />
             </div>
           ) : (
             <StatusBadge tone={tone}>{tone.toUpperCase()}</StatusBadge>
