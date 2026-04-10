@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Bell, ChevronDown, Laptop, Moon, Search, Sun } from "lucide-react";
+import { Bell, ChevronDown, Laptop, Moon, Search, Sun, SunMoon } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useLocation, useNavigate } from "react-router";
 
@@ -18,12 +18,16 @@ import {
 import { SidebarTrigger } from "@/app/components/ui/sidebar";
 import { facilities } from "@/data/mock";
 import { useSelectedFactory } from "@/app/state/factory";
+import { useThemeMode } from "@/app/state/theme-mode";
+import { useNotifications } from "@/app/state/notifications";
 
 export function AppTopbar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { theme, resolvedTheme, setTheme } = useTheme();
+  const { resolvedTheme } = useTheme();
+  const { mode, setMode } = useThemeMode();
   const { selectedFactoryId, setSelectedFactoryId } = useSelectedFactory();
+  const { unreadCount } = useNotifications();
   const selectedFactoryName =
     facilities.find((f) => f.id === selectedFactoryId)?.name ?? "Select factory";
 
@@ -89,9 +93,15 @@ export function AppTopbar() {
               <DropdownMenuLabel>Theme</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuRadioGroup
-                value={theme ?? "system"}
-                onValueChange={(v) => setTheme(v)}
+                value={mode}
+                onValueChange={(v) =>
+                  setMode(v as "auto" | "system" | "light" | "dark")
+                }
               >
+                <DropdownMenuRadioItem value="auto">
+                  <SunMoon className="size-4" />
+                  Auto
+                </DropdownMenuRadioItem>
                 <DropdownMenuRadioItem value="light">
                   <Sun className="size-4" />
                   Light
@@ -108,8 +118,19 @@ export function AppTopbar() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button variant="ghost" size="icon" aria-label="Notifications">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Notifications"
+            onClick={() => navigate("/notifications")}
+            className="relative"
+          >
             <Bell className="size-4" />
+            {unreadCount > 0 ? (
+              <span className="bg-destructive text-destructive-foreground absolute -top-0.5 -right-0.5 grid min-w-[16px] place-items-center rounded-full px-1 text-[10px] font-semibold leading-none ring-2 ring-background">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            ) : null}
           </Button>
 
           <DropdownMenu>

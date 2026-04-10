@@ -72,11 +72,6 @@ export const emsNavGroups: Array<{ label: string; items: NavItem[] }> = [
         icon: TriangleAlert,
       },
       { label: "Training", to: "/training", icon: UsersRound },
-      {
-        label: "Notifications",
-        to: "/notifications",
-        icon: Bell,
-      },
     ],
   },
   {

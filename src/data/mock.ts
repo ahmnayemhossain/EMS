@@ -249,88 +249,114 @@ export const utilityRecords: UtilityRecord[] = [
 ];
 
 export const sdsRecords: SDSRecord[] = [
-  {
-    id: "sds_001",
-    chemicalName: "Hydrogen Peroxide (50%)",
-    supplier: "Delta Chemicals Ltd.",
-    language: "English",
-    revisionDate: "2025-11-10",
-    fileName: "SDS_H2O2_50_Delta_2025-11.pdf",
-    sections: [
-      { id: "1", title: "Identification", summary: "Product identifier, supplier, recommended use." },
-      { id: "2", title: "Hazard", summary: "Oxidizer; causes severe burns and eye damage." },
-      { id: "3", title: "Composition", summary: "Hydrogen peroxide solution, stabilizers." },
-      { id: "4", title: "First Aid", summary: "Immediate rinse; seek medical attention." },
-      { id: "5", title: "Fire Fighting", summary: "Not flammable; supports combustion." },
-      { id: "7", title: "Handling and Storage", summary: "Keep cool, ventilated; avoid contaminants." },
-      { id: "8", title: "PPE", summary: "Face shield, gloves, apron, ventilation." },
-      { id: "13", title: "Disposal", summary: "Follow local regs; neutralize where allowed." },
-      { id: "14", title: "Transport", summary: "UN 2014; oxidizing liquid." },
-      { id: "16", title: "Revision History", summary: "Updated exposure controls." },
-    ],
-  },
-  {
-    id: "sds_002",
-    chemicalName: "Caustic Soda (Flakes)",
-    supplier: "Nexa Trading",
-    language: "English",
-    revisionDate: "2026-01-05",
-    fileName: "SDS_NaOH_Nexa_2026-01.pdf",
-    sections: [
-      { id: "1", title: "Identification", summary: "Sodium hydroxide; used for cleaning and pH adjustment." },
-      { id: "2", title: "Hazard", summary: "Corrosive; severe skin burns and eye damage." },
-      { id: "7", title: "Handling and Storage", summary: "Keep dry; avoid aluminum; use corrosion-resistant containers." },
-      { id: "8", title: "PPE", summary: "Goggles/face shield, gloves, apron." },
-      { id: "13", title: "Disposal", summary: "Neutralize; follow hazardous waste rules." },
-    ],
-  },
-  // Generated rows so SDS list has at least 20 records
+  // Standard SDS structure (16 sections)
+  // https://www.osha.gov/publications/sds is the common reference, but we keep copy minimal here for UI mock data.
+  // Sections are used across preview + drawer edit UI.
   ...(() => {
-    const names = [
-      "Acetic Acid",
-      "Sodium Hypochlorite",
-      "Sodium Hydrosulfite",
-      "Hydrochloric Acid (30%)",
-      "Sulfuric Acid (98%)",
-      "Sodium Carbonate (Soda Ash)",
-      "Wetting Agent (Non-ionic)",
-      "Reactive Dye (Blue)",
-      "Dispersing Agent",
-      "Antifoam (Silicone)",
-      "Softener (Cationic)",
-      "Enzyme (Desizing)",
-      "Formaldehyde-free Resin",
-      "Chelating Agent (EDTA)",
-      "Polymer Flocculant",
-      "Alum (Aluminum Sulfate)",
-      "PAC (Polyaluminum Chloride)",
-      "Activated Carbon",
-      "PU Adhesive (Solvent-based)",
-      "Detergent (Industrial)",
-    ] as const;
-
-    const sections = [
-      { id: "1", title: "Identification", summary: "Product identifier, supplier, recommended use." },
-      { id: "2", title: "Hazard", summary: "Key hazards, signal word, precautionary statements." },
-      { id: "3", title: "Composition", summary: "Main components and concentrations." },
-      { id: "4", title: "First Aid", summary: "Immediate first-aid measures." },
-      { id: "5", title: "Fire Fighting", summary: "Suitable extinguishing media and special hazards." },
-      { id: "7", title: "Handling and Storage", summary: "Safe handling, storage conditions." },
-      { id: "8", title: "PPE", summary: "Exposure controls and personal protection." },
-      { id: "13", title: "Disposal", summary: "Disposal considerations and controls." },
-      { id: "14", title: "Transport", summary: "Transport classification (if applicable)." },
-      { id: "16", title: "Revision History", summary: "Revision date and change log." },
+    const sectionDefs: Array<{ id: string; title: string; summary: string }> = [
+      { id: "1", title: "Identification", summary: "Product identifier, recommended use, supplier details." },
+      { id: "2", title: "Hazard(s) identification", summary: "GHS classification, signal word, hazard statements." },
+      { id: "3", title: "Composition / information on ingredients", summary: "Substances/mixtures, concentration ranges, CAS numbers." },
+      { id: "4", title: "First-aid measures", summary: "First-aid instructions by exposure route; symptoms and effects." },
+      { id: "5", title: "Fire-fighting measures", summary: "Suitable extinguishing media; special hazards; protective equipment." },
+      { id: "6", title: "Accidental release measures", summary: "Spill response, containment, clean-up methods, PPE." },
+      { id: "7", title: "Handling and storage", summary: "Safe handling precautions; storage conditions; incompatibilities." },
+      { id: "8", title: "Exposure controls / personal protection", summary: "Exposure limits, engineering controls, PPE requirements." },
+      { id: "9", title: "Physical and chemical properties", summary: "Appearance, odor, pH, flash point, solubility, etc." },
+      { id: "10", title: "Stability and reactivity", summary: "Reactivity, stability, hazardous reactions, incompatible materials." },
+      { id: "11", title: "Toxicological information", summary: "Routes of exposure; acute/chronic effects; sensitization." },
+      { id: "12", title: "Ecological information", summary: "Ecotoxicity, persistence/degradability, bioaccumulation." },
+      { id: "13", title: "Disposal considerations", summary: "Waste treatment methods; disposal restrictions and controls." },
+      { id: "14", title: "Transport information", summary: "UN number, packing group, hazard class, marine pollutant info." },
+      { id: "15", title: "Regulatory information", summary: "Safety/health/environment regulations specific to the product." },
+      { id: "16", title: "Other information", summary: "Revision history and additional notes." },
     ];
 
-    return names.map((n, idx) => ({
-      id: `sds_gen_${String(idx + 1).padStart(3, "0")}`,
-      chemicalName: n,
-      supplier: idx % 3 === 0 ? "Delta Chemicals Ltd." : idx % 3 === 1 ? "Nexa Trading" : "Kite Materials",
-      language: "English",
-      revisionDate: idx % 2 === 0 ? "2026-01-15" : "2025-12-10",
-      fileName: `SDS_${n.replace(/[^\w]+/g, "_")}_Rev.pdf`,
-      sections,
-    }));
+    const makeSections = (overrides?: Partial<Record<string, string>>) =>
+      sectionDefs.map((s) => ({
+        ...s,
+        summary: overrides?.[s.id] ?? s.summary,
+      }));
+
+    const base: SDSRecord[] = [
+      {
+        id: "sds_001",
+        chemicalName: "Hydrogen Peroxide (50%)",
+        supplier: "Delta Chemicals Ltd.",
+        language: "English",
+        revisionDate: "2025-11-10",
+        fileName: "SDS_H2O2_50_Delta_2025-11.pdf",
+        sections: makeSections({
+          "2": "Oxidizer; causes severe burns and eye damage. Keep away from organics and reducers.",
+          "6": "Isolate area. Dike to contain. Flush small spills with water where permitted; avoid drains.",
+          "7": "Keep cool and ventilated. Use compatible containers; avoid contamination with metals/dyes.",
+          "8": "Face shield, chemical goggles, nitrile gloves, apron; local exhaust ventilation.",
+          "14": "UN 2014; Hydrogen peroxide, aqueous solution; Class 5.1 (Oxidizer).",
+          "16": "Updated exposure controls and handling guidance.",
+        }),
+      },
+      {
+        id: "sds_002",
+        chemicalName: "Caustic Soda (Flakes)",
+        supplier: "Nexa Trading",
+        language: "English",
+        revisionDate: "2026-01-05",
+        fileName: "SDS_NaOH_Nexa_2026-01.pdf",
+        sections: makeSections({
+          "1": "Sodium hydroxide; cleaning, scouring, and pH adjustment. Emergency contact available.",
+          "2": "Corrosive. Causes severe skin burns and eye damage.",
+          "6": "Avoid dust. Sweep up dry material carefully. Neutralize residues where allowed.",
+          "7": "Keep dry. Store in corrosion-resistant containers; avoid aluminum and zinc.",
+          "8": "Goggles/face shield, gloves, apron; eyewash and safety shower required.",
+          "14": "UN 1823; Sodium hydroxide, solid; Class 8 (Corrosive).",
+        }),
+      },
+    ];
+
+    // Generated rows so SDS list has at least 20 records
+    const generated = (() => {
+      const names = [
+        "Acetic Acid",
+        "Sodium Hypochlorite",
+        "Sodium Hydrosulfite",
+        "Hydrochloric Acid (30%)",
+        "Sulfuric Acid (98%)",
+        "Sodium Carbonate (Soda Ash)",
+        "Wetting Agent (Non-ionic)",
+        "Reactive Dye (Blue)",
+        "Dispersing Agent",
+        "Antifoam (Silicone)",
+        "Softener (Cationic)",
+        "Enzyme (Desizing)",
+        "Formaldehyde-free Resin",
+        "Chelating Agent (EDTA)",
+        "Polymer Flocculant",
+        "Alum (Aluminum Sulfate)",
+        "PAC (Polyaluminum Chloride)",
+        "Activated Carbon",
+        "PU Adhesive (Solvent-based)",
+        "Detergent (Industrial)",
+      ] as const;
+
+      return names.map((n, idx) => ({
+        id: `sds_gen_${String(idx + 1).padStart(3, "0")}`,
+        chemicalName: n,
+        supplier:
+          idx % 3 === 0
+            ? "Delta Chemicals Ltd."
+            : idx % 3 === 1
+              ? "Nexa Trading"
+              : "Kite Materials",
+        language: "English",
+        revisionDate: idx % 2 === 0 ? "2026-01-15" : "2025-12-10",
+        fileName: `SDS_${n.replace(/[^\w]+/g, "_")}_Rev.pdf`,
+        sections: makeSections({
+          "1": `${n}; site-approved use in wet processing and ETP operations (as applicable).`,
+        }),
+      }));
+    })();
+
+    return [...base, ...generated];
   })(),
 ];
 
@@ -726,6 +752,8 @@ export const notifications: Notification[] = [
     title: "Wastewater exceedance requires CAPA",
     description: "Outlet pH exceeded threshold in latest lab report. Create corrective action and attach evidence.",
     read: false,
+    actionTo: "/wastewater",
+    actionLabel: "Open wastewater",
   },
   {
     id: "not_002",
@@ -735,6 +763,8 @@ export const notifications: Notification[] = [
     title: "Permit expiring soon",
     description: "DoE Discharge Permit for FGL expires on 2026-04-30. Start renewal workflow.",
     read: true,
+    actionTo: "/documents",
+    actionLabel: "Open documents",
   },
   {
     id: "not_003",
@@ -743,6 +773,8 @@ export const notifications: Notification[] = [
     title: "Monthly utilities review ready",
     description: "March utilities records imported. Review variance flags and attach missing bills.",
     read: true,
+    actionTo: "/utilities",
+    actionLabel: "Open utilities",
   },
 ];
 

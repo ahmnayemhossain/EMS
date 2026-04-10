@@ -13,18 +13,22 @@ import {
 export function CreateActionDialog({
   title,
   triggerLabel = "Create",
+  submitLabel = "Create",
   open: openProp,
   onOpenChange: onOpenChangeProp,
   hideTrigger,
+  contentClassName,
   children,
   onCreate,
   submitDisabled,
 }: {
   title: string;
   triggerLabel?: string;
+  submitLabel?: string;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   hideTrigger?: boolean;
+  contentClassName?: string;
   children: React.ReactNode;
   onCreate?: () => void | boolean | Promise<void | boolean>;
   submitDisabled?: boolean;
@@ -40,7 +44,7 @@ export function CreateActionDialog({
           <Button>{triggerLabel}</Button>
         </DialogTrigger>
       )}
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className={contentClassName ?? "sm:max-w-xl"}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
@@ -59,7 +63,7 @@ export function CreateActionDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={submitDisabled}>
-              Create
+              {submitLabel}
             </Button>
           </DialogFooter>
         </form>
