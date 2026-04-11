@@ -272,6 +272,16 @@
     background: color-mix(in oklab, hsl(var(--sidebar-foreground)) 34%, hsl(var(--sidebar)) 66%);
   }
 
+  /* Hide visible scrollbar for specific components (keeps layout clean) */
+  .hide-scrollbar [data-slot="table-container"] {
+    scrollbar-width: none;
+  }
+
+  .hide-scrollbar [data-slot="table-container"]::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+
   /**
   * Default typography styles for HTML elements (h1-h4, p, label, button, input).
   * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
