@@ -205,6 +205,39 @@ export type Incident = {
   status: "open" | "investigating" | "closed";
 };
 
+export type ReportBoxMessageKind = "text" | "voice" | "photo";
+
+export type ReportBoxAttachment = {
+  mime: string;
+  name?: string;
+  dataUrl?: string; // base64 data url for local-only storage
+  url?: string; // public URL (e.g. from /public/report-box/inbox/*)
+};
+
+export type ReportBoxMessage = {
+  id: ID;
+  at: string; // ISO date-time
+  kind: ReportBoxMessageKind;
+  text?: string;
+  attachment?: ReportBoxAttachment;
+  durationSec?: number;
+};
+
+export type ReportBoxReport = {
+  id: ID;
+  createdAt: string; // ISO date-time
+  facilityId?: ID;
+  channel: "public" | "internal";
+  origin?: "inbox" | "local";
+  status: "new" | "triaged" | "handled";
+  flagged: boolean;
+  subject: string;
+  category?: string;
+  messages: ReportBoxMessage[];
+  assignedTo?: string;
+  handledAt?: string; // ISO date-time
+};
+
 export type TrainingRecord = {
   id: ID;
   facilityId: ID;

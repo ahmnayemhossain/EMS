@@ -720,6 +720,15 @@ export const incidents: Incident[] = [
     severity: "medium",
     status: "closed",
   },
+  {
+    id: "inc_003",
+    facilityId: "fac_garments_a",
+    date: "2026-04-05",
+    title: "Near-miss: waste trolley blocking emergency exit (cleared)",
+    type: "near_miss",
+    severity: "low",
+    status: "open",
+  },
 ];
 
 export const trainingRecords: TrainingRecord[] = [

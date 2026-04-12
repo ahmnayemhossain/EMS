@@ -20,8 +20,29 @@ import { IncidentsPage } from "@/pages/IncidentsPage";
 import { TrainingPage } from "@/pages/TrainingPage";
 import { SettingsPage } from "@/pages/SettingsPage";
 import { NotificationsPage } from "@/pages/NotificationsPage";
+import { PublicReportBoxPage } from "@/pages/PublicReportBoxPage";
 
 const routes = [
+  {
+    path: "/report-box",
+    element: <Navigate to="/rb/hfl" replace />,
+    errorElement: <RouteErrorPage />,
+  },
+  {
+    path: "report-box",
+    element: <Navigate to="/rb/hfl" replace />,
+    errorElement: <RouteErrorPage />,
+  },
+  {
+    path: "/rb/:code",
+    element: <PublicReportBoxPage />,
+    errorElement: <RouteErrorPage />,
+  },
+  {
+    path: "rb/:code",
+    element: <PublicReportBoxPage />,
+    errorElement: <RouteErrorPage />,
+  },
   {
     path: "/",
     element: <AppShell />,
@@ -53,6 +74,8 @@ const routes = [
 ];
 
 export const router =
-  typeof window !== "undefined" && window.location.hash.startsWith("#/")
+  typeof window !== "undefined" &&
+  window.location.pathname === "/" &&
+  window.location.hash.startsWith("#/")
     ? createHashRouter(routes)
     : createBrowserRouter(routes);
