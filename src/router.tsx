@@ -17,6 +17,7 @@ import { CapaPage } from "@/pages/CapaPage";
 import { ReportsPage } from "@/pages/ReportsPage";
 import { DocumentsPage } from "@/pages/DocumentsPage";
 import { IncidentsPage } from "@/pages/IncidentsPage";
+import { ComplaintBoxPage } from "@/pages/ComplaintBoxPage";
 import { TrainingPage } from "@/pages/TrainingPage";
 import { SettingsPage } from "@/pages/SettingsPage";
 import { NotificationsPage } from "@/pages/NotificationsPage";
@@ -64,6 +65,7 @@ const routes = [
       { path: "capa", element: <CapaPage /> },
       { path: "reports", element: <ReportsPage /> },
       { path: "documents", element: <DocumentsPage /> },
+      { path: "complaint-box", element: <ComplaintBoxPage /> },
       { path: "incidents", element: <IncidentsPage /> },
       { path: "training", element: <TrainingPage /> },
       { path: "settings", element: <SettingsPage /> },

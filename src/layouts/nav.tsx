@@ -1,6 +1,5 @@
 import type { LucideIcon } from "lucide-react";
 import {
-  Bell,
   ClipboardList,
   CalendarDays,
   Droplets,
@@ -9,6 +8,7 @@ import {
   LayoutDashboard,
   Leaf,
   LineChart,
+  MessageSquareWarning,
   Settings,
   ShieldCheck,
   Sparkles,
@@ -66,6 +66,11 @@ export const emsNavGroups: Array<{ label: string; items: NavItem[] }> = [
   {
     label: "People",
     items: [
+      {
+        label: "Complaint box",
+        to: "/complaint-box",
+        icon: MessageSquareWarning,
+      },
       {
         label: "Incidents",
         to: "/incidents",

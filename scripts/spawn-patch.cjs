@@ -13,22 +13,18 @@ function isEsbuildExe(command) {
 
 function wrapSpawn(original) {
   return function spawnWithFallback(command, args, options) {
-    try {
-      return original(command, args, options);
-    } catch (err) {
-      if (
-        err &&
-        (err.code === "EPERM" || err.code === "EINVAL") &&
-        isEsbuildExe(command)
-      ) {
-        return original(
-          "cmd",
-          ["/c", command, ...(Array.isArray(args) ? args : [])],
-          options,
-        );
-      }
-      throw err;
+    // Some Windows environments (AV / policy) block direct spawning of `esbuild.exe`
+    // and raise EPERM asynchronously. Route through `cmd /c` to avoid that class
+    // of failure for both sync and async spawn calls.
+    if (isEsbuildExe(command)) {
+      return original(
+        "cmd",
+        ["/c", command, ...(Array.isArray(args) ? args : [])],
+        options,
+      );
     }
+
+    return original(command, args, options);
   };
 }
 
