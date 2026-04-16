@@ -1,15 +1,23 @@
+# Fortis Group EMS
 
-  # High-Fidelity Design System
+Monorepo layout:
 
-  This is a code bundle for High-Fidelity Design System. The original project is available at https://www.figma.com/design/29D17XZawIMcrXmRWU3Qwn/High-Fidelity-Design-System.
+- `client/` React + TypeScript + Vite + Tailwind (EMS UI)
+- `server/` Express API (local JSON-file store)
 
-  ## Running the code
+## Run (frontend)
 
-  Run `npm i` to install the dependencies.
+```bash
+cd client
+npm install
+npm run dev
+```
 
-  Run `npm run dev` to start the development server.
+## Run (backend)
 
-  If PowerShell blocks `npm` scripts (execution policy), run via CMD:
-  `cmd /c "npm run dev"`.
-  
-# EMS
+```bash
+cd server
+npm install
+npm run dev
+```
+
