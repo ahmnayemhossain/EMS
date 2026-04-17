@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Link, useMatch } from "react-router";
 
-import { SidebarMenuButton } from "@/app/components/ui/sidebar";
+import { SidebarMenuButton, useSidebar } from "@/app/components/ui/sidebar";
 import { cn } from "@/app/components/ui/utils";
 
 export function SidebarNavLink({
@@ -17,11 +17,15 @@ export function SidebarNavLink({
 }) {
   const match = useMatch({ path: to, end: end ?? false });
   const isActive = Boolean(match);
+  const { isMobile, setOpenMobile } = useSidebar();
 
   return (
     <SidebarMenuButton asChild isActive={isActive} tooltip={label}>
       <Link
         to={to}
+        onClick={() => {
+          if (isMobile) setOpenMobile(false);
+        }}
         className={cn(
           "relative [&>svg]:text-muted-foreground group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0",
           "before:absolute before:inset-y-1 before:left-0 before:w-[3px] before:rounded-full before:bg-transparent",

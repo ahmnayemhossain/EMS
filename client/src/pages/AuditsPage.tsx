@@ -33,6 +33,7 @@ import {
 import { PageHeader } from "@/components/PageHeader";
 import { CreateActionDialog } from "@/components/CreateActionDialog";
 import { KPIStatCard } from "@/components/KPIStatCard";
+import { PageKpiGrid } from "@/components/PageKpiGrid";
 import { StatusBadge } from "@/components/StatusBadge";
 import { DataTable, type DataColumn } from "@/components/DataTable";
 import { DetailPanel } from "@/components/DetailPanel";
@@ -876,7 +877,7 @@ export function AuditsPage() {
         }
       />
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <PageKpiGrid columnsClassName="sm:grid-cols-2 xl:grid-cols-4">
         <KPIStatCard title="Audits" value={total} icon={ShieldCheck} tone="info" />
         <KPIStatCard
           title="In progress"
@@ -896,7 +897,7 @@ export function AuditsPage() {
           icon={CalendarDays}
           tone="neutral"
         />
-      </div>
+      </PageKpiGrid>
 
       <div className="grid gap-4 xl:grid-cols-3">
         <Card className="shadow-xs xl:col-span-2">
@@ -1007,7 +1008,7 @@ export function AuditsPage() {
       >
         {selected ? (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="rounded-lg border p-3">
                 <div className="text-muted-foreground text-xs">Template</div>
                 <div className="mt-1 text-sm font-medium">

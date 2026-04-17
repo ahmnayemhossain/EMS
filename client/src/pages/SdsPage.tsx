@@ -14,6 +14,7 @@ import {
 import { PageHeader } from "@/components/PageHeader";
 import { CreateActionDialog } from "@/components/CreateActionDialog";
 import { KPIStatCard } from "@/components/KPIStatCard";
+import { PageKpiGrid } from "@/components/PageKpiGrid";
 import { StatusBadge } from "@/components/StatusBadge";
 import { formatDate } from "@/utils/format";
 import { Textarea } from "@/app/components/ui/textarea";
@@ -306,11 +307,14 @@ export function SdsPage() {
         }
       />
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <PageKpiGrid columnsClassName="sm:grid-cols-2 md:grid-cols-3">
         <KPIStatCard title="SDS records" value={sdsRecords.length} icon={FileText} tone="info" />
         <KPIStatCard title="Suppliers" value={suppliers} tone="neutral" />
-        <KPIStatCard title="Latest revision" value={latestRevision ? formatDate(latestRevision) : "-"} />
-      </div>
+        <KPIStatCard
+          title="Latest revision"
+          value={latestRevision ? formatDate(latestRevision) : "-"}
+        />
+      </PageKpiGrid>
 
       <Card className="shadow-xs">
         <CardHeader className="pb-2">

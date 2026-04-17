@@ -55,7 +55,15 @@ export function DocumentsPage() {
       header: "Expiry",
       cell: (d) => (
         <div className="flex justify-end">
-          <StatusBadge tone={d.status === "expired" ? "critical" : d.status === "expiring" ? "warning" : "neutral"}>
+          <StatusBadge
+            tone={
+              d.status === "expired"
+                ? "critical"
+                : d.status === "expiring"
+                  ? "warning"
+                  : "neutral"
+            }
+          >
             {d.expiresOn ? formatDate(d.expiresOn) : "—"}
           </StatusBadge>
         </div>
@@ -67,7 +75,15 @@ export function DocumentsPage() {
       header: "Status",
       cell: (d) => (
         <div className="flex justify-end">
-          <StatusBadge tone={d.status === "valid" ? "compliant" : d.status === "expiring" ? "warning" : "critical"}>
+          <StatusBadge
+            tone={
+              d.status === "valid"
+                ? "compliant"
+                : d.status === "expiring"
+                  ? "warning"
+                  : "critical"
+            }
+          >
             {d.status}
           </StatusBadge>
         </div>
@@ -125,3 +141,4 @@ export function DocumentsPage() {
     </div>
   );
 }
+

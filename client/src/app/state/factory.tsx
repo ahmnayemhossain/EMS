@@ -1,13 +1,14 @@
-import * as React from "react";
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { shallow } from "zustand/shallow";
 
+import { createSafeJsonStorage } from "@/app/state/_shared/zustand-storage";
 import { facilities } from "@/data/mock";
 
-type FactoryContextValue = {
+type FactoryStore = {
   selectedFactoryId: string;
   setSelectedFactoryId: (id: string) => void;
 };
-
-const FactoryContext = React.createContext<FactoryContextValue | null>(null);
 
 const STORAGE_KEY = "ems:selectedFactoryId";
 
@@ -15,39 +16,33 @@ function getDefaultFactoryId() {
   return facilities[0]?.id ?? "unknown";
 }
 
-export function FactoryProvider({ children }: { children: React.ReactNode }) {
-  const [selectedFactoryId, setSelectedFactoryIdState] = React.useState(() => {
-    const saved =
-      typeof window !== "undefined"
-        ? window.localStorage.getItem(STORAGE_KEY)
-        : null;
-    return saved || getDefaultFactoryId();
-  });
-
-  const setSelectedFactoryId = React.useCallback((id: string) => {
-    setSelectedFactoryIdState(id);
-    try {
-      window.localStorage.setItem(STORAGE_KEY, id);
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  const value = React.useMemo(
-    () => ({ selectedFactoryId, setSelectedFactoryId }),
-    [selectedFactoryId, setSelectedFactoryId],
-  );
-
-  return (
-    <FactoryContext.Provider value={value}>{children}</FactoryContext.Provider>
-  );
-}
+const useFactoryStore = create<FactoryStore>()(
+  persist(
+    (set) => ({
+      selectedFactoryId: getDefaultFactoryId(),
+      setSelectedFactoryId: (id: string) => set({ selectedFactoryId: id }),
+    }),
+    {
+      name: STORAGE_KEY,
+      storage: createSafeJsonStorage<FactoryStore>(),
+      partialize: (state) => ({ selectedFactoryId: state.selectedFactoryId }),
+      merge: (persisted, current) => {
+        const merged = { ...current, ...(persisted as Partial<FactoryStore>) };
+        return {
+          ...merged,
+          selectedFactoryId: merged.selectedFactoryId || getDefaultFactoryId(),
+        };
+      },
+    },
+  ),
+);
 
 export function useSelectedFactory() {
-  const ctx = React.useContext(FactoryContext);
-  if (!ctx) {
-    throw new Error("useSelectedFactory must be used within <FactoryProvider />");
-  }
-  return ctx;
+  return useFactoryStore(
+    (s) => ({
+      selectedFactoryId: s.selectedFactoryId,
+      setSelectedFactoryId: s.setSelectedFactoryId,
+    }),
+    shallow,
+  );
 }
-

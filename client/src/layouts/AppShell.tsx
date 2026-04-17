@@ -14,7 +14,6 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarRail,
-  SidebarTrigger,
 } from "@/app/components/ui/sidebar";
 import { Separator } from "@/app/components/ui/separator";
 import { AppTopbar } from "@/layouts/AppTopbar";
@@ -67,17 +66,9 @@ export function AppShell() {
         <SidebarRail />
       </Sidebar>
 
-      <SidebarInset className="h-svh overflow-hidden [--sidebar-current-width:var(--sidebar-width)] peer-data-[state=collapsed]:[--sidebar-current-width:var(--sidebar-width-icon)]">
-        <div className="hidden md:block">
-          <SidebarTrigger
-            className={
-              "fixed top-14 z-[90] size-5 -translate-x-1/2 -translate-y-1/2 rounded-full border bg-zinc-200 text-zinc-800 shadow-sm hover:bg-zinc-300 dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-700 " +
-              "left-[var(--sidebar-current-width)]"
-            }
-          />
-        </div>
+      <SidebarInset className="min-h-svh [--sidebar-current-width:var(--sidebar-width)] peer-data-[state=collapsed]:[--sidebar-current-width:var(--sidebar-width-icon)]">
         <AppTopbar />
-        <div className="flex-1 overflow-x-hidden overflow-y-auto">
+        <div className="flex-1">
           <div className="mx-auto w-full max-w-[1800px] px-4 py-5 md:px-6">
             <div className="mb-4 flex items-center justify-between gap-3">
               <Breadcrumbs />

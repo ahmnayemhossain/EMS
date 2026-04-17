@@ -1,11 +1,11 @@
-import * as React from "react";
-
 import type { Notification } from "@/types/ems";
 import { notifications as seedNotifications } from "@/data/mock";
+import { create } from "zustand";
+import { shallow } from "zustand/shallow";
 
 export type NotificationItem = Notification & { flagged: boolean };
 
-type NotificationsContextValue = {
+type NotificationsStore = {
   items: NotificationItem[];
   unreadCount: number;
   markAllRead: () => void;
@@ -14,61 +14,48 @@ type NotificationsContextValue = {
   toggleFlag: (id: string) => void;
 };
 
-const NotificationsContext =
-  React.createContext<NotificationsContextValue | null>(null);
-
-export function NotificationsProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [items, setItems] = React.useState<NotificationItem[]>(() =>
-    seedNotifications.map((n) => ({ ...n, flagged: false })),
-  );
-
-  const unreadCount = React.useMemo(
-    () => items.filter((n) => !n.read).length,
-    [items],
-  );
-
-  const markAllRead = React.useCallback(() => {
-    setItems((prev) => prev.map((n) => ({ ...n, read: true })));
-  }, []);
-
-  const markRead = React.useCallback((id: string) => {
-    setItems((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
-    );
-  }, []);
-
-  const markUnread = React.useCallback((id: string) => {
-    setItems((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: false } : n)),
-    );
-  }, []);
-
-  const toggleFlag = React.useCallback((id: string) => {
-    setItems((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, flagged: !n.flagged } : n)),
-    );
-  }, []);
-
-  const value = React.useMemo(
-    () => ({ items, unreadCount, markAllRead, markRead, markUnread, toggleFlag }),
-    [items, unreadCount, markAllRead, markRead, markUnread, toggleFlag],
-  );
-
-  return (
-    <NotificationsContext.Provider value={value}>
-      {children}
-    </NotificationsContext.Provider>
-  );
-}
+const useNotificationsStore = create<NotificationsStore>((set) => ({
+  items: seedNotifications.map((n) => ({ ...n, flagged: false })),
+  unreadCount: seedNotifications.filter((n) => !n.read).length,
+  markAllRead: () =>
+    set((state) => {
+      const nextItems = state.items.map((n) => ({ ...n, read: true }));
+      return { items: nextItems, unreadCount: 0 };
+    }),
+  markRead: (id: string) =>
+    set((state) => {
+      const nextItems = state.items.map((n) =>
+        n.id === id ? { ...n, read: true } : n,
+      );
+      const unreadCount = nextItems.filter((n) => !n.read).length;
+      return { items: nextItems, unreadCount };
+    }),
+  markUnread: (id: string) =>
+    set((state) => {
+      const nextItems = state.items.map((n) =>
+        n.id === id ? { ...n, read: false } : n,
+      );
+      const unreadCount = nextItems.filter((n) => !n.read).length;
+      return { items: nextItems, unreadCount };
+    }),
+  toggleFlag: (id: string) =>
+    set((state) => ({
+      items: state.items.map((n) =>
+        n.id === id ? { ...n, flagged: !n.flagged } : n,
+      ),
+    })),
+}));
 
 export function useNotifications() {
-  const ctx = React.useContext(NotificationsContext);
-  if (!ctx) {
-    throw new Error("useNotifications must be used within NotificationsProvider");
-  }
-  return ctx;
+  return useNotificationsStore(
+    (s) => ({
+      items: s.items,
+      unreadCount: s.unreadCount,
+      markAllRead: s.markAllRead,
+      markRead: s.markRead,
+      markUnread: s.markUnread,
+      toggleFlag: s.toggleFlag,
+    }),
+    shallow,
+  );
 }

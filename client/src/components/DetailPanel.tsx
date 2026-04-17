@@ -64,7 +64,7 @@ export function DetailPanel({
         />
         <DialogPrimitive.Content
           className={cn(
-            "bg-card text-foreground fixed inset-y-0 right-0 z-50 flex h-full w-[420px] max-w-[92vw] flex-col border-l shadow-2xl outline-none",
+            "bg-card text-foreground fixed inset-y-0 right-0 z-50 flex h-full w-full max-w-none flex-col border-l shadow-2xl outline-none sm:w-[420px] sm:max-w-[92vw]",
           )}
         >
           <div className="relative border-b p-4">

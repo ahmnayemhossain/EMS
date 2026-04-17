@@ -244,8 +244,12 @@
     height: 100%;
   }
 
+  html {
+    @apply overflow-x-hidden;
+  }
+
   body {
-    @apply bg-background text-foreground overflow-hidden;
+    @apply bg-background text-foreground overflow-x-hidden;
   }
 
   /* Thin scrollbar for sidebar only */

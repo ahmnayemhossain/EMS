@@ -1,14 +1,17 @@
 import * as React from "react";
 import { useTheme } from "next-themes";
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { shallow } from "zustand/shallow";
 
-type ThemeMode = "auto" | "system" | "light" | "dark";
+import { createSafeJsonStorage } from "@/app/state/_shared/zustand-storage";
 
-type ThemeModeContextValue = {
+export type ThemeMode = "auto" | "system" | "light" | "dark";
+
+type ThemeModeStore = {
   mode: ThemeMode;
   setMode: (mode: ThemeMode) => void;
 };
-
-const ThemeModeContext = React.createContext<ThemeModeContextValue | null>(null);
 
 const STORAGE_KEY = "ems-theme-mode";
 
@@ -18,36 +21,40 @@ export function getAutoTheme(now: Date = new Date()): "light" | "dark" {
   return hour >= 17 || hour < 7 ? "dark" : "light";
 }
 
-function readStoredMode(): ThemeMode {
-  if (typeof window === "undefined") return "auto";
-  const v = window.localStorage.getItem(STORAGE_KEY);
-  if (v === "auto" || v === "system" || v === "light" || v === "dark") return v;
-  return "auto";
+function isThemeMode(value: unknown): value is ThemeMode {
+  return (
+    value === "auto" || value === "system" || value === "light" || value === "dark"
+  );
 }
 
-export function ThemeModeProvider({ children }: { children: React.ReactNode }) {
+const useThemeModeStore = create<ThemeModeStore>()(
+  persist(
+    (set) => ({
+      mode: "auto",
+      setMode: (mode: ThemeMode) => set({ mode }),
+    }),
+    {
+      name: STORAGE_KEY,
+      storage: createSafeJsonStorage<ThemeModeStore>(),
+      partialize: (state) => ({ mode: state.mode }),
+      merge: (persisted, current) => {
+        const merged = { ...current, ...(persisted as Partial<ThemeModeStore>) };
+        return { ...merged, mode: isThemeMode(merged.mode) ? merged.mode : "auto" };
+      },
+    },
+  ),
+);
+
+export function useThemeMode() {
+  return useThemeModeStore(
+    (s) => ({ mode: s.mode, setMode: s.setMode }),
+    shallow,
+  );
+}
+
+export function ThemeModeSync() {
   const { setTheme } = useTheme();
-  const [mode, setModeState] = React.useState<ThemeMode>(() => readStoredMode());
-
-  const setMode = React.useCallback((next: ThemeMode) => {
-    setModeState(next);
-    try {
-      window.localStorage.setItem(STORAGE_KEY, next);
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  React.useEffect(() => {
-    // Ensure first-time visitors default to auto.
-    if (typeof window !== "undefined" && !window.localStorage.getItem(STORAGE_KEY)) {
-      try {
-        window.localStorage.setItem(STORAGE_KEY, "auto");
-      } catch {
-        // ignore
-      }
-    }
-  }, []);
+  const { mode } = useThemeMode();
 
   React.useEffect(() => {
     if (mode === "system") {
@@ -63,28 +70,13 @@ export function ThemeModeProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Auto: time-based (day = light, evening/night = dark)
     const applyAuto = () => setTheme(getAutoTheme());
     applyAuto();
 
-    // Update periodically so theme flips when time crosses the boundary.
     const id = window.setInterval(applyAuto, 60_000);
     return () => window.clearInterval(id);
   }, [mode, setTheme]);
 
-  const value = React.useMemo(() => ({ mode, setMode }), [mode, setMode]);
-
-  return (
-    <ThemeModeContext.Provider value={value}>
-      {children}
-    </ThemeModeContext.Provider>
-  );
+  return null;
 }
 
-export function useThemeMode() {
-  const ctx = React.useContext(ThemeModeContext);
-  if (!ctx) {
-    throw new Error("useThemeMode must be used within ThemeModeProvider");
-  }
-  return ctx;
-}

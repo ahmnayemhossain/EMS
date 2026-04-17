@@ -221,7 +221,7 @@ export function AuditCalendarPage() {
   }
 
   return (
-    <div className="flex min-h-[calc(100svh-8.5rem)] flex-col gap-4 overflow-hidden">
+    <div className="flex min-h-[calc(100svh-8.5rem)] flex-col gap-4">
       <div className="shrink-0">
         <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
@@ -659,7 +659,7 @@ export function AuditCalendarPage() {
                   </StatusBadge>
                 </div>
 
-                <div className="mt-3 grid grid-cols-2 gap-2">
+                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <div className="rounded-lg border p-2">
                     <div className="text-muted-foreground text-[11px]">Score</div>
                     <div className="mt-1">
