@@ -50,17 +50,18 @@ export function DashboardSectionItem<TId extends string>({
       className={cn("group relative", isDragging ? "opacity-70" : undefined)}
     >
       {enabled ? (
-        <button
+        <div
           ref={dragRef}
-          type="button"
+          role="button"
+          tabIndex={0}
           aria-label="Drag section"
           className={cn(
             "absolute -left-2 -top-2 z-10 inline-flex size-8 items-center justify-center rounded-md border bg-background shadow-sm",
-            "opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity",
+            "cursor-grab active:cursor-grabbing opacity-100 transition-opacity",
           )}
         >
           <GripVertical className="size-4 text-muted-foreground" />
-        </button>
+        </div>
       ) : null}
 
       <div className={cn(enabled ? "rounded-xl outline-dashed outline-1 outline-border/60 p-2" : undefined)}>
@@ -69,4 +70,3 @@ export function DashboardSectionItem<TId extends string>({
     </div>
   );
 }
-

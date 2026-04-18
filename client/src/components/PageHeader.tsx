@@ -7,12 +7,10 @@ export function PageHeader({
   title: string;
   actions?: React.ReactNode;
 }) {
-  if (!actions) return <h1 className="sr-only">{title}</h1>;
-
   return (
-    <div className="flex items-center justify-end gap-2">
-      <h1 className="sr-only">{title}</h1>
-      {actions}
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <h1 className="text-lg font-semibold leading-none sm:text-xl">{title}</h1>
+      {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
     </div>
   );
 }

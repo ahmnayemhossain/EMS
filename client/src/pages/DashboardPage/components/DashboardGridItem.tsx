@@ -74,7 +74,11 @@ export function DashboardGridItem<TId extends string>({
 
       const onMoveResize = (ev: PointerEvent) => {
         const dx = ev.clientX - startX;
-        const next = clamp(Math.round((startSpan * colWidth + dx) / colWidth), minSpan, maxSpan);
+        const next = clamp(
+          Math.round((startSpan * colWidth + dx) / colWidth),
+          minSpan,
+          maxSpan,
+        );
         onSpanChange(next);
       };
 
@@ -92,48 +96,53 @@ export function DashboardGridItem<TId extends string>({
     [enabled, gridRef, span, minSpan, maxSpan, onSpanChange],
   );
 
+  const clampedSpan = clamp(span, minSpan, maxSpan);
+
   return (
     <div
       ref={(node) => {
         previewRef(node);
         dropRef(node);
       }}
-      className={cn(
-        "group relative min-w-0",
-        isDragging ? "opacity-70" : undefined,
-      )}
-      style={{ gridColumn: `span ${clamp(span, minSpan, maxSpan)} / span ${clamp(span, minSpan, maxSpan)}` }}
+      className={cn("group relative min-w-0", isDragging ? "opacity-70" : undefined)}
+      style={{ gridColumn: `span ${clampedSpan} / span ${clampedSpan}` }}
     >
-      <div className={cn(enabled ? "outline-dashed outline-1 outline-border/70 rounded-xl" : undefined)}>
+      <div
+        className={cn(
+          "min-w-0",
+          enabled ? "rounded-xl outline-dashed outline-1 outline-border/70" : undefined,
+        )}
+      >
         {children}
       </div>
 
       {enabled ? (
         <>
-          <button
+          <div
             ref={dragRef}
-            type="button"
+            role="button"
+            tabIndex={0}
             aria-label="Drag"
             className={cn(
               "absolute left-2 top-2 z-10 inline-flex size-8 items-center justify-center rounded-md border bg-background shadow-sm",
-              "opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity",
+              "cursor-grab active:cursor-grabbing opacity-100 transition-opacity",
             )}
           >
             <GripVertical className="size-4 text-muted-foreground" />
-          </button>
+          </div>
 
           <div
             onPointerDown={startResize}
             className={cn(
               "absolute bottom-2 right-2 z-10 size-8 rounded-md border bg-background shadow-sm",
-              "cursor-ew-resize opacity-0 group-hover:opacity-100 transition-opacity",
+              "cursor-ew-resize opacity-100 transition-opacity",
             )}
             title="Resize"
             role="separator"
             aria-orientation="horizontal"
           >
             <div className="grid h-full w-full place-items-center text-muted-foreground text-xs">
-              ⇔
+              ↔
             </div>
           </div>
         </>
@@ -141,4 +150,3 @@ export function DashboardGridItem<TId extends string>({
     </div>
   );
 }
-
