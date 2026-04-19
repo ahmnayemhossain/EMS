@@ -1,9 +1,6 @@
 import * as React from "react";
-import { FileText, ShieldCheck } from "lucide-react";
 
-import { Button } from "@/app/components/ui/button";
 import { useIsMobile } from "@/app/components/ui/use-mobile";
-import { useDashboardLayout, type DashboardSectionKey } from "@/app/state/dashboard-layout";
 import type { ActivityItem } from "@/components/ActivityList";
 import { PageHeader } from "@/components/PageHeader";
 import type { StatusTone } from "@/components/StatusBadge";
@@ -19,12 +16,10 @@ import {
 } from "@/data/mock";
 import { formatDate } from "@/utils/format";
 
-import { DashboardBottomWidgets } from "./components/DashboardBottomWidgets";
-import { DashboardKpis, type DashboardKpi } from "./components/DashboardKpis";
-import { DashboardSectionItem } from "./components/DashboardSectionItem";
-import { DashboardTopWidgets } from "./components/DashboardTopWidgets";
+import { useDashboardBuilder } from "@/app/state/dashboard-builder";
+import { DashboardBuilder } from "./builder/DashboardBuilder";
+import { DashboardLayoutContextMenu } from "./builder/DashboardLayoutContextMenu";
 import type { UtilityTrendPoint } from "./components/UtilityTrendCard";
-import { FactoryPerformanceCard } from "./components/FactoryPerformanceCard";
 
 const utilityTrend: UtilityTrendPoint[] = [
   { month: "Nov", kwh: 780_000 },
@@ -37,8 +32,8 @@ const utilityTrend: UtilityTrendPoint[] = [
 
 export function DashboardPage() {
   const isMobile = useIsMobile();
-  const [rearrange, setRearrange] = React.useState(false);
-  const { sectionOrder, moveSection, reset } = useDashboardLayout();
+  const [editMode, setEditMode] = React.useState(false);
+  const { reset, addContainer } = useDashboardBuilder();
 
   const avgReadiness = Math.round(
     facilities.reduce((sum, f) => sum + f.auditReadinessScore, 0) / facilities.length,
@@ -52,20 +47,49 @@ export function DashboardPage() {
   const readinessTone: StatusTone =
     avgReadiness >= 85 ? "compliant" : avgReadiness >= 70 ? "warning" : "critical";
 
-  const kpis: DashboardKpi[] = [
+  const kpis = [
     {
       key: "readiness",
       title: "Audit Readiness Score",
       value: `${avgReadiness}%`,
       helper: "Weighted across active factories",
-      icon: ShieldCheck,
       tone: readinessTone,
     },
-    { key: "openCapa", title: "Open CAPA", value: openCapa, helper: "All statuses except closed", tone: openCapa > 0 ? "warning" : "compliant" },
-    { key: "expiredDocs", title: "Expired Documents", value: expiredDocs, helper: "Requires renewal / upload", tone: expiredDocs > 0 ? "critical" : "compliant" },
-    { key: "chemicalAlerts", title: "Chemical Alerts", value: chemicalAlerts, helper: "Restricted or pending approvals", tone: chemicalAlerts > 0 ? "warning" : "compliant" },
-    { key: "wastePending", title: "Waste Disposal Pending", value: wasteDisposalPending, helper: "Stored / scheduled streams", tone: wasteDisposalPending > 0 ? "warning" : "compliant" },
-    { key: "varianceFlags", title: "Utility Variance Flags", value: varianceFlags, helper: "High variance vs baseline", tone: varianceFlags > 0 ? "info" : "compliant" },
+    {
+      key: "openCapa",
+      title: "Open CAPA",
+      value: openCapa,
+      helper: "All statuses except closed",
+      tone: openCapa > 0 ? "warning" : "compliant",
+    },
+    {
+      key: "expiredDocs",
+      title: "Expired Documents",
+      value: expiredDocs,
+      helper: "Requires renewal / upload",
+      tone: expiredDocs > 0 ? "critical" : "compliant",
+    },
+    {
+      key: "chemicalAlerts",
+      title: "Chemical Alerts",
+      value: chemicalAlerts,
+      helper: "Restricted or pending approvals",
+      tone: chemicalAlerts > 0 ? "warning" : "compliant",
+    },
+    {
+      key: "wastePending",
+      title: "Waste Disposal Pending",
+      value: wasteDisposalPending,
+      helper: "Stored / scheduled streams",
+      tone: wasteDisposalPending > 0 ? "warning" : "compliant",
+    },
+    {
+      key: "varianceFlags",
+      title: "Utility Variance Flags",
+      value: varianceFlags,
+      helper: "High variance vs baseline",
+      tone: varianceFlags > 0 ? "info" : "compliant",
+    },
   ];
 
   const overdueActions: TimelineItem[] = capas
@@ -85,63 +109,35 @@ export function DashboardPage() {
   ];
 
   const expiringDocuments = documents.filter((d) => d.status !== "valid");
-  const rearrangeEnabled = !isMobile && rearrange;
-
-  const sectionsByKey: Record<DashboardSectionKey, React.ReactNode> = {
-    kpis: <DashboardKpis items={kpis} rearrangeEnabled={rearrangeEnabled} />,
-    topWidgets: (
-      <DashboardTopWidgets
-        utilityTrend={utilityTrend}
-        notifications={notifications}
-        audits={audits}
-        rearrangeEnabled={rearrangeEnabled}
-      />
-    ),
-    factoryPerformance: <FactoryPerformanceCard facilities={facilities} />,
-    bottomWidgets: (
-      <DashboardBottomWidgets
-        overdueActions={overdueActions}
-        recentUploads={recentUploads}
-        expiringDocuments={expiringDocuments}
-        rearrangeEnabled={rearrangeEnabled}
-      />
-    ),
-  };
+  const enabled = Boolean(editMode) && !isMobile;
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Group dashboard"
-        actions={
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            {!isMobile ? (
-              <>
-                <Button type="button" variant={rearrange ? "default" : "outline"} size="sm" onClick={() => setRearrange((v) => !v)}>
-                  {rearrange ? "Done" : "Rearrange"}
-                </Button>
-                <Button type="button" variant="outline" size="sm" onClick={() => { reset(); setRearrange(false); }}>
-                  Reset layout
-                </Button>
-              </>
-            ) : null}
-            <Button variant="outline" size="sm">
-              <FileText className="mr-2 size-4" />
-              Generate report
-            </Button>
-          </div>
-        }
-      />
+    <DashboardLayoutContextMenu
+      editMode={editMode}
+      onEditModeChange={(next) => setEditMode(next && !isMobile)}
+      onAddContainer={() => addContainer("Container")}
+      onReset={() => {
+        reset();
+        setEditMode(false);
+      }}
+    >
+      <div className="space-y-6">
+        <PageHeader title="Group dashboard" />
 
-      {sectionOrder.map((key) => (
-        <DashboardSectionItem
-          key={key}
-          id={key}
-          enabled={rearrangeEnabled}
-          onMove={moveSection}
-        >
-          {sectionsByKey[key]}
-        </DashboardSectionItem>
-      ))}
-    </div>
+        <DashboardBuilder
+          enabled={enabled}
+          data={{
+            kpis,
+            utilityTrend,
+            notifications,
+            audits,
+            overdueActions,
+            recentUploads,
+            expiringDocuments,
+            facilities,
+          }}
+        />
+      </div>
+    </DashboardLayoutContextMenu>
   );
 }

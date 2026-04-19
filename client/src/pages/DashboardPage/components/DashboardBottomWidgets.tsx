@@ -55,11 +55,12 @@ export function DashboardBottomWidgets({
 
   return (
     <div ref={gridRef} className="grid grid-cols-12 gap-4">
-      {bottomWidgetOrder.map((key) => (
+      {bottomWidgetOrder.map((key, idx) => (
         <DashboardGridItem
           key={key}
           dndType="dashboard-bottom-widget"
           id={key}
+          index={idx}
           enabled={enabled}
           gridRef={gridRef}
           span={bottomWidgetSpanByKey[key] ?? 4}

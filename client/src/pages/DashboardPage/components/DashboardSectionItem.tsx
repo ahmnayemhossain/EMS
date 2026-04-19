@@ -4,46 +4,66 @@ import { useDrag, useDrop } from "react-dnd";
 
 import { cn } from "@/app/components/ui/utils";
 
-type DragItem<TId extends string> = { id: TId };
+type DragItem<TId extends string> = { id: TId; index: number };
 
 export function DashboardSectionItem<TId extends string>({
   id,
+  index,
   enabled,
   onMove,
   children,
 }: {
   id: TId;
+  index: number;
   enabled: boolean;
   onMove: (from: TId, to: TId) => void;
   children: React.ReactNode;
 }) {
+  const itemRef = React.useRef<HTMLDivElement | null>(null);
   const [{ isDragging }, dragRef, previewRef] = useDrag(
     () => ({
       type: "dashboard-section",
-      item: { id } satisfies DragItem<TId>,
+      item: { id, index } satisfies DragItem<TId>,
       canDrag: enabled,
       collect: (monitor) => ({ isDragging: monitor.isDragging() }),
     }),
-    [id, enabled],
+    [id, index, enabled],
   );
 
   const [, dropRef] = useDrop(
     () => ({
       accept: "dashboard-section",
       canDrop: () => enabled,
-      hover: (item: DragItem<TId>) => {
+      hover: (item: DragItem<TId>, monitor) => {
         if (!enabled) return;
         if (item.id === id) return;
+
+        const dragIndex = item.index;
+        const hoverIndex = index;
+        if (dragIndex === hoverIndex) return;
+
+        const rect = itemRef.current?.getBoundingClientRect();
+        const clientOffset = monitor.getClientOffset();
+        if (!rect || !clientOffset) return;
+
+        const hoverMiddleY = (rect.bottom - rect.top) / 2;
+        const hoverClientY = clientOffset.y - rect.top;
+
+        if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
+        if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
+
         onMove(item.id, id);
         item.id = id;
+        item.index = hoverIndex;
       },
     }),
-    [id, enabled, onMove],
+    [id, index, enabled, onMove],
   );
 
   return (
     <div
       ref={(node) => {
+        itemRef.current = node;
         previewRef(node);
         dropRef(node);
       }}

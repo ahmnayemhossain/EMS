@@ -52,11 +52,12 @@ export function DashboardTopWidgets({
 
   return (
     <div ref={gridRef} className="grid grid-cols-12 gap-4">
-      {topWidgetOrder.map((key) => (
+      {topWidgetOrder.map((key, idx) => (
         <DashboardGridItem
           key={key}
           dndType="dashboard-top-widget"
           id={key}
+          index={idx}
           enabled={enabled}
           gridRef={gridRef}
           span={topWidgetSpanByKey[key] ?? (key === "utilityTrend" ? 8 : 4)}

@@ -1,6 +1,5 @@
 import { Link } from "react-router";
 
-import { Button } from "@/app/components/ui/button";
 import type { DataColumn } from "@/components/DataTable";
 import { RiskBadge } from "@/components/RiskBadge";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -62,9 +61,9 @@ export function getFacilityColumns(): Array<DataColumn<Facility>> {
       id: "action",
       header: "",
       cell: (row) => (
-        <Button asChild variant="outline" size="sm">
-          <Link to={`/factories/${row.id}`}>Open</Link>
-        </Button>
+        <Link to={`/factories/${row.id}`} className="text-primary text-sm font-medium hover:underline">
+          Open
+        </Link>
       ),
       className: "text-right",
     },

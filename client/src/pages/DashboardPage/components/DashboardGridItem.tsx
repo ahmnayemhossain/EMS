@@ -4,7 +4,7 @@ import { useDrag, useDrop } from "react-dnd";
 
 import { cn } from "@/app/components/ui/utils";
 
-type DragItem<TId extends string> = { id: TId };
+type DragItem<TId extends string> = { id: TId; index: number };
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
@@ -13,6 +13,7 @@ function clamp(value: number, min: number, max: number) {
 export function DashboardGridItem<TId extends string>({
   dndType,
   id,
+  index,
   enabled,
   gridRef,
   span,
@@ -24,6 +25,7 @@ export function DashboardGridItem<TId extends string>({
 }: {
   dndType: string;
   id: TId;
+  index: number;
   enabled: boolean;
   gridRef: React.RefObject<HTMLElement | null>;
   span: number;
@@ -34,29 +36,46 @@ export function DashboardGridItem<TId extends string>({
   children: React.ReactNode;
 }) {
   const [isResizing, setIsResizing] = React.useState(false);
+  const itemRef = React.useRef<HTMLDivElement | null>(null);
 
   const [{ isDragging }, dragRef, previewRef] = useDrag(
     () => ({
       type: dndType,
-      item: { id } satisfies DragItem<TId>,
+      item: { id, index } satisfies DragItem<TId>,
       canDrag: enabled && !isResizing,
       collect: (monitor) => ({ isDragging: monitor.isDragging() }),
     }),
-    [dndType, id, enabled, isResizing],
+    [dndType, id, index, enabled, isResizing],
   );
 
   const [, dropRef] = useDrop(
     () => ({
       accept: dndType,
       canDrop: () => enabled && !isResizing,
-      hover: (item: DragItem<TId>) => {
+      hover: (item: DragItem<TId>, monitor) => {
         if (!enabled || isResizing) return;
         if (item.id === id) return;
+
+        const dragIndex = item.index;
+        const hoverIndex = index;
+        if (dragIndex === hoverIndex) return;
+
+        const rect = itemRef.current?.getBoundingClientRect();
+        const clientOffset = monitor.getClientOffset();
+        if (!rect || !clientOffset) return;
+
+        const hoverMiddleY = (rect.bottom - rect.top) / 2;
+        const hoverClientY = clientOffset.y - rect.top;
+
+        if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
+        if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
+
         onMove(item.id, id);
         item.id = id;
+        item.index = hoverIndex;
       },
     }),
-    [dndType, id, enabled, isResizing, onMove],
+    [dndType, id, index, enabled, isResizing, onMove],
   );
 
   const startResize = React.useCallback(
@@ -101,6 +120,7 @@ export function DashboardGridItem<TId extends string>({
   return (
     <div
       ref={(node) => {
+        itemRef.current = node;
         previewRef(node);
         dropRef(node);
       }}
@@ -125,7 +145,7 @@ export function DashboardGridItem<TId extends string>({
             aria-label="Drag"
             className={cn(
               "absolute left-2 top-2 z-10 inline-flex size-8 items-center justify-center rounded-md border bg-background shadow-sm",
-              "cursor-grab active:cursor-grabbing opacity-100 transition-opacity",
+              "cursor-grab active:cursor-grabbing opacity-100 transition-opacity touch-none",
             )}
           >
             <GripVertical className="size-4 text-muted-foreground" />
@@ -135,7 +155,7 @@ export function DashboardGridItem<TId extends string>({
             onPointerDown={startResize}
             className={cn(
               "absolute bottom-2 right-2 z-10 size-8 rounded-md border bg-background shadow-sm",
-              "cursor-ew-resize opacity-100 transition-opacity",
+              "cursor-ew-resize opacity-100 transition-opacity touch-none",
             )}
             title="Resize"
             role="separator"
@@ -150,3 +170,4 @@ export function DashboardGridItem<TId extends string>({
     </div>
   );
 }
+

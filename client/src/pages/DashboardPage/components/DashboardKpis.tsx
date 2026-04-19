@@ -63,11 +63,12 @@ export function DashboardKpis({
 
   return (
     <div ref={gridRef} className="grid grid-cols-12 gap-4">
-      {orderedItems.map((item) => (
+      {orderedItems.map((item, idx) => (
         <DashboardGridItem
           key={item.key}
           dndType="dashboard-kpi"
           id={item.key}
+          index={idx}
           enabled={enabled}
           gridRef={gridRef}
           span={kpiSpanByKey[item.key] ?? 2}
