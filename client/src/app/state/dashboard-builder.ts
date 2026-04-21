@@ -1,14 +1,11 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-import {
-  DEFAULT_DASHBOARD_BUILDER_STATE,
-  arrayMove,
-  clampSpan,
-} from "./dashboard-builder.defaults";
+import { DEFAULT_DASHBOARD_BUILDER_STATE, arrayMove, clampRect, clampRows, clampSpan } from "./dashboard-builder.defaults";
 import type {
   DashboardBuilderState,
   DashboardContainer,
+  DashboardGridRect,
   DashboardWidget,
   DashboardWidgetLocation,
 } from "./dashboard-builder.types";
@@ -31,7 +28,7 @@ function insertIntoArray(arr: string[], idx: number, value: string) {
 }
 
 export const useDashboardBuilder = create<DashboardBuilderState & {
-  moveContainer: (fromIndex: number, toIndex: number) => void;
+  setContainerLayout: (containerId: string, layout: DashboardGridRect) => void;
   setContainerTitle: (containerId: string, title: string) => void;
   toggleContainerCollapsed: (containerId: string) => void;
   addContainer: (title: string) => void;
@@ -42,6 +39,7 @@ export const useDashboardBuilder = create<DashboardBuilderState & {
     to: DashboardWidgetLocation,
   ) => void;
   setWidgetSpan: (widgetId: string, span: number) => void;
+  setWidgetRows: (widgetId: string, rows: number) => void;
   addWidgetToContainer: (containerId: string, widget: DashboardWidget) => void;
   removeWidget: (widgetId: string) => void;
   reset: () => void;
@@ -49,13 +47,12 @@ export const useDashboardBuilder = create<DashboardBuilderState & {
   persist(
     (set, get) => ({
       ...DEFAULT_DASHBOARD_BUILDER_STATE,
-      moveContainer: (fromIndex, toIndex) => {
-        const { containers } = get();
-        if (fromIndex === toIndex) return;
-        if (fromIndex < 0 || toIndex < 0) return;
-        if (fromIndex >= containers.length || toIndex >= containers.length) return;
-        set({ containers: arrayMove(containers, fromIndex, toIndex) });
-      },
+      setContainerLayout: (containerId, layout) =>
+        set((state) => ({
+          containers: state.containers.map((c) =>
+            c.id === containerId ? { ...c, layout: clampRect(layout) } : c,
+          ),
+        })),
       setContainerTitle: (containerId, title) =>
         set((state) => ({
           containers: state.containers.map((c) =>
@@ -70,12 +67,20 @@ export const useDashboardBuilder = create<DashboardBuilderState & {
         })),
       addContainer: (title) =>
         set((state) => ({
+          // Place new containers beneath the lowest existing one.
           containers: [
             ...state.containers,
             {
               id: `c_${Date.now()}`,
               title: title.trim() || "Container",
               widgetIds: [],
+              layout: (() => {
+                const maxY = Math.max(
+                  0,
+                  ...state.containers.map((c) => (c.layout ? c.layout.y + c.layout.h : 0)),
+                );
+                return { x: 1, y: maxY + 1, w: 12, h: 8 } satisfies DashboardGridRect;
+              })(),
             },
           ],
         })),
@@ -130,9 +135,23 @@ export const useDashboardBuilder = create<DashboardBuilderState & {
             },
           };
         }),
+      setWidgetRows: (widgetId, rows) =>
+        set((state) => {
+          const widget = state.widgetsById[widgetId];
+          if (!widget) return state;
+          return {
+            widgetsById: {
+              ...state.widgetsById,
+              [widgetId]: { ...widget, rows: clampRows(rows) },
+            },
+          };
+        }),
       addWidgetToContainer: (containerId, widget) =>
         set((state) => ({
-          widgetsById: { ...state.widgetsById, [widget.id]: widget },
+          widgetsById: {
+            ...state.widgetsById,
+            [widget.id]: { ...widget, span: clampSpan(widget.span), rows: clampRows(widget.rows ?? 3) },
+          },
           containers: state.containers.map((c) =>
             c.id === containerId ? { ...c, widgetIds: [...c.widgetIds, widget.id] } : c,
           ),
@@ -150,13 +169,29 @@ export const useDashboardBuilder = create<DashboardBuilderState & {
       reset: () => set({ ...DEFAULT_DASHBOARD_BUILDER_STATE }),
     }),
     {
-      name: "ems-dashboard-builder-v1",
-      version: 1,
+      name: "ems-dashboard-builder-v2",
+      version: 2,
       migrate: (persisted) => {
         const state = (persisted ?? {}) as PersistedState;
         return {
-          containers: state.containers ?? DEFAULT_DASHBOARD_BUILDER_STATE.containers,
-          widgetsById: state.widgetsById ?? DEFAULT_DASHBOARD_BUILDER_STATE.widgetsById,
+          containers: (state.containers ?? DEFAULT_DASHBOARD_BUILDER_STATE.containers).map(
+            (c, idx) => ({
+              ...c,
+              layout: clampRect(
+                c.layout ?? {
+                  x: 1,
+                  y: 1 + idx * 9,
+                  w: 12,
+                  h: 8,
+                },
+              ),
+            }),
+          ),
+          widgetsById: Object.fromEntries(
+            Object.entries(state.widgetsById ?? DEFAULT_DASHBOARD_BUILDER_STATE.widgetsById).map(
+              ([id, w]) => [id, { ...w, rows: clampRows((w as DashboardWidget).rows ?? 3) }],
+            ),
+          ),
         };
       },
     },
