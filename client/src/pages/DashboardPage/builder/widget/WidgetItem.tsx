@@ -118,8 +118,7 @@ export function WidgetItem({
 
       {enabled ? (
         <>
-          <button
-            type="button"
+          <div
             onPointerDown={startResize("x")}
             className={cn(
               "absolute right-2 top-1/2 -translate-y-1/2 z-10 inline-flex items-center justify-center rounded-md p-1.5",
@@ -131,10 +130,9 @@ export function WidgetItem({
             aria-orientation="horizontal"
           >
             <ResizeHandleIcon />
-          </button>
+          </div>
 
-          <button
-            type="button"
+          <div
             onPointerDown={startResize("y")}
             className={cn(
               "absolute bottom-2 left-1/2 -translate-x-1/2 z-10 inline-flex items-center justify-center rounded-md p-1.5",
@@ -146,10 +144,9 @@ export function WidgetItem({
             aria-orientation="vertical"
           >
             <ResizeHandleIcon className="rotate-90" />
-          </button>
+          </div>
 
-          <button
-            type="button"
+          <div
             onPointerDown={startResize("xy")}
             className={cn(
               "absolute bottom-2 right-2 z-10 inline-flex items-center justify-center rounded-md p-1.5",
@@ -159,7 +156,7 @@ export function WidgetItem({
             title="Resize"
           >
             <ResizeHandleIcon />
-          </button>
+          </div>
         </>
       ) : null}
     </div>

@@ -25,10 +25,7 @@ export function WidgetShell({
 }) {
   return (
     <div
-      className={cn(
-        "relative min-w-0 h-full",
-        enabled ? "rounded-xl ring-1 ring-border/60" : undefined,
-      )}
+      className={cn("relative min-w-0 h-full", enabled ? "rounded-xl ring-1 ring-border/60" : undefined)}
     >
       {children}
 
@@ -53,3 +50,4 @@ export function WidgetShell({
     </div>
   );
 }
+

@@ -46,9 +46,7 @@ function DashboardCanvasOverlay({ rows, active }: { rows: number; active: boolea
           key={idx}
           className="dashboard-layout-cell"
           style={{ gridColumn: `span ${DASH_GROUP_SPAN} / span ${DASH_GROUP_SPAN}` }}
-        >
-          +
-        </div>
+        />
       ))}
     </div>
   );

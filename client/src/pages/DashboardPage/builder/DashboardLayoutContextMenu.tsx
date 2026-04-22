@@ -14,12 +14,14 @@ import {
 export function DashboardLayoutContextMenu({
   editMode,
   onEditModeChange,
+  disableEdit,
   onAddContainer,
   onReset,
   children,
 }: {
   editMode: boolean;
   onEditModeChange: (next: boolean) => void;
+  disableEdit?: boolean;
   onAddContainer: () => void;
   onReset: () => void;
   children: React.ReactNode;
@@ -35,12 +37,13 @@ export function DashboardLayoutContextMenu({
         <ContextMenuSeparator />
         <ContextMenuCheckboxItem
           checked={editMode}
+          disabled={disableEdit}
           onCheckedChange={(v) => onEditModeChange(Boolean(v))}
         >
           Edit layout
         </ContextMenuCheckboxItem>
         <ContextMenuItem
-          disabled={!editMode}
+          disabled={!editMode || disableEdit}
           onSelect={() => {
             onAddContainer();
           }}

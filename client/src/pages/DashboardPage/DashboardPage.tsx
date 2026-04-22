@@ -1,10 +1,9 @@
 import * as React from "react";
-import { Plus, RotateCcw, Settings } from "lucide-react";
 
-import { Button } from "@/app/components/ui/button";
 import { useIsMobile } from "@/app/components/ui/use-mobile";
-import type { ActivityItem } from "@/components/ActivityList";
+import { useDashboardBuilder } from "@/app/state/dashboard-builder";
 import { PageHeader } from "@/components/PageHeader";
+import type { ActivityItem } from "@/components/ActivityList";
 import type { StatusTone } from "@/components/StatusBadge";
 import type { TimelineItem } from "@/components/TimelineList";
 import {
@@ -18,10 +17,7 @@ import {
 } from "@/data/mock";
 import { formatDate } from "@/utils/format";
 
-import { useDashboardBuilder } from "@/app/state/dashboard-builder";
-import type { DashboardWidgetType } from "@/app/state/dashboard-builder.types";
 import { DashboardBuilder } from "./builder/DashboardBuilder";
-import { AddWidgetDialog } from "./builder/AddWidgetDialog";
 import { DashboardLayoutContextMenu } from "./builder/DashboardLayoutContextMenu";
 import type { DashboardWidgetData } from "./builder/widgetRegistry";
 import type { UtilityTrendPoint } from "./components/UtilityTrendCard";
@@ -35,15 +31,10 @@ const utilityTrend: UtilityTrendPoint[] = [
   { month: "Apr", kwh: 790_000 },
 ];
 
-function makeWidgetId(type: DashboardWidgetType) {
-  return `w_${Date.now()}_${type.replaceAll(":", "_")}_${Math.random().toString(16).slice(2)}`;
-}
-
 export function DashboardPage() {
   const isMobile = useIsMobile();
   const [editMode, setEditMode] = React.useState(false);
-  const [addOpen, setAddOpen] = React.useState(false);
-  const { containers, reset, addContainer, addWidgetToContainer } = useDashboardBuilder();
+  const { reset, addContainer } = useDashboardBuilder();
 
   const avgReadiness = Math.round(
     facilities.reduce((sum, f) => sum + f.auditReadinessScore, 0) / facilities.length,
@@ -146,6 +137,7 @@ export function DashboardPage() {
     <DashboardLayoutContextMenu
       editMode={editMode}
       onEditModeChange={(next) => setEditMode(next && !isMobile)}
+      disableEdit={isMobile}
       onAddContainer={() => addContainer("Container")}
       onReset={() => {
         reset();
@@ -155,51 +147,20 @@ export function DashboardPage() {
       <div className="aws-dashboard-grid space-y-6 py-2">
         <PageHeader
           title={
-            <span className="flex items-baseline gap-2">
-              <span>Console Home</span>
-              <span className="text-primary text-xs font-medium">Info</span>
+            <span className="grid gap-1">
+              <span className="flex items-center gap-2">
+                <span>Dashboard</span>
+                {enabled ? (
+                  <span className="bg-muted text-muted-foreground rounded-full border px-2 py-0.5 text-xs font-medium">
+                    Edit mode
+                  </span>
+                ) : null}
+              </span>
+              <span className="text-muted-foreground text-xs">
+                Desktop: right-click to customize layout
+              </span>
             </span>
           }
-          actions={
-            <>
-              <Button
-                variant={editMode ? "secondary" : "outline"}
-                disabled={isMobile}
-                onClick={() => setEditMode((v) => !v && !isMobile)}
-                title={isMobile ? "Edit layout is disabled on mobile" : undefined}
-              >
-                <Settings className="size-4" />
-                {editMode ? "Editing" : "Edit layout"}
-              </Button>
-              <Button
-                variant="outline"
-                className="border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/20"
-                onClick={() => {
-                  reset();
-                  setEditMode(false);
-                }}
-              >
-                <RotateCcw className="size-4" />
-                Reset to default layout
-              </Button>
-              <Button
-                className="bg-amber-500 text-white hover:bg-amber-500/90 focus-visible:ring-amber-500/30"
-                onClick={() => setAddOpen(true)}
-              >
-                <Plus className="size-4" />
-                Add widgets
-              </Button>
-            </>
-          }
-        />
-
-        <AddWidgetDialog
-          open={addOpen}
-          onOpenChange={setAddOpen}
-          containers={containers}
-          onAddWidget={(containerId, type, defaultSpan) => {
-            addWidgetToContainer(containerId, { id: makeWidgetId(type), type, span: defaultSpan });
-          }}
         />
 
         <DashboardBuilder
@@ -219,3 +180,4 @@ export function DashboardPage() {
     </DashboardLayoutContextMenu>
   );
 }
+

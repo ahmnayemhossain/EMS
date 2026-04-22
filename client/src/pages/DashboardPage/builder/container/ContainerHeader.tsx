@@ -1,22 +1,10 @@
 import * as React from "react";
-import { Info, MoreVertical, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 
 import { CardHeader } from "@/app/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from "@/app/components/ui/dropdown-menu";
+import { Input } from "@/app/components/ui/input";
 import { useIsMobile } from "@/app/components/ui/use-mobile";
 import { cn } from "@/app/components/ui/utils";
-import type { DashboardWidgetType } from "@/app/state/dashboard-builder.types";
-
-import { WIDGET_PALETTE } from "../widgetPalette";
 
 function DotsHandle({ className }: { className?: string }) {
   return (
@@ -34,24 +22,30 @@ export function ContainerHeader({
   title,
   dragHandleRef,
   onToggleCollapsed,
-  onAddWidget,
-  onRemoveContainer,
+  onRename,
 }: {
   enabled: boolean;
   collapsed: boolean;
   title: string;
   dragHandleRef?: (node: HTMLDivElement | null) => void;
   onToggleCollapsed: () => void;
-  onAddWidget: (type: DashboardWidgetType, defaultSpan: number) => void;
-  onRemoveContainer: () => void;
+  onRename: (title: string) => void;
 }) {
   const isMobile = useIsMobile();
+  const [draft, setDraft] = React.useState(title);
+
+  React.useEffect(() => {
+    setDraft(title);
+  }, [title]);
 
   return (
     <CardHeader
-      className="flex-row items-center justify-between gap-3 space-y-0 border-b pb-4"
+      className={cn("flex-row items-center justify-between gap-3 space-y-0", enabled ? "pb-3" : undefined)}
+      role="button"
+      tabIndex={0}
+      onClick={enabled ? undefined : () => onToggleCollapsed()}
     >
-      <div className="flex min-w-0 items-center gap-3">
+      <div className="flex min-w-0 items-center gap-2">
         {enabled && !isMobile ? (
           <div
             ref={dragHandleRef}
@@ -59,7 +53,8 @@ export function ContainerHeader({
             tabIndex={0}
             aria-label="Drag container"
             className={cn(
-              "inline-flex items-center justify-center",
+              "inline-flex size-8 items-center justify-center rounded-md",
+              "bg-transparent text-muted-foreground hover:bg-muted/20",
               "cursor-grab active:cursor-grabbing touch-none",
             )}
             title="Drag"
@@ -70,62 +65,26 @@ export function ContainerHeader({
         ) : null}
 
         {enabled ? (
-          <div className="truncate text-sm font-semibold">{title}</div>
+          <Input
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={() => onRename(draft.trim() || title)}
+            onClick={(e) => e.stopPropagation()}
+            className="h-8 w-[220px] max-w-[55vw] rounded-lg"
+          />
         ) : (
-          <div className="flex min-w-0 items-center gap-2">
-            <div className="truncate text-sm font-semibold">{title}</div>
-            <div className="text-primary inline-flex items-center gap-1 text-xs font-medium">
-              <Info className="size-3.5" />
-              Info
-            </div>
-          </div>
+          <div className="truncate text-sm font-semibold">{title}</div>
         )}
       </div>
 
-      <div className="flex items-center gap-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              type="button"
-              aria-label="Container actions"
-              className="grid size-8 place-items-center rounded-md bg-transparent text-muted-foreground hover:bg-muted/20"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <MoreVertical className="size-4 text-muted-foreground" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[240px]">
-            <DropdownMenuItem
-              onSelect={() => {
-                onToggleCollapsed();
-              }}
-            >
-              {collapsed ? "Expand" : "Collapse"}
-            </DropdownMenuItem>
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
-                <Plus className="size-4" />
-                Add widget
-              </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent className="w-[260px]">
-                {WIDGET_PALETTE.map((w) => (
-                  <DropdownMenuItem
-                    key={w.type}
-                    onSelect={() => onAddWidget(w.type, w.defaultSpan)}
-                  >
-                    {w.label}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive" onSelect={() => onRemoveContainer()}>
-              <Trash2 className="size-4" />
-              Remove container
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      <div className="grid size-8 place-items-center rounded-md border bg-muted/10">
+        {collapsed ? (
+          <ChevronRight className="size-4 text-muted-foreground" />
+        ) : (
+          <ChevronDown className="size-4 text-muted-foreground" />
+        )}
       </div>
     </CardHeader>
   );
 }
+
