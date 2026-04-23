@@ -59,7 +59,7 @@ export function FacilityDashboardPage() {
       />
 
       <FacilityKpis
-        water={`${formatNumber(water)} m³`}
+        water={`${formatNumber(water)} m\u00B3`}
         electricity={`${formatNumber(electricity)} kWh`}
         hazardousChem={hazardousChem}
         wasteKg={`${formatNumber(wasteKg)} kg`}
@@ -125,4 +125,3 @@ export function FacilityDashboardPage() {
     </div>
   );
 }
-

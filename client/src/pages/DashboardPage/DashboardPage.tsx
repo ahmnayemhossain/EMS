@@ -1,10 +1,19 @@
 import * as React from "react";
+import {
+  BellRing,
+  ClipboardList,
+  Droplet,
+  FileWarning,
+  ShieldCheck,
+  TrendingUp,
+} from "lucide-react";
 
+import { Button } from "@/app/components/ui/button";
+import { Switch } from "@/app/components/ui/switch";
 import { useIsMobile } from "@/app/components/ui/use-mobile";
-import { useDashboardBuilder } from "@/app/state/dashboard-builder";
+import { useDashboardLayout } from "@/app/state/dashboard-layout";
 import { PageHeader } from "@/components/PageHeader";
 import type { ActivityItem } from "@/components/ActivityList";
-import type { StatusTone } from "@/components/StatusBadge";
 import type { TimelineItem } from "@/components/TimelineList";
 import {
   audits,
@@ -17,9 +26,12 @@ import {
 } from "@/data/mock";
 import { formatDate } from "@/utils/format";
 
-import { DashboardBuilder } from "./builder/DashboardBuilder";
-import { DashboardLayoutContextMenu } from "./builder/DashboardLayoutContextMenu";
-import type { DashboardWidgetData } from "./builder/widgetRegistry";
+import type { DashboardKpi } from "./components/DashboardKpis";
+import { DashboardKpis } from "./components/DashboardKpis";
+import { DashboardSectionItem } from "./components/DashboardSectionItem";
+import { DashboardTopWidgets } from "./components/DashboardTopWidgets";
+import { DashboardBottomWidgets } from "./components/DashboardBottomWidgets";
+import { FactoryPerformanceCard } from "./components/FactoryPerformanceCard";
 import type { UtilityTrendPoint } from "./components/UtilityTrendCard";
 
 const utilityTrend: UtilityTrendPoint[] = [
@@ -33,8 +45,9 @@ const utilityTrend: UtilityTrendPoint[] = [
 
 export function DashboardPage() {
   const isMobile = useIsMobile();
-  const [editMode, setEditMode] = React.useState(false);
-  const { reset, addContainer } = useDashboardBuilder();
+  const [customize, setCustomize] = React.useState(false);
+  const { sectionOrder, moveSection, reset: resetLayout } = useDashboardLayout();
+  const enabled = Boolean(customize) && !isMobile;
 
   const avgReadiness = Math.round(
     facilities.reduce((sum, f) => sum + f.auditReadinessScore, 0) / facilities.length,
@@ -45,16 +58,14 @@ export function DashboardPage() {
   const wasteDisposalPending = 3;
   const varianceFlags = utilityRecords.filter((r) => r.varianceFlag === "high").length;
 
-  const readinessTone: StatusTone =
-    avgReadiness >= 85 ? "compliant" : avgReadiness >= 70 ? "warning" : "critical";
-
-  const kpis: DashboardWidgetData["kpis"] = [
+  const kpis: DashboardKpi[] = [
     {
       key: "readiness",
-      title: "Audit Readiness Score",
+      title: "Audit readiness score",
       value: `${avgReadiness}%`,
       helper: "Weighted across active factories",
-      tone: readinessTone,
+      tone: avgReadiness >= 85 ? "compliant" : avgReadiness >= 70 ? "warning" : "critical",
+      icon: ShieldCheck,
     },
     {
       key: "openCapa",
@@ -62,34 +73,39 @@ export function DashboardPage() {
       value: openCapa,
       helper: "All statuses except closed",
       tone: openCapa > 0 ? "warning" : "compliant",
+      icon: ClipboardList,
     },
     {
       key: "expiredDocs",
-      title: "Expired Documents",
+      title: "Expired documents",
       value: expiredDocs,
       helper: "Requires renewal / upload",
       tone: expiredDocs > 0 ? "critical" : "compliant",
+      icon: FileWarning,
     },
     {
       key: "chemicalAlerts",
-      title: "Chemical Alerts",
+      title: "Chemical alerts",
       value: chemicalAlerts,
       helper: "Restricted or pending approvals",
       tone: chemicalAlerts > 0 ? "warning" : "compliant",
+      icon: BellRing,
     },
     {
       key: "wastePending",
-      title: "Waste Disposal Pending",
+      title: "Waste disposal pending",
       value: wasteDisposalPending,
       helper: "Stored / scheduled streams",
       tone: wasteDisposalPending > 0 ? "warning" : "compliant",
+      icon: Droplet,
     },
     {
       key: "varianceFlags",
-      title: "Utility Variance Flags",
+      title: "Utility variance flags",
       value: varianceFlags,
       helper: "High variance vs baseline",
       tone: varianceFlags > 0 ? "info" : "compliant",
+      icon: TrendingUp,
     },
   ];
 
@@ -99,7 +115,7 @@ export function DashboardPage() {
       id: c.id,
       title: c.title,
       date: `Due ${formatDate(c.dueDate)}`,
-      description: `${c.owner} • Evidence: ${c.evidenceCount}`,
+      description: `${c.owner} \u2022 Evidence: ${c.evidenceCount}`,
       tone: "critical",
     }));
 
@@ -131,53 +147,79 @@ export function DashboardPage() {
   ];
 
   const expiringDocuments = documents.filter((d) => d.status !== "valid");
-  const enabled = Boolean(editMode) && !isMobile;
+
+  const sectionsByKey = {
+    kpis: <DashboardKpis items={kpis} rearrangeEnabled={enabled} />,
+    topWidgets: (
+      <DashboardTopWidgets
+        utilityTrend={utilityTrend}
+        notifications={notifications}
+        audits={audits}
+        rearrangeEnabled={enabled}
+      />
+    ),
+    factoryPerformance: <FactoryPerformanceCard facilities={facilities} />,
+    bottomWidgets: (
+      <DashboardBottomWidgets
+        overdueActions={overdueActions}
+        recentUploads={recentUploads}
+        expiringDocuments={expiringDocuments}
+        rearrangeEnabled={enabled}
+      />
+    ),
+  } as const;
 
   return (
-    <DashboardLayoutContextMenu
-      editMode={editMode}
-      onEditModeChange={(next) => setEditMode(next && !isMobile)}
-      disableEdit={isMobile}
-      onAddContainer={() => addContainer("Container")}
-      onReset={() => {
-        reset();
-        setEditMode(false);
-      }}
-    >
-      <div className="aws-dashboard-grid space-y-6 py-2">
-        <PageHeader
-          title={
-            <span className="grid gap-1">
-              <span className="flex items-center gap-2">
-                <span>Dashboard</span>
-                {enabled ? (
-                  <span className="bg-muted text-muted-foreground rounded-full border px-2 py-0.5 text-xs font-medium">
-                    Edit mode
-                  </span>
-                ) : null}
-              </span>
-              <span className="text-muted-foreground text-xs">
-                Desktop: right-click to customize layout
-              </span>
+    <div className="aws-dashboard-grid space-y-6 py-2">
+      <PageHeader
+        title={
+          <span className="grid gap-1">
+            <span className="flex items-center gap-2">
+              <span>Dashboard</span>
+              {enabled ? (
+                <span className="bg-muted text-muted-foreground rounded-full border px-2 py-0.5 text-xs font-medium">
+                  Customize
+                </span>
+              ) : null}
             </span>
-          }
-        />
+            <span className="text-muted-foreground text-xs">
+              Overview of compliance readiness, alerts, audits, and facility performance.
+            </span>
+          </span>
+        }
+        actions={
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 rounded-md border bg-background px-2 py-1">
+              <span className="text-muted-foreground text-xs">Customize</span>
+              <Switch checked={customize} onCheckedChange={setCustomize} disabled={isMobile} />
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                resetLayout();
+                setCustomize(false);
+              }}
+            >
+              Reset layout
+            </Button>
+          </div>
+        }
+      />
 
-        <DashboardBuilder
-          enabled={enabled}
-          data={{
-            kpis,
-            utilityTrend,
-            notifications,
-            audits,
-            overdueActions,
-            recentUploads,
-            expiringDocuments,
-            facilities,
-          }}
-        />
+      <div className="space-y-4">
+        {sectionOrder.map((key, idx) => (
+          <DashboardSectionItem
+            key={key}
+            id={key}
+            index={idx}
+            enabled={enabled}
+            onMove={moveSection}
+          >
+            {sectionsByKey[key]}
+          </DashboardSectionItem>
+        ))}
       </div>
-    </DashboardLayoutContextMenu>
+    </div>
   );
 }
-

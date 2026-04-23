@@ -110,7 +110,7 @@ const cards: SettingsCardDef[] = [
     key: "uom",
     tab: "operations",
     title: "Units (UOM)",
-    description: "kWh, m³, kg, Nm³... unified units across utilities.",
+    description: "kWh, m\u00B3, kg, Nm\u00B3... unified units across utilities.",
     icon: Ruler,
     openAs: "page",
     to: "/settings/uom",
@@ -283,4 +283,3 @@ export function SettingsHomePage() {
     </div>
   );
 }
-

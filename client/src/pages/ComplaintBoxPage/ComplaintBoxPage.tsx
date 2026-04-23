@@ -335,7 +335,7 @@ export function ComplaintBoxPage() {
           .replace(/</g, "&lt;")
           .replace(/>/g, "&gt;");
         const meta = isNote
-          ? `<b>NOTE</b> Â· ${at}${safeAuthor ? ` Â· ${safeAuthor}` : ""}`
+          ? `<b>NOTE</b> \u00B7 ${at}${safeAuthor ? ` \u00B7 ${safeAuthor}` : ""}`
           : `${at}`;
         const safeText = text
           .replace(/&/g, "&amp;")
@@ -350,7 +350,7 @@ export function ComplaintBoxPage() {
 
         return `
           <div style="margin:12px 0;padding:12px;border-radius:16px;border:1px ${isNote ? "dashed" : "solid"} ${isNote ? "rgba(148,163,184,.55)" : "rgba(34,197,94,.25)"};background:${isNote ? "rgba(148,163,184,.08)" : "rgba(34,197,94,.08)"};">
-            <div style="font-size:11px;color:rgba(100,116,139,.95);margin-bottom:6px;">${isNote ? "<b>NOTE</b> · " : ""}${at}</div>
+            <div style="font-size:11px;color:rgba(100,116,139,.95);margin-bottom:6px;">${isNote ? "<b>NOTE</b> \u00B7 " : ""}${at}</div>
             ${safeText ? `<div style="font-size:14px;line-height:1.5;white-space:pre-wrap;">${safeText}</div>` : ""}
             ${media}
           </div>
@@ -674,11 +674,11 @@ export function ComplaintBoxPage() {
                   <div className="min-w-0">
                     <div className="truncate text-sm font-semibold">
                       {r.title?.trim() || formatReportNumber(r.reportId)}{" "}
-                      <span className="text-muted-foreground font-normal">â€¢</span>{" "}
+                      <span className="text-muted-foreground font-normal">{"\u2022"}</span>{" "}
                       {getRecordFactoryName(r)}
                     </div>
                     <div className="text-muted-foreground mt-1 text-xs">
-                      Complaint #{formatReportNumber(r.reportId)} â€¢ Recorded{" "}
+                      Complaint #{formatReportNumber(r.reportId)} {"\u2022"} Recorded{" "}
                       {new Date(r.recordedAt).toLocaleString()}
                     </div>
                   </div>
@@ -1065,7 +1065,7 @@ export function ComplaintBoxPage() {
                 )}
               />
               <div className="text-muted-foreground text-xs">
-                Press Enter to add note â€¢ Shift+Enter for new line
+                Press Enter to add note {"\u2022"} Shift+Enter for new line
               </div>
             </div>
           </div>

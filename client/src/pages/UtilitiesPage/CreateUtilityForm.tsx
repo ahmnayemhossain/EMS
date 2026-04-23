@@ -95,7 +95,7 @@ export function CreateUtilityForm({
       </div>
       <div className="grid gap-1.5">
         <div className="text-muted-foreground text-xs">Unit</div>
-        <Input value={unit} onChange={(e) => onUnitChange(e.target.value)} placeholder="kWh / m³ / L" />
+        <Input value={unit} onChange={(e) => onUnitChange(e.target.value)} placeholder="kWh / m\u00B3 / L" />
       </div>
       <div className="grid gap-1.5 sm:col-span-2">
         <div className="text-muted-foreground text-xs">Minimum threshold (alert below)</div>
@@ -117,4 +117,3 @@ export function CreateUtilityForm({
     </div>
   );
 }
-
