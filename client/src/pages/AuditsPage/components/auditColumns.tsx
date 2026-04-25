@@ -19,10 +19,14 @@ export function getAuditColumns(): Array<DataColumn<AuditRecord>> {
               {a.name}
             </div>
             <div className="text-muted-foreground mt-1 text-xs">
-              {getFacilityName(a.facilityId)} • {formatAuditDate(a.date)}
+              {getFacilityName(a.facilityId)}
+              {a.customerName ? ` • ${a.customerName}` : ""} • {formatAuditDate(a.date)}
             </div>
             <div className="mt-2 flex flex-wrap gap-2">
               <StatusBadge tone="neutral">{templateName}</StatusBadge>
+              {a.nextAuditDate ? (
+                <StatusBadge tone="neutral">Next {formatAuditDate(a.nextAuditDate)}</StatusBadge>
+              ) : null}
               <StatusBadge
                 tone={
                   a.overallScore >= 85

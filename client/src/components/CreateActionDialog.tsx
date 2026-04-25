@@ -44,7 +44,7 @@ export function CreateActionDialog({
           <Button>{triggerLabel}</Button>
         </DialogTrigger>
       )}
-      <DialogContent className={contentClassName ?? "sm:max-w-xl"}>
+      <DialogContent className={contentClassName}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>

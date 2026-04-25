@@ -22,7 +22,12 @@ export type AuditFindingRecord = {
     | "general";
   title: string;
   description?: string;
+  customerName?: string;
+  action?: string;
+  responsiblePerson?: string;
+  responsibleTeam?: string;
   status: "open" | "in_progress" | "closed";
+  startDate?: string;
   dueDate?: string;
   owner?: string;
   evidenceCount?: number;
@@ -34,4 +39,3 @@ export type AuditRecord = Audit & {
   checklist: AuditChecklistResponse[];
   findings: AuditFindingRecord[];
 };
-

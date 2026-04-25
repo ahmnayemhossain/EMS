@@ -77,9 +77,15 @@ export const auditRecords: AuditRecord[] = audits.map((a, idx) => {
       severity: "major",
       area: "wastewater",
       title: "ETP logbook has missing dosing entries",
+      description: "Daily dosing logs are missing for multiple shifts; records need backfill and control checks.",
+      customerName: a.customerName,
+      action: "Update logbook SOP, retrain operators, and enforce shift sign-off.",
+      responsibleTeam: "ETP / Utilities",
       status: "open",
+      startDate: "2026-04-10",
       dueDate: "2026-04-30",
       owner: "Munna (700902)",
+      responsiblePerson: "Munna (700902)",
       evidenceCount: 1,
     });
   }
@@ -89,9 +95,15 @@ export const auditRecords: AuditRecord[] = audits.map((a, idx) => {
       severity: "critical",
       area: "chemicals",
       title: "Restricted chemical approval evidence missing",
+      description: "Approval documentation is incomplete for restricted chemical usage; traceability is not verifiable.",
+      customerName: a.customerName,
+      action: "Collect approval evidence, restrict issue, and update chemical register with approvals.",
+      responsibleTeam: "EHS / Stores",
       status: "in_progress",
+      startDate: "2026-04-12",
       dueDate: "2026-04-20",
       owner: "Sakib (700903)",
+      responsiblePerson: "Sakib (700903)",
       evidenceCount: 0,
     });
   }

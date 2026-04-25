@@ -22,7 +22,7 @@ export function FilterBar({
         className,
       )}
     >
-      <div className="flex flex-col gap-2 md:flex-row md:items-center">
+      <div className="flex min-w-0 flex-col gap-2 md:flex-row md:items-center">
         {left}
         {onClear ? (
           <Button variant="ghost" onClick={onClear} className="justify-start">
@@ -35,4 +35,3 @@ export function FilterBar({
     </div>
   );
 }
-

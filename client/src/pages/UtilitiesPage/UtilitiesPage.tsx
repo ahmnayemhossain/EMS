@@ -76,10 +76,19 @@ export function UtilitiesPage() {
             missingBillsCount={missingBillsCount}
           />
 
-          <div className="grid gap-4 xl:grid-cols-3">
-            <UtilitiesTrendCard data={trendMock} />
-            <UtilitiesComparisonCard />
-          </div>
+          {isMobile ? (
+            <div className="-mx-4 overflow-x-auto px-4">
+              <div className="flex w-max gap-4 pb-1">
+                <UtilitiesTrendCard data={trendMock} className="w-[92vw] max-w-[720px] shrink-0" />
+                <UtilitiesComparisonCard className="w-[92vw] max-w-[520px] shrink-0" />
+              </div>
+            </div>
+          ) : (
+            <div className="grid gap-4 xl:grid-cols-3">
+              <UtilitiesTrendCard data={trendMock} />
+              <UtilitiesComparisonCard />
+            </div>
+          )}
 
           {isMobile ? (
             <UtilitiesRecordsMobile rows={rows} onSelect={setSelected} />
@@ -109,4 +118,3 @@ export function UtilitiesPage() {
     </div>
   );
 }
-

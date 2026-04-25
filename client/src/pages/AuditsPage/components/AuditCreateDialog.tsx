@@ -1,15 +1,17 @@
 import * as React from "react";
 import { toast } from "sonner";
+
 import { auditTemplates } from "@/data/audit-templates";
 import { facilities } from "@/data/mock";
-import { Input } from "@/app/components/ui/input";
-import { Progress } from "@/app/components/ui/progress";
 import { CreateActionDialog } from "@/components/CreateActionDialog";
-import { SelectFilter } from "@/components/SelectFilter";
-import { StatusBadge } from "@/components/StatusBadge";
 import type { AuditRecord } from "@/types/audit";
+
 import { AUDITORS } from "../audit.constants";
 import { computeChecklistStats, defaultStatusesForTemplate } from "../audit.helpers";
+import { AuditCreateForm } from "./AuditCreateForm";
+import { buildAuditRecord, buildFindings } from "./auditCreate.helpers";
+import type { FindingDraft } from "./auditCreate.types";
+
 export function AuditCreateDialog({
   open,
   onOpenChange,
@@ -25,15 +27,23 @@ export function AuditCreateDialog({
     auditTemplates[0]?.id ?? "tmpl_iso14001_ems",
   );
   const [auditor, setAuditor] = React.useState<string>("");
+  const [customerName, setCustomerName] = React.useState<string>("");
   const [date, setDate] = React.useState<string>("");
+  const [nextAuditDate, setNextAuditDate] = React.useState<string>("");
+  const [findingsDrafts, setFindingsDrafts] = React.useState<FindingDraft[]>([]);
+
   React.useEffect(() => {
     if (!open) return;
     setName("");
     setFacilityId(facilities[0]?.id ?? "");
     setTemplateId(auditTemplates[0]?.id ?? "tmpl_iso14001_ems");
     setAuditor(String(AUDITORS[0] ?? ""));
+    setCustomerName("");
     setDate("");
+    setNextAuditDate("");
+    setFindingsDrafts([]);
   }, [open]);
+
   const stats = React.useMemo(() => {
     const statuses = defaultStatusesForTemplate(templateId);
     return computeChecklistStats(templateId, statuses);
@@ -45,19 +55,11 @@ export function AuditCreateDialog({
       submitLabel="Create"
       open={open}
       onOpenChange={onOpenChange}
+      contentClassName="sm:max-w-3xl max-h-[85vh] overflow-y-auto"
       onCreate={() => {
-        if (!name.trim()) {
-          toast.error("Audit name is required");
-          return false;
-        }
-        if (!facilityId) {
-          toast.error("Select a factory");
-          return false;
-        }
-        if (!auditor) {
-          toast.error("Select an auditor");
-          return false;
-        }
+        if (!name.trim()) return toast.error("Audit name is required"), false;
+        if (!facilityId) return toast.error("Select a factory"), false;
+        if (!auditor) return toast.error("Select an auditor"), false;
 
         const now = new Date();
         const statusesByItemId = defaultStatusesForTemplate(templateId);
@@ -67,82 +69,49 @@ export function AuditCreateDialog({
           status,
           evidenceCount: 0,
         }));
-
-        const record: AuditRecord = {
+        const findings = buildFindings({ drafts: findingsDrafts, fallbackCustomerName: customerName });
+        const record = buildAuditRecord({
           id: `audit_${Date.now()}`,
+          nowIso: now.toISOString(),
           facilityId,
-          name: name.trim(),
-          date: date.trim(),
+          name,
+          customerName,
+          date,
+          nextAuditDate,
           auditor,
+          templateId,
           progress: computed.progress,
           overallScore: computed.score,
-          findingsCount: { minor: 0, major: 0, critical: 0 },
-          templateId,
-          createdAt: now.toISOString(),
           checklist,
-          findings: [],
-        };
-
+          findings,
+        });
         onCreate(record);
         toast.success("Audit created (mock)");
         return true;
       }}
     >
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="grid gap-1.5 sm:col-span-2">
-          <div className="text-muted-foreground text-xs">Audit name</div>
-          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. ISO 14001 internal audit" />
-        </div>
-        <div className="grid gap-1.5">
-          <div className="text-muted-foreground text-xs">Factory</div>
-          <SelectFilter
-            value={facilityId}
-            onChange={(v) => setFacilityId(v ?? "")}
-            placeholder="Select factory"
-            items={facilities.map((f) => ({ value: f.id, label: f.name }))}
-          />
-        </div>
-        <div className="grid gap-1.5">
-          <div className="text-muted-foreground text-xs">Auditor</div>
-          <SelectFilter
-            value={auditor}
-            onChange={(v) => setAuditor(v ?? "")}
-            placeholder="Select auditor"
-            items={AUDITORS.map((a) => ({ value: a, label: a }))}
-          />
-        </div>
-        <div className="grid gap-1.5 sm:col-span-2">
-          <div className="text-muted-foreground text-xs">Template</div>
-          <SelectFilter
-            value={templateId}
-            onChange={(v) => setTemplateId(v ?? "")}
-            placeholder="Select template"
-            items={auditTemplates.map((t) => ({ value: t.id, label: t.name }))}
-          />
-        </div>
-        <div className="grid gap-1.5">
-          <div className="text-muted-foreground text-xs">Schedule date</div>
-          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-        </div>
-        <div className="flex items-center justify-between rounded-lg border p-3 sm:col-span-2">
-          <div>
-            <div className="text-sm font-medium">Checklist preview</div>
-            <div className="text-muted-foreground mt-1 text-xs">
-              Total items {stats.total} • Default score {stats.score}%
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <StatusBadge tone="neutral">{stats.template.name}</StatusBadge>
-          </div>
-        </div>
-        <div className="sm:col-span-2">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Progress</span>
-            <span className="font-medium">{stats.progress}%</span>
-          </div>
-          <Progress value={stats.progress} className="mt-2" />
-        </div>
-      </div>
+      <AuditCreateForm
+        facilities={facilities}
+        auditTemplates={auditTemplates}
+        stats={stats}
+        name={name}
+        onNameChange={setName}
+        facilityId={facilityId}
+        onFacilityIdChange={setFacilityId}
+        auditor={auditor}
+        onAuditorChange={setAuditor}
+        customerName={customerName}
+        onCustomerNameChange={setCustomerName}
+        date={date}
+        onDateChange={setDate}
+        nextAuditDate={nextAuditDate}
+        onNextAuditDateChange={setNextAuditDate}
+        templateId={templateId}
+        onTemplateIdChange={setTemplateId}
+        findingsDrafts={findingsDrafts}
+        onFindingsDraftsChange={setFindingsDrafts}
+      />
     </CreateActionDialog>
   );
 }
+

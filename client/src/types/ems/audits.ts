@@ -24,7 +24,9 @@ export type Audit = {
   id: ID;
   facilityId: ID;
   name: string; // e.g. "ISO 14001 Internal Audit"
+  customerName?: string;
   date: string; // ISO date
+  nextAuditDate?: string; // ISO date
   auditor: string;
   progress: number; // 0-100 checklist progress
   overallScore: number; // 0-100
@@ -42,4 +44,3 @@ export type CAPA = {
   evidenceCount: number;
   relatedFindingId?: ID;
 };
-
