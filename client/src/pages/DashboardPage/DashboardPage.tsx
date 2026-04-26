@@ -172,21 +172,6 @@ export function DashboardPage() {
   return (
     <div className="aws-dashboard-grid space-y-6 py-2">
       <PageHeader
-        title={
-          <span className="grid gap-1">
-            <span className="flex items-center gap-2">
-              <span>Dashboard</span>
-              {enabled ? (
-                <span className="bg-muted text-muted-foreground rounded-full border px-2 py-0.5 text-xs font-medium">
-                  Customize
-                </span>
-              ) : null}
-            </span>
-            <span className="text-muted-foreground text-xs">
-              Overview of compliance readiness, alerts, audits, and facility performance.
-            </span>
-          </span>
-        }
         actions={
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-2 rounded-md border bg-background px-2 py-1">

@@ -3,7 +3,6 @@ import { CalendarClock, ClipboardList, Paperclip } from "lucide-react";
 
 import { capas, getFacilityName } from "@/data/mock";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
-import { PageHeader } from "@/components/PageHeader";
 import { StatusBadge } from "@/components/StatusBadge";
 import { formatDate } from "@/utils/format";
 import type { CAPA } from "@/types/ems";
@@ -38,10 +37,6 @@ export function CapaPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="CAPA"
-      />
-
       <div className="grid gap-4 xl:grid-cols-5">
         {columns.map((col) => {
           const items = byStatus.get(col.id) ?? [];

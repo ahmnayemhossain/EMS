@@ -24,6 +24,7 @@ import { audits, facilities, getFacilityName } from "@/data/mock";
 import { Button } from "@/app/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Input } from "@/app/components/ui/input";
+import { Tabs, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
 import { Textarea } from "@/app/components/ui/textarea";
 import { CreateActionDialog } from "@/components/CreateActionDialog";
 import { DetailPanel } from "@/components/DetailPanel";
@@ -224,83 +225,82 @@ export function AuditCalendarPage() {
     <div className="flex min-h-[calc(100svh-8.5rem)] flex-col gap-4">
       <div className="shrink-0">
         <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="bg-muted/15 inline-flex w-[260px] overflow-hidden rounded-full border p-1">
-            <button
-              type="button"
-              onClick={() => setView("calendar")}
-              className={[
-                "inline-flex flex-1 items-center justify-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-colors",
-                view === "calendar"
-                  ? "bg-background shadow-sm"
-                  : "text-muted-foreground hover:text-foreground",
-              ].join(" ")}
+          <div className="flex flex-wrap items-center gap-2">
+            <Tabs
+              value={view}
+              onValueChange={(v) => setView(v === "list" ? "list" : "calendar")}
+              className="w-full sm:w-auto"
             >
-              <CalendarDays className="size-4" />
-              Calendar
-            </button>
-            <button
-              type="button"
-              onClick={() => setView("list")}
-              className={[
-                "inline-flex flex-1 items-center justify-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-colors",
-                view === "list"
-                  ? "bg-background shadow-sm"
-                  : "text-muted-foreground hover:text-foreground",
-              ].join(" ")}
-            >
-              <List className="size-4" />
-              List
-            </button>
-          </div>
+              <TabsList className="bg-muted/30 grid h-auto w-full grid-cols-2 gap-1 rounded-xl border p-1 sm:w-[260px]">
+                <TabsTrigger value="calendar" className="min-w-0 gap-2">
+                  <CalendarDays className="size-4" />
+                  <span className="truncate">Calendar</span>
+                </TabsTrigger>
+                <TabsTrigger value="list" className="min-w-0 gap-2">
+                  <List className="size-4" />
+                  <span className="truncate">List</span>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
 
-          <div className="inline-flex items-center overflow-hidden rounded-full border bg-background">
-            <Button variant="outline" size="sm" onClick={() => shiftWindow("prev")} aria-label="Previous">
-              <ChevronLeft className="size-4" />
-            </Button>
-            <div className="px-3 text-sm font-semibold tracking-tight text-[var(--calendar-accent)]">
-              {format(monthsToRender[0], "MMMM yyyy")}
+            <div className="inline-flex items-center overflow-hidden rounded-full border bg-background">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => shiftWindow("prev")}
+                aria-label="Previous"
+              >
+                <ChevronLeft className="size-4" />
+              </Button>
+              <div className="px-3 text-sm font-semibold tracking-tight text-[var(--calendar-accent)]">
+                {format(monthsToRender[0], "MMMM yyyy")}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => shiftWindow("next")}
+                aria-label="Next"
+              >
+                <ChevronRight className="size-4" />
+              </Button>
             </div>
-            <Button variant="outline" size="sm" onClick={() => shiftWindow("next")} aria-label="Next">
-              <ChevronRight className="size-4" />
-            </Button>
           </div>
-        </div>
 
-        <CreateActionDialog
-          title="Add audit"
-          triggerLabel="Add audit"
-          open={createOpen}
-          onOpenChange={setCreateOpen}
-          submitDisabled={createHasConflict}
-          onCreate={() => {
-            if (!createFactoryId || !createName || !createAuditor || !createDate) return false;
+          <CreateActionDialog
+            title="Add audit"
+            triggerLabel="Add audit"
+            open={createOpen}
+            onOpenChange={setCreateOpen}
+            submitDisabled={createHasConflict}
+            onCreate={() => {
+              if (!createFactoryId || !createName || !createAuditor || !createDate) return false;
 
-            const id = `audit_${Date.now()}`;
-            const newAudit: ScheduledAudit = {
-              id,
-              facilityId: createFactoryId,
-              name: createName,
-              date: createDate,
-              auditor: createAuditor,
-              progress: 0,
-              overallScore: 0,
-              findingsCount: { minor: 0, major: 0, critical: 0 },
-              time: createStartTime && computedEndTime
-                ? { start: createStartTime, end: computedEndTime }
-                : undefined,
-            };
+              const id = `audit_${Date.now()}`;
+              const newAudit: ScheduledAudit = {
+                id,
+                facilityId: createFactoryId,
+                name: createName,
+                date: createDate,
+                auditor: createAuditor,
+                progress: 0,
+                overallScore: 0,
+                findingsCount: { minor: 0, major: 0, critical: 0 },
+                time:
+                  createStartTime && computedEndTime
+                    ? { start: createStartTime, end: computedEndTime }
+                    : undefined,
+              };
 
-            setScheduled((prev) => [newAudit, ...prev]);
-            const nextMonth = startOfMonth(toPickerDate(createDate));
-            setAnchorMonth(nextMonth);
-            setSelectedDateKey(createDate);
-            setCreateNotes("");
-            setView("calendar");
-            return true;
-          }}
-        >
-          <div className="grid gap-3 sm:grid-cols-2">
+              setScheduled((prev) => [newAudit, ...prev]);
+              const nextMonth = startOfMonth(toPickerDate(createDate));
+              setAnchorMonth(nextMonth);
+              setSelectedDateKey(createDate);
+              setCreateNotes("");
+              setView("calendar");
+              return true;
+            }}
+          >
+            <div className="grid gap-3 sm:grid-cols-2">
             <div className="grid gap-1.5">
               <div className="text-muted-foreground text-xs">Factory</div>
               <SelectFilter
@@ -374,8 +374,8 @@ export function AuditCalendarPage() {
                 placeholder="Optional notes (mock UI)"
               />
             </div>
-          </div>
-        </CreateActionDialog>
+            </div>
+          </CreateActionDialog>
         </div>
       </div>
 

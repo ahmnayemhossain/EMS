@@ -62,7 +62,6 @@ export function WastePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Waste management"
         actions={
           <WasteCreateDialog
             facilities={facilities}
@@ -139,4 +138,3 @@ export function WastePage() {
     </div>
   );
 }
-

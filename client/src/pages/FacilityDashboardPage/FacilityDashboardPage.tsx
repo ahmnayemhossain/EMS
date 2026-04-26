@@ -49,7 +49,6 @@ export function FacilityDashboardPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={facility.name}
         actions={
           <div className="flex items-center gap-2">
             <RiskBadge level={facility.riskLevel} />

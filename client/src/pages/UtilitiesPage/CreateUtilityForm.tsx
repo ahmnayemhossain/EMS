@@ -1,12 +1,105 @@
-import { TriangleAlert } from "lucide-react";
+import * as React from "react";
+import { CalendarDays, TriangleAlert } from "lucide-react";
+import { format } from "date-fns";
 
 import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert";
+import { Button } from "@/app/components/ui/button";
+import { Calendar } from "@/app/components/ui/calendar";
 import { Input } from "@/app/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover";
 import { Textarea } from "@/app/components/ui/textarea";
+import { cn } from "@/app/components/ui/utils";
 import type { Facility, UtilityType } from "@/types/ems";
 import { SelectFilter } from "@/components/SelectFilter";
 import { formatUtilityType } from "@/utils/format";
 import { utilityTypes } from "@/pages/UtilitiesPage/constants";
+
+function pad2(n: number) {
+  return String(n).padStart(2, "0");
+}
+
+function toPickerDate(dateIso: string) {
+  // Use midday to avoid timezone edge cases.
+  return new Date(`${dateIso}T12:00:00`);
+}
+
+function toIsoDate(date: Date) {
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+}
+
+function DatePickerField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const [open, setOpen] = React.useState(false);
+  const selected = value ? toPickerDate(value) : undefined;
+  const display = selected ? format(selected, "PPP") : "Select date";
+  const todayIso = React.useMemo(() => toIsoDate(new Date()), []);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          className={cn("w-full justify-between", !value && "text-muted-foreground")}
+        >
+          <span className="flex min-w-0 items-center gap-2">
+            <CalendarDays className="size-4 shrink-0" />
+            <span className="truncate">{display}</span>
+          </span>
+          <span className="text-muted-foreground ml-2 shrink-0 text-xs">{value || "--"}</span>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-auto p-2">
+        <div className="flex items-center justify-between gap-2 px-1 pb-2">
+          <div className="text-sm font-medium">{label}</div>
+          <div className="flex items-center gap-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                onChange(todayIso);
+                setOpen(false);
+              }}
+            >
+              Today
+            </Button>
+            {value ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  onChange("");
+                  setOpen(false);
+                }}
+              >
+                Clear
+              </Button>
+            ) : null}
+          </div>
+        </div>
+        <Calendar
+          mode="single"
+          selected={selected}
+          onSelect={(d) => {
+            if (!d) return;
+            onChange(toIsoDate(d));
+            setOpen(false);
+          }}
+          initialFocus
+        />
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 export function CreateUtilityForm({
   facilities,
@@ -75,11 +168,29 @@ export function CreateUtilityForm({
       </div>
       <div className="grid gap-1.5">
         <div className="text-muted-foreground text-xs">Period start</div>
-        <Input type="date" value={periodStart} onChange={(e) => onPeriodStartChange(e.target.value)} />
+        <DatePickerField
+          label="Period start"
+          value={periodStart}
+          onChange={(v) => {
+            onPeriodStartChange(v);
+            if (v && periodEnd && v > periodEnd) {
+              onPeriodEndChange(v);
+            }
+          }}
+        />
       </div>
       <div className="grid gap-1.5">
         <div className="text-muted-foreground text-xs">Period end</div>
-        <Input type="date" value={periodEnd} onChange={(e) => onPeriodEndChange(e.target.value)} />
+        <DatePickerField
+          label="Period end"
+          value={periodEnd}
+          onChange={(v) => {
+            onPeriodEndChange(v);
+            if (v && periodStart && v < periodStart) {
+              onPeriodStartChange(v);
+            }
+          }}
+        />
       </div>
       <div className="grid gap-1.5 sm:col-span-2">
         <div className="text-muted-foreground text-xs">Meter name</div>

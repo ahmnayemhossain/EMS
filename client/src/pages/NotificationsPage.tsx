@@ -53,7 +53,6 @@ export function NotificationsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Notifications"
         actions={
           <div className="flex items-center gap-2">
             <Button

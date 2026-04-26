@@ -107,7 +107,6 @@ export function DocumentsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Documents"
         actions={
           <Button variant="outline">
             <FileText className="mr-2 size-4" />
@@ -141,4 +140,3 @@ export function DocumentsPage() {
     </div>
   );
 }
-

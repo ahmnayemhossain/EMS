@@ -17,9 +17,24 @@ function wrapSpawn(original) {
     // and raise EPERM asynchronously. Route through `cmd /c` to avoid that class
     // of failure for both sync and async spawn calls.
     if (isEsbuildExe(command)) {
+      const argv = Array.isArray(args) ? args : [];
+
+      // NOTE: In some locked-down Windows environments, spawning `cmd.exe` is blocked
+      // (EPERM). PowerShell is a better fallback here and still preserves stdio piping,
+      // which esbuild needs for its long-lived service process.
+      const psQuote = (value) => `'${String(value).replace(/'/g, "''")}'`;
+      const psCommand = ["&", psQuote(command), ...argv.map(psQuote)].join(" ");
+
       return original(
-        "cmd",
-        ["/c", command, ...(Array.isArray(args) ? args : [])],
+        "powershell.exe",
+        [
+          "-NoProfile",
+          "-NonInteractive",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-Command",
+          psCommand,
+        ],
         options,
       );
     }

@@ -42,7 +42,6 @@ export function ReportsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Reports"
         actions={
           <Button>
             <Download className="mr-2 size-4" />
