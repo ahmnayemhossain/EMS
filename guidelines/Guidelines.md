@@ -1,5 +1,54 @@
 # EMS - Final Feature List
 
+## Core Development Guidelines
+
+### Database
+
+- Main database name must be `ems`.
+- All database primary keys must be numeric:
+  - Use `BIGSERIAL PRIMARY KEY` for application tables.
+  - Do not use text/string values as primary keys.
+- Human-readable or app-facing identifiers must be stored as unique non-PK fields:
+  - Use `code` for records such as facilities, users, roles, departments, designations, employees.
+  - Use `key` for permission keys.
+- Foreign keys must reference numeric primary keys.
+- Existing frontend string identifiers may still be accepted by APIs, but the server must map them to numeric database IDs before saving.
+- Legacy text-primary-key tables must not be dropped silently. Rename/archive them before creating corrected numeric-primary-key tables.
+
+### User, Role & Employee Model
+
+- User-related tables must be created before module tables that reference users.
+- Required user-related tables:
+  - `facilities`
+  - `departments`
+  - `designations`
+  - `employees`
+  - `users`
+  - `roles`
+  - `permissions`
+  - `user_roles`
+  - `role_permissions`
+- Employee table requirements:
+  - Numeric primary key: `id BIGSERIAL PRIMARY KEY`
+  - Numeric employee number: `employee_id INTEGER UNIQUE NOT NULL`
+  - Employee name
+  - Department relation: `department_id -> departments.id`
+  - Designation relation: `designation_id -> designations.id`
+  - Active status as numeric `0/1`
+  - Email address required and unique
+  - Phone number optional
+
+### Utilities
+
+- Utilities must use the server API and database, not mock data.
+- Utility records must relate to:
+  - Numeric `facilities.id`
+  - Numeric `users.id` for created/updated user tracking
+- The API may accept frontend facility/user codes, but must store numeric FK values.
+- Same factory + utility type + meter + overlapping date range must not be saved twice.
+- Utility record IDs must be numeric.
+- Baseline and threshold settings are not required during utility entry.
+
 ## 1. Dashboard
 
 - Group-level overview
@@ -174,6 +223,12 @@ Auto-triggered for:
 - Users management
 - Roles and permissions
 - Employees
+  - Create modal must collect complete employee information directly.
+  - Employee ID must be numeric.
+  - Department and designation must use related dropdown data.
+  - Active status must be `0` or `1`.
+  - Email is required.
+  - Phone is optional.
 - Factories
 - Departments
 - Designations
@@ -191,3 +246,10 @@ Auto-triggered for:
 - People & Events
 - Notifications
 - Admin
+
+## UI Interaction Guidelines
+
+- Success, warning, and error feedback should use centered `react-hot-toast` cards.
+- Success feedback should show a large checkmark icon.
+- Destructive actions must use a centered confirmation dialog before deleting.
+- Drawer detail views should expose primary record actions such as Edit and Delete when records are editable.
