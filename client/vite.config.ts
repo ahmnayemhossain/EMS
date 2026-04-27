@@ -420,5 +420,8 @@ export default defineConfig({
     https: useHttps,
     host: true,
     allowedHosts: ["molecular-samiyah-unowned.ngrok-free.dev"],
+    proxy: {
+      "/api/utilities": "http://localhost:4000",
+    },
   },
 });

@@ -1,73 +1,32 @@
 {
   "_meta": {
-    "name": "Fortis Group EMS",
-    "createdAt": "2026-04-16T00:00:00.000Z"
+    "name": "EMS Platform",
+    "createdAt": "2026-04-27T00:00:00.000Z",
+    "environment": "production-ready-empty"
   },
-  "factories": [
-    { "id": "fac_hfl", "name": "HFL", "code": "hfl", "type": "garments", "city": "Dhaka", "riskLevel": "medium" },
-    { "id": "fac_qfl", "name": "QFL", "code": "qfl", "type": "knitting", "city": "Gazipur", "riskLevel": "medium" },
-    { "id": "fac_fgl", "name": "FGL", "code": "fgl", "type": "dyeing_wet_processing", "city": "Narayanganj", "riskLevel": "high" },
-    { "id": "fac_afl", "name": "AFL", "code": "afl", "type": "shoe", "city": "Chattogram", "riskLevel": "medium" },
-    { "id": "fac_rsbl", "name": "RSBL", "code": "rsbl", "type": "garments", "city": "Dhaka", "riskLevel": "low" },
-    { "id": "res_sarah", "name": "Sarah Resort", "code": "sarah-resort", "type": "resort", "city": "Cox's Bazar", "riskLevel": "medium" },
-    { "id": "res_downtown", "name": "Dowtown Resort", "code": "downtown-resort", "type": "resort", "city": "Sylhet", "riskLevel": "low" }
-  ],
-  "departments": [
-    { "id": "dept_ehs", "name": "EHS" },
-    { "id": "dept_compliance", "name": "Compliance" },
-    { "id": "dept_utility", "name": "Utility" },
-    { "id": "dept_maintenance", "name": "Maintenance" },
-    { "id": "dept_admin", "name": "Admin" }
-  ],
-  "designations": [
-    { "id": "desig_officer", "name": "Officer" },
-    { "id": "desig_executive", "name": "Executive" },
-    { "id": "desig_engineer", "name": "Engineer" },
-    { "id": "desig_supervisor", "name": "Supervisor" },
-    { "id": "desig_manager", "name": "Manager" }
-  ],
+  "factories": [],
+  "departments": [],
+  "designations": [],
   "uoms": [
     { "id": "uom_kwh", "name": "kWh" },
-    { "id": "uom_m3", "name": "m³" },
+    { "id": "uom_m3", "name": "m3" },
     { "id": "uom_kg", "name": "kg" },
     { "id": "uom_l", "name": "L" },
-    { "id": "uom_nm3", "name": "Nm³" }
+    { "id": "uom_nm3", "name": "Nm3" }
   ],
-  "suppliers": [
-    { "id": "sup_eco", "name": "EcoChem BD", "type": "chemical" },
-    { "id": "sup_lab", "name": "GreenLab Services", "type": "lab" },
-    { "id": "sup_waste", "name": "SafeWaste Logistics", "type": "waste" }
-  ],
+  "suppliers": [],
   "roles": [
-    { "id": "role_admin", "name": "Admin", "scope": "group", "permissionKeys": ["settings:manage"] },
-    { "id": "role_supervisor", "name": "Supervisor", "scope": "factory", "permissionKeys": ["complaints:triage", "complaints:handle"] }
+    { "id": "role_admin", "name": "Admin", "scope": "group", "permissionKeys": ["settings:manage"] }
   ],
-  "employees": [
-    { "id": "emp_700901", "name": "Nayem", "employeeId": "700901", "factoryId": "fac_hfl", "department": "EHS", "designation": "Officer", "status": "active", "joinedOn": "2024-01-10" },
-    { "id": "emp_70900", "name": "Mehedi", "employeeId": "70900", "factoryId": "fac_qfl", "department": "Compliance", "designation": "Executive", "status": "active", "joinedOn": "2023-09-20" },
-    { "id": "emp_700999", "name": "Nimur", "employeeId": "700999", "factoryId": "fac_fgl", "department": "Utility", "designation": "Engineer", "status": "active", "joinedOn": "2024-06-01" },
-    { "id": "emp_700902", "name": "Munna", "employeeId": "700902", "factoryId": "fac_rsbl", "department": "Admin", "designation": "Supervisor", "status": "active", "joinedOn": "2022-11-14" },
-    { "id": "emp_700903", "name": "Sakib", "employeeId": "700903", "factoryId": "fac_afl", "department": "Maintenance", "designation": "Supervisor", "status": "active", "joinedOn": "2023-03-08" },
-    { "id": "emp_700905", "name": "Aminul", "employeeId": "700905", "factoryId": "res_sarah", "department": "Resort Ops", "designation": "Manager", "status": "active", "joinedOn": "2021-05-19" },
-    { "id": "emp_700906", "name": "Parvej", "employeeId": "700906", "factoryId": "fac_hfl", "department": "Security", "designation": "Officer", "status": "inactive", "joinedOn": "2020-02-13" }
-  ],
-  "users": [
-    { "id": "usr_nayem", "employeeId": "700901", "username": "nayem", "email": "nayem@fortis.local", "roleIds": ["role_admin"], "status": "active" },
-    { "id": "usr_mehedi", "employeeId": "70900", "username": "mehedi", "email": "mehedi@fortis.local", "roleIds": ["role_supervisor"], "status": "active" }
-  ],
+  "employees": [],
+  "users": [],
   "emailSettings": [
-    { "id": "email_default", "enabled": false, "host": "", "port": 587, "username": "", "fromName": "Fortis Group EMS", "fromEmail": "" }
+    { "id": "email_default", "enabled": false, "host": "", "port": 587, "username": "", "fromName": "EMS Platform", "fromEmail": "" }
   ],
   "complaintBoxSettings": [
     { "id": "rb_default", "retentionDays": 365, "maxMessagesPerThread": 10, "autoReplyEnabled": true }
   ],
-  "thresholds": [
-    { "id": "th_ph_outlet", "metric": "pH_outlet", "min": 6.0, "max": 9.0 },
-    { "id": "th_cod_outlet", "metric": "COD_outlet", "max": 250 }
-  ],
-  "approvals": [
-    { "id": "ap_sds_required", "key": "sds_required", "enabled": true },
-    { "id": "ap_restricted_list", "key": "restricted_list", "enabled": true }
-  ]
+  "thresholds": [],
+  "approvals": [],
+  "utilityRecords": []
 }
-

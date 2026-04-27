@@ -32,7 +32,7 @@ export function AppShell() {
             </div>
             <div className="group-data-[collapsible=icon]:hidden">
               <div className="text-sm font-semibold leading-none">
-                Fortis Group EMS
+                EMS Platform
               </div>
             </div>
           </div>

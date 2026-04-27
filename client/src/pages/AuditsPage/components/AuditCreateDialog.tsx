@@ -1,5 +1,5 @@
 import * as React from "react";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 import { auditTemplates } from "@/data/audit-templates";
 import { facilities } from "@/data/mock";

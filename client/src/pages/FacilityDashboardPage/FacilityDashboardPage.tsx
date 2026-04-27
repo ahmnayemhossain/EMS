@@ -75,7 +75,7 @@ export function FacilityDashboardPage() {
             node: (
               <FacilityTrendCard
                 title="Utility trend"
-                description="Weekly trend (mock)"
+                description="No utility records yet"
                 config={{
                   water: { label: "Water", color: "var(--chart-2)" },
                   elec: { label: "Electricity", color: "var(--chart-1)" },
@@ -84,7 +84,7 @@ export function FacilityDashboardPage() {
                   { dataKey: "elec", strokeVar: "var(--color-elec)" },
                   { dataKey: "water", strokeVar: "var(--color-water)" },
                 ]}
-                data={facilityTrend}
+                data={[]}
               />
             ),
           },
@@ -93,7 +93,7 @@ export function FacilityDashboardPage() {
             node: (
               <FacilityTrendCard
                 title="Waste trend"
-                description="Weekly waste generated (mock)"
+                description="Weekly waste generated"
                 config={{ waste: { label: "Waste", color: "var(--chart-3)" } }}
                 lines={[{ dataKey: "waste", strokeVar: "var(--color-waste)" }]}
                 data={facilityTrend}

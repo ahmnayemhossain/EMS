@@ -1,16 +1,18 @@
-import { getFacilityName, utilityRecords } from "@/data/mock";
+import { getFacilityName } from "@/data/mock";
 import type { UtilityRecord, UtilityType } from "@/types/ems";
 
 export function useUtilitiesRows({
   active,
   facilityId,
   search,
+  extraRows = [],
 }: {
   active: UtilityType;
   facilityId?: string;
   search: string;
+  extraRows?: UtilityRecord[];
 }) {
-  const rows: UtilityRecord[] = utilityRecords
+  const rows: UtilityRecord[] = [...extraRows]
     .filter((r) => r.type === active)
     .filter((r) => (facilityId ? r.facilityId === facilityId : true))
     .filter((r) => {
@@ -28,4 +30,3 @@ export function useUtilitiesRows({
 
   return { rows, total, highVarianceCount, missingBillsCount };
 }
-

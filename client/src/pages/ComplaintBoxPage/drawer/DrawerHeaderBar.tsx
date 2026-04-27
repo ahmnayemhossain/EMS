@@ -1,4 +1,4 @@
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 import { Button } from "@/app/components/ui/button";
 import { StatusBadge } from "@/components/StatusBadge";

@@ -29,24 +29,27 @@ export function UtilitiesTrendCard({
           className={cn("w-full", isMobile ? "h-[220px]" : "h-[260px]")}
           config={{ value: { label: "Value", color: "var(--chart-2)" } }}
         >
-          <ResponsiveContainer>
-            <AreaChart data={data} margin={{ left: 6, right: 10, top: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={6} />
-              <YAxis tickLine={false} axisLine={false} width={isMobile ? 42 : 56} />
-              <Tooltip />
-              <Area
-                type="monotone"
-                dataKey="value"
-                stroke="var(--color-value)"
-                fill="color-mix(in oklab, var(--color-value) 15%, transparent)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          {data.length ? (
+            <ResponsiveContainer>
+              <AreaChart data={data} margin={{ left: 6, right: 10, top: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={6} />
+                <YAxis tickLine={false} axisLine={false} width={isMobile ? 42 : 56} />
+                <Tooltip />
+                <Area
+                  type="monotone"
+                  dataKey="value"
+                  stroke="var(--color-value)"
+                  fill="color-mix(in oklab, var(--color-value) 15%, transparent)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
+              No utility records yet.
+            </div>
+          )}
         </ChartContainer>
-        <div className="text-muted-foreground mt-2 text-xs">
-          Trend chart placeholder; wire to real time-series later.
-        </div>
       </CardContent>
     </Card>
   );

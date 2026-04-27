@@ -1,24 +1,47 @@
 import { Card, CardContent } from "@/app/components/ui/card";
 import { cn } from "@/app/components/ui/utils";
+import { getFacilityName } from "@/data/mock";
+import type { UtilityRecord } from "@/types/ems";
 
-export function UtilitiesComparisonCard({ className }: { className?: string }) {
+export function UtilitiesComparisonCard({
+  rows,
+  className,
+}: {
+  rows: UtilityRecord[];
+  className?: string;
+}) {
+  const topVariance = [...rows]
+    .filter((row) => typeof row.variancePercent === "number")
+    .sort((a, b) => Math.abs(b.variancePercent ?? 0) - Math.abs(a.variancePercent ?? 0))[0];
+  const stableMeters = rows.filter((row) => (row.varianceFlag ?? "normal") === "normal").length;
+
   return (
     <Card className={cn("shadow-xs", className)}>
       <CardContent className="pt-6">
         <div className="text-sm font-semibold">Comparison widget</div>
         <div className="text-muted-foreground mt-1 text-sm">
-          Compare factory meters vs baseline (placeholder).
+          Compare factory meters vs baseline.
         </div>
-        <div className="mt-4 grid gap-2">
-          <div className="rounded-lg border p-3 text-sm">
-            <div className="text-muted-foreground text-xs">Top variance</div>
-            <div className="mt-1 font-medium">Process water line (GS-D)</div>
+        {rows.length ? (
+          <div className="mt-4 grid gap-2">
+            <div className="rounded-lg border p-3 text-sm">
+              <div className="text-muted-foreground text-xs">Top variance</div>
+              <div className="mt-1 font-medium">
+                {topVariance
+                  ? `${topVariance.meterName} (${getFacilityName(topVariance.facilityId)})`
+                  : "No variance calculated"}
+              </div>
+            </div>
+            <div className="rounded-lg border p-3 text-sm">
+              <div className="text-muted-foreground text-xs">Stable meters</div>
+              <div className="mt-1 font-medium">{stableMeters}</div>
+            </div>
           </div>
-          <div className="rounded-lg border p-3 text-sm">
-            <div className="text-muted-foreground text-xs">Stable meters</div>
-            <div className="mt-1 font-medium">Production floor (GS-S)</div>
+        ) : (
+          <div className="text-muted-foreground mt-4 rounded-lg border p-3 text-sm">
+            No utility records yet.
           </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );

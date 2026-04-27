@@ -1,15 +1,20 @@
 import type { ID } from "@/types/ems";
 
 export type EmployeeStatus = "active" | "inactive";
+export type EmployeeActiveStatus = 0 | 1;
 
 export type Employee = {
   id: ID;
   name: string;
-  employeeId: string; // e.g. "700901"
+  employeeId: number;
   factoryId: ID;
-  department: string;
-  designation: string;
-  status: EmployeeStatus;
+  departmentId: ID;
+  designationId: ID;
+  status: EmployeeActiveStatus;
+  email: string;
+  phone?: string;
+  department?: string;
+  designation?: string;
   joinedOn: string; // ISO date
 };
 
@@ -17,7 +22,7 @@ export type UserStatus = "active" | "suspended";
 
 export type AppUser = {
   id: ID;
-  employeeId: string;
+  employeeId: number;
   username: string;
   email: string;
   roleIds: ID[];
@@ -48,4 +53,3 @@ export type Role = {
   description?: string;
   permissionKeys: PermissionKey[];
 };
-

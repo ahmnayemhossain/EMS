@@ -1,4 +1,4 @@
-# Fortis Group EMS
+# EMS Platform
 
 Monorepo layout:
 

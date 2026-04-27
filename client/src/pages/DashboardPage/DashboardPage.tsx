@@ -32,16 +32,6 @@ import { DashboardSectionItem } from "./components/DashboardSectionItem";
 import { DashboardTopWidgets } from "./components/DashboardTopWidgets";
 import { DashboardBottomWidgets } from "./components/DashboardBottomWidgets";
 import { FactoryPerformanceCard } from "./components/FactoryPerformanceCard";
-import type { UtilityTrendPoint } from "./components/UtilityTrendCard";
-
-const utilityTrend: UtilityTrendPoint[] = [
-  { month: "Nov", kwh: 780_000 },
-  { month: "Dec", kwh: 812_000 },
-  { month: "Jan", kwh: 835_000 },
-  { month: "Feb", kwh: 805_000 },
-  { month: "Mar", kwh: 820_000 },
-  { month: "Apr", kwh: 790_000 },
-];
 
 export function DashboardPage() {
   const isMobile = useIsMobile();
@@ -57,6 +47,19 @@ export function DashboardPage() {
   const chemicalAlerts = chemicals.filter((c) => c.approvalStatus !== "approved").length;
   const wasteDisposalPending = 3;
   const varianceFlags = utilityRecords.filter((r) => r.varianceFlag === "high").length;
+  const utilityTrend = React.useMemo(() => {
+    const totalsByMonth = new Map<string, number>();
+
+    for (const record of utilityRecords) {
+      if (record.type !== "electricity") continue;
+      const month = record.periodStart.slice(0, 7);
+      totalsByMonth.set(month, (totalsByMonth.get(month) ?? 0) + record.value);
+    }
+
+    return Array.from(totalsByMonth, ([month, kwh]) => ({ month, kwh })).sort((a, b) =>
+      a.month.localeCompare(b.month),
+    );
+  }, []);
 
   const kpis: DashboardKpi[] = [
     {

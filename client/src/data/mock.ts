@@ -16,8 +16,8 @@ import type {
 
 export const group: Group = {
   id: "grp_greenstitch",
-  name: "FORTIS GROUP",
-  country: "Bangladesh",
+  name: "EMS Demo Group",
+  country: "Local",
   timezone: "Asia/Dhaka",
 };
 
@@ -25,10 +25,10 @@ export const facilities: Facility[] = [
   {
     id: "fac_garments_a",
     groupId: group.id,
-    name: "HFL",
-    code: "HFL",
+    name: "Factory A",
+    code: "Factory A",
     type: "garments",
-    location: { city: "Gazipur", region: "Dhaka Division", country: "Bangladesh" },
+    location: { city: "Region A", region: "Division A", country: "Local" },
     riskLevel: "medium",
     auditReadinessScore: 82,
     complianceScore: 86,
@@ -36,10 +36,10 @@ export const facilities: Facility[] = [
   {
     id: "fac_knitting_b",
     groupId: group.id,
-    name: "QFL",
-    code: "QFL",
+    name: "Factory B",
+    code: "Factory B",
     type: "knitting",
-    location: { city: "Narayanganj", region: "Dhaka Division", country: "Bangladesh" },
+    location: { city: "Region B", region: "Division A", country: "Local" },
     riskLevel: "medium",
     auditReadinessScore: 78,
     complianceScore: 80,
@@ -47,10 +47,10 @@ export const facilities: Facility[] = [
   {
     id: "fac_dyeing_d",
     groupId: group.id,
-    name: "FGL",
-    code: "FGL",
+    name: "Factory C",
+    code: "Factory C",
     type: "dyeing_wet_processing",
-    location: { city: "Gazipur", region: "Dhaka Division", country: "Bangladesh" },
+    location: { city: "Region A", region: "Division A", country: "Local" },
     riskLevel: "high",
     auditReadinessScore: 68,
     complianceScore: 72,
@@ -58,10 +58,10 @@ export const facilities: Facility[] = [
   {
     id: "fac_shoe_s",
     groupId: group.id,
-    name: "AFL",
-    code: "AFL",
+    name: "Factory D",
+    code: "Factory D",
     type: "shoe",
-    location: { city: "Chattogram", region: "Chattogram Division", country: "Bangladesh" },
+    location: { city: "Region C", region: "Region C Division", country: "Local" },
     riskLevel: "medium",
     auditReadinessScore: 74,
     complianceScore: 78,
@@ -69,10 +69,10 @@ export const facilities: Facility[] = [
   {
     id: "fac_resort_r",
     groupId: group.id,
-    name: "Sarah Resort",
-    code: "SARAH",
+    name: "Site E",
+    code: "SITE-E",
     type: "resort",
-    location: { city: "Cox’s Bazar", region: "Chattogram Division", country: "Bangladesh" },
+    location: { city: "Region D", region: "Region C Division", country: "Local" },
     riskLevel: "low",
     auditReadinessScore: 88,
     complianceScore: 90,
@@ -80,10 +80,10 @@ export const facilities: Facility[] = [
   {
     id: "fac_kadl",
     groupId: group.id,
-    name: "KADL",
-    code: "KADL",
+    name: "Factory F",
+    code: "Factory F",
     type: "dyeing_wet_processing",
-    location: { city: "Gazipur", region: "Dhaka Division", country: "Bangladesh" },
+    location: { city: "Region A", region: "Division A", country: "Local" },
     riskLevel: "high",
     auditReadinessScore: 71,
     complianceScore: 75,
@@ -91,10 +91,10 @@ export const facilities: Facility[] = [
   {
     id: "fac_dt_resort",
     groupId: group.id,
-    name: "Dowtown Resort",
-    code: "DTR",
+    name: "Site G",
+    code: "SITE-G",
     type: "resort",
-    location: { city: "Cox’s Bazar", region: "Chattogram Division", country: "Bangladesh" },
+    location: { city: "Region D", region: "Region C Division", country: "Local" },
     riskLevel: "low",
     auditReadinessScore: 90,
     complianceScore: 92,
@@ -102,151 +102,17 @@ export const facilities: Facility[] = [
   {
     id: "fac_rsbl",
     groupId: group.id,
-    name: "RSBL",
-    code: "RSBL",
+    name: "Factory H",
+    code: "Factory H",
     type: "garments",
-    location: { city: "Savar", region: "Dhaka Division", country: "Bangladesh" },
+    location: { city: "Region E", region: "Division A", country: "Local" },
     riskLevel: "medium",
     auditReadinessScore: 76,
     complianceScore: 79,
   },
 ];
 
-export const utilityRecords: UtilityRecord[] = [
-  {
-    id: "util_001",
-    facilityId: "fac_garments_a",
-    type: "electricity",
-    periodStart: "2026-03-01",
-    periodEnd: "2026-03-31",
-    meterName: "Main incomer",
-    uom: "kWh",
-    value: 482_300,
-    baselineValue: 460_000,
-    varianceFlag: "watch",
-    remarks: "Overtime batch orders in last week of March.",
-    billFiles: [{ name: "GS-A_Electricity_Mar2026.pdf", uploadedAt: "2026-04-02" }],
-  },
-  {
-    id: "util_002",
-    facilityId: "fac_dyeing_d",
-    type: "water",
-    periodStart: "2026-03-01",
-    periodEnd: "2026-03-31",
-    meterName: "Process water line",
-    uom: "m3",
-    value: 31_240,
-    baselineValue: 28_900,
-    varianceFlag: "high",
-    remarks: "Higher reprocessing rate; check rinse optimization.",
-  },
-  {
-    id: "util_003",
-    facilityId: "fac_resort_r",
-    type: "water",
-    periodStart: "2026-03-01",
-    periodEnd: "2026-03-31",
-    meterName: "Guest wing",
-    uom: "m3",
-    value: 1_980,
-    baselineValue: 2_120,
-    varianceFlag: "normal",
-  },
-  {
-    id: "util_004",
-    facilityId: "fac_knitting_b",
-    type: "fuel",
-    periodStart: "2026-03-01",
-    periodEnd: "2026-03-31",
-    meterName: "Boiler feed",
-    uom: "L",
-    value: 18_700,
-    baselineValue: 19_100,
-    varianceFlag: "normal",
-  },
-  {
-    id: "util_005",
-    facilityId: "fac_shoe_s",
-    type: "electricity",
-    periodStart: "2026-03-01",
-    periodEnd: "2026-03-31",
-    meterName: "Production floor",
-    uom: "kWh",
-    value: 154_600,
-    baselineValue: 151_200,
-    varianceFlag: "normal",
-  },
-  // Generated rows so each utility tab has at least 20 records
-  ...(() => {
-    const periods = [
-      { start: "2026-01-01", end: "2026-01-31", label: "2026-01" },
-      { start: "2026-02-01", end: "2026-02-28", label: "2026-02" },
-      { start: "2026-03-01", end: "2026-03-31", label: "2026-03" },
-    ] as const;
-
-    const types = [
-      { type: "electricity", meter: "Main incomer", uom: "kWh" as const, base: 160_000 },
-      { type: "water", meter: "Process water", uom: "m3" as const, base: 5200 },
-      { type: "fuel", meter: "Boiler feed", uom: "L" as const, base: 9800 },
-      { type: "steam", meter: "Steam header", uom: "Nm3" as const, base: 4200 },
-      { type: "refrigerant", meter: "Cold room", uom: "kg" as const, base: 48 },
-      { type: "other", meter: "Compressed air", uom: "kWh" as const, base: 9200 },
-    ] as const;
-
-    const out: UtilityRecord[] = [];
-    let n = 0;
-
-    for (const p of periods) {
-      for (const t of types) {
-        for (const f of facilities) {
-          const factor =
-            f.type === "dyeing_wet_processing"
-              ? 1.6
-              : f.type === "garments"
-                ? 1.2
-                : f.type === "knitting"
-                  ? 1.35
-                  : f.type === "shoe"
-                    ? 0.85
-                    : 0.55;
-
-          const jitter = ((f.id.length + p.label.length + t.type.length) % 9) / 100;
-          const value = Math.round(t.base * factor * (1 + jitter));
-          const baselineValue = Math.round(value * 0.97);
-          const varianceFlag =
-            f.id === "fac_dyeing_d" && t.type === "water" && p.label === "2026-03"
-              ? "high"
-              : value > baselineValue * 1.08
-                ? "watch"
-                : "normal";
-
-          out.push({
-            id: `util_gen_${p.label}_${t.type}_${++n}`,
-            facilityId: f.id,
-            type: t.type,
-            periodStart: p.start,
-            periodEnd: p.end,
-            meterName: t.meter,
-            uom: t.uom,
-            value,
-            baselineValue,
-            varianceFlag,
-            remarks:
-              varianceFlag === "high"
-                ? "Flagged variance; review process changes and attach bills."
-                : undefined,
-            billFiles:
-              t.type === "electricity" && p.label === "2026-03"
-                ? [{ name: `${f.code}_${t.type}_${p.label}.pdf`, uploadedAt: "2026-04-03" }]
-                : undefined,
-          });
-        }
-      }
-    }
-
-    return out;
-  })(),
-];
+export const utilityRecords: UtilityRecord[] = [];
 
 export const sdsRecords: SDSRecord[] = [
   // Standard SDS structure (16 sections)
@@ -621,7 +487,7 @@ export const audits: Audit[] = [
     customerName: "Internal",
     date: "2026-04-22",
     nextAuditDate: "2026-07-22",
-    auditor: "Mehedi (70900)",
+    auditor: "User Two (EMP-0002)",
     progress: 55,
     overallScore: 84,
     findingsCount: { minor: 6, major: 1, critical: 0 },
@@ -633,7 +499,7 @@ export const audits: Audit[] = [
     customerName: "Buyer",
     date: "2026-04-16",
     nextAuditDate: "2026-06-16",
-    auditor: "Nimur (700999)",
+    auditor: "User Three (EMP-0003)",
     progress: 40,
     overallScore: 72,
     findingsCount: { minor: 9, major: 3, critical: 1 },
@@ -645,7 +511,7 @@ export const capas: CAPA[] = [
     id: "capa_001",
     facilityId: "fac_dyeing_d",
     title: "ETP outlet pH exceedance — dosing control tuning",
-    owner: "Munna (700902)",
+    owner: "User Four (EMP-0004)",
     severity: "major",
     status: "overdue",
     dueDate: "2026-04-08",
@@ -655,7 +521,7 @@ export const capas: CAPA[] = [
     id: "capa_002",
     facilityId: "fac_garments_a",
     title: "Update waste segregation signage in loading bay",
-    owner: "Sakib (700903)",
+    owner: "User Five (EMP-0005)",
     severity: "minor",
     status: "in_progress",
     dueDate: "2026-04-18",
@@ -665,7 +531,7 @@ export const capas: CAPA[] = [
     id: "capa_003",
     facilityId: "fac_shoe_s",
     title: "Restricted adhesive approval — substitute review",
-    owner: "Aminul (700905)",
+    owner: "User Six (EMP-0006)",
     severity: "major",
     status: "open",
     dueDate: "2026-04-25",
@@ -677,31 +543,31 @@ export const documents: Document[] = [
   {
     id: "doc_001",
     facilityId: "fac_dyeing_d",
-    title: "DoE Discharge Permit",
+    title: "Regulator Discharge Permit",
     category: "permit",
-    ownerDepartment: "EHS (Parvej 700906)",
+    ownerDepartment: "EHS (User Seven EMP-0007)",
     expiresOn: "2026-04-30",
     status: "expiring",
-    fileName: "DoE_Discharge_Permit_FGL_2025-2026.pdf",
+    fileName: "Regulator_Discharge_Permit_Factory C_2025-2026.pdf",
   },
   {
     id: "doc_002",
     facilityId: "fac_garments_a",
     title: "Hazardous Waste Vendor Contract",
     category: "contract",
-    ownerDepartment: "Admin (Sakib 700903)",
+    ownerDepartment: "Admin (User Five EMP-0005)",
     expiresOn: "2026-03-31",
     status: "expired",
-    fileName: "HazWaste_Contract_HFL_2025.pdf",
+    fileName: "HazWaste_Contract_Factory A_2025.pdf",
   },
   {
     id: "doc_003",
     facilityId: "fac_resort_r",
     title: "Water Quality Test Report (Quarterly)",
     category: "report",
-    ownerDepartment: "Operations (Nayem 700901)",
+    ownerDepartment: "Operations (User One EMP-0001)",
     status: "valid",
-    fileName: "Water_Test_Q1_2026_SarahResort.pdf",
+    fileName: "Water_Test_Q1_2026_SiteE.pdf",
   },
 ];
 
@@ -774,7 +640,7 @@ export const notifications: Notification[] = [
     facilityId: "fac_garments_a",
     tone: "warning",
     title: "Permit expiring soon",
-    description: "DoE Discharge Permit for FGL expires on 2026-04-30. Start renewal workflow.",
+    description: "Regulator Discharge Permit for Factory C expires on 2026-04-30. Start renewal workflow.",
     read: true,
     actionTo: "/documents",
     actionLabel: "Open documents",

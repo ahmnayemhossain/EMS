@@ -1,4 +1,4 @@
-# Fortis Group EMS API (Express)
+# EMS Platform API (Express)
 
 Local JSON-file backend for the EMS frontend. Built as a modular Express API so you can replace the `store` layer later with a real DB/service.
 

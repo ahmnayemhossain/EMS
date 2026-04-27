@@ -13,7 +13,7 @@ Use:
 - `/rb/kadl`
 - `/rb/rsbl`
 - `/rb/sarah`
-- `/rb/dtr` (Dowtown Resort)
+- `/rb/dtr` (Site G)
 
 The factory is taken from the URL (no factory selection on the worker page).
 

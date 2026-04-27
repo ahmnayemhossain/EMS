@@ -16,7 +16,7 @@ export type ReportBoxMessage = {
   text?: string;
   attachment?: ReportBoxAttachment;
   durationSec?: number;
-  author?: string; // internal notes / replies (e.g. "Nayem (700901)")
+  author?: string; // internal notes / replies (e.g. "User One (EMP-0001)")
 };
 
 export type ReportBoxReport = {

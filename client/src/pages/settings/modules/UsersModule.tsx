@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 import { facilities, getFacilityName } from "@/data/mock";
 import type { AppUser } from "@/types/admin";
@@ -105,7 +105,7 @@ export function UsersModule() {
             const id = createId("usr");
             const user: AppUser = {
               id,
-              employeeId: employees[0]?.employeeId ?? "700901",
+              employeeId: employees[0]?.employeeId ?? 1001,
               username: "",
               email: "",
               roleIds: ["role_viewer"],
@@ -157,11 +157,11 @@ export function UsersModule() {
               <div className="grid gap-1.5">
                 <div className="text-muted-foreground text-xs">Employee</div>
                 <SelectFilter
-                  value={selected.employeeId}
-                  onChange={(v) => setSelected({ ...selected, employeeId: v || selected.employeeId })}
+                  value={String(selected.employeeId)}
+                  onChange={(v) => setSelected({ ...selected, employeeId: Number(v) || selected.employeeId })}
                   placeholder="Pick employee"
                   items={employees.map((e) => ({
-                    value: e.employeeId,
+                    value: String(e.employeeId),
                     label: `${e.name} (${e.employeeId}) • ${getFacilityName(e.factoryId)}`,
                   }))}
                 />
@@ -179,7 +179,7 @@ export function UsersModule() {
                 <Input
                   value={selected.email}
                   onChange={(e) => setSelected({ ...selected, email: e.target.value })}
-                  placeholder="user@fortis.local"
+                  placeholder="user@example.test"
                 />
               </div>
               <div className="grid gap-1.5">
@@ -255,4 +255,3 @@ export function UsersModule() {
     </div>
   );
 }
-

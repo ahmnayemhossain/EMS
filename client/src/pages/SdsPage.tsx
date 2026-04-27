@@ -1,6 +1,6 @@
 import * as React from "react";
 import { FileSearch, FileText, Search, X } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 import { sdsRecords } from "@/data/mock";
 import { Input } from "@/app/components/ui/input";

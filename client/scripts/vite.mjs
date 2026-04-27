@@ -7,11 +7,19 @@ const args = process.argv.slice(2);
 const spawnPatch = path.resolve("scripts/spawn-patch.cjs");
 process.env.NODE_OPTIONS = `${process.env.NODE_OPTIONS ?? ""} --require ${spawnPatch}`.trim();
 
-const viteCmd = path.resolve("node_modules/.bin/vite.cmd");
-const child = spawn("cmd", ["/c", viteCmd, ...args], {
-  stdio: "inherit",
-  env: process.env,
-});
+const isWindows = process.platform === "win32";
+const viteBin = path.resolve(
+  "node_modules/.bin",
+  isWindows ? "vite.cmd" : "vite",
+);
+const child = spawn(
+  isWindows ? "cmd" : viteBin,
+  isWindows ? ["/c", viteBin, ...args] : args,
+  {
+    stdio: "inherit",
+    env: process.env,
+  },
+);
 
 child.on("exit", (code) => {
   process.exit(code ?? 0);

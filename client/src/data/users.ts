@@ -5,16 +5,16 @@ export type EmsUser = {
 };
 
 export const emsUsers: EmsUser[] = [
-  { id: "u_nayem_700901", name: "Nayem", employeeId: "700901" },
-  { id: "u_mehedi_70900", name: "Mehedi", employeeId: "70900" },
-  { id: "u_nimur_700999", name: "Nimur", employeeId: "700999" },
-  { id: "u_munna_700902", name: "Munna", employeeId: "700902" },
-  { id: "u_sakib_700903", name: "Sakib", employeeId: "700903" },
-  { id: "u_aminul_700905", name: "Aminul", employeeId: "700905" },
-  { id: "u_parvej_700906", name: "Parvej", employeeId: "700906" },
+  { id: "u_userone_EMP-0001", name: "User One", employeeId: "EMP-0001" },
+  { id: "u_usertwo_EMP-0002", name: "User Two", employeeId: "EMP-0002" },
+  { id: "u_userthree_EMP-0003", name: "User Three", employeeId: "EMP-0003" },
+  { id: "u_userfour_EMP-0004", name: "User Four", employeeId: "EMP-0004" },
+  { id: "u_userfive_EMP-0005", name: "User Five", employeeId: "EMP-0005" },
+  { id: "u_usersix_EMP-0006", name: "User Six", employeeId: "EMP-0006" },
+  { id: "u_userseven_EMP-0007", name: "User Seven", employeeId: "EMP-0007" },
 ];
 
-export const defaultUserId = emsUsers[0]?.id ?? "u_nayem_700901";
+export const defaultUserId = emsUsers[0]?.id ?? "u_userone_EMP-0001";
 
 export function formatUserLabel(u: EmsUser) {
   return `${u.name} (${u.employeeId})`;

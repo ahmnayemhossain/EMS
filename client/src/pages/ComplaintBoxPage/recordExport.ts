@@ -70,7 +70,7 @@ export function buildRecordHtml(r: ReportBoxRecord) {
       <div class="card">
         <div class="header">
           <div>
-            <div class="pill">Fortis Group EMS</div>
+            <div class="pill">EMS Platform</div>
             <h1 class="h1" style="margin-top:10px;">${escapeHtml(title)}</h1>
             <div class="meta">
               <div><b>Complaint #</b> ${formatReportNumber(report.id)} · <b>${escapeHtml(factoryName)}</b></div>

@@ -33,8 +33,24 @@ export function UtilityRecordDetail({ record }: { record: UtilityRecord }) {
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {typeof record.previousReading === "number" ? (
+          <div className="rounded-lg border p-3">
+            <div className="text-muted-foreground text-xs">Previous Reading</div>
+            <div className="mt-1 text-sm font-semibold tabular-nums">
+              {formatNumber(record.previousReading)} {record.uom}
+            </div>
+          </div>
+        ) : null}
+        {typeof record.currentReading === "number" ? (
+          <div className="rounded-lg border p-3">
+            <div className="text-muted-foreground text-xs">Current Reading</div>
+            <div className="mt-1 text-sm font-semibold tabular-nums">
+              {formatNumber(record.currentReading)} {record.uom}
+            </div>
+          </div>
+        ) : null}
         <div className="rounded-lg border p-3">
-          <div className="text-muted-foreground text-xs">Reading</div>
+          <div className="text-muted-foreground text-xs">Consumption</div>
           <div className="mt-1 text-sm font-semibold tabular-nums">
             {formatNumber(record.value)} {record.uom}
           </div>
@@ -46,6 +62,29 @@ export function UtilityRecordDetail({ record }: { record: UtilityRecord }) {
           </div>
         </div>
       </div>
+
+      {typeof record.baselineValue === "number" ? (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="rounded-lg border p-3">
+            <div className="text-muted-foreground text-xs">Baseline Usage</div>
+            <div className="mt-1 text-sm font-semibold tabular-nums">
+              {formatNumber(record.baselineValue)} {record.uom}
+            </div>
+          </div>
+          <div className="rounded-lg border p-3">
+            <div className="text-muted-foreground text-xs">Variance</div>
+            <div className="mt-1 text-sm font-semibold tabular-nums">
+              {typeof record.variance === "number" ? formatNumber(record.variance) : "—"} {record.uom}
+            </div>
+          </div>
+          <div className="rounded-lg border p-3">
+            <div className="text-muted-foreground text-xs">Variance %</div>
+            <div className="mt-1 text-sm font-semibold tabular-nums">
+              {typeof record.variancePercent === "number" ? `${record.variancePercent.toFixed(1)}%` : "—"}
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <div className="rounded-lg border p-3">
         <div className="text-muted-foreground text-xs">Remarks</div>
@@ -79,4 +118,3 @@ export function UtilityRecordDetail({ record }: { record: UtilityRecord }) {
     </div>
   );
 }
-

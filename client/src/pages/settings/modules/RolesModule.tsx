@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/app/lib/toast";
 
 import { permissionCatalog, seedRoles } from "@/data/admin";
 import type { Role } from "@/types/admin";

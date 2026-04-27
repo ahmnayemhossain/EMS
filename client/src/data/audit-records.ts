@@ -84,8 +84,8 @@ export const auditRecords: AuditRecord[] = audits.map((a, idx) => {
       status: "open",
       startDate: "2026-04-10",
       dueDate: "2026-04-30",
-      owner: "Munna (700902)",
-      responsiblePerson: "Munna (700902)",
+      owner: "User Four (EMP-0004)",
+      responsiblePerson: "User Four (EMP-0004)",
       evidenceCount: 1,
     });
   }
@@ -102,8 +102,8 @@ export const auditRecords: AuditRecord[] = audits.map((a, idx) => {
       status: "in_progress",
       startDate: "2026-04-12",
       dueDate: "2026-04-20",
-      owner: "Sakib (700903)",
-      responsiblePerson: "Sakib (700903)",
+      owner: "User Five (EMP-0005)",
+      responsiblePerson: "User Five (EMP-0005)",
       evidenceCount: 0,
     });
   }

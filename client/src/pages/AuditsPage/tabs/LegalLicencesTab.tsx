@@ -17,8 +17,8 @@ type LicenceRow = {
 const rows: LicenceRow[] = [
   {
     id: "lic_1",
-    licence: "DoE Environmental Clearance",
-    authority: "Department of Environment",
+    licence: "Environmental Clearance",
+    authority: "Regulatory Authority",
     facilityId: facilities[0]?.id ?? "fac_1",
     renewalDate: "2026-06-15",
     status: "due",
