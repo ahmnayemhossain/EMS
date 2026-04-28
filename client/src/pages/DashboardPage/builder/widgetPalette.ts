@@ -16,7 +16,7 @@ export const WIDGET_PALETTE: WidgetPaletteItem[] = [
   { type: "widget:utilityTrend", label: "Chart • Utility trend", defaultSpan: 8 },
   { type: "widget:alerts", label: "Card • Compliance alerts", defaultSpan: 4 },
   { type: "widget:auditCalendar", label: "Card • Audit calendar", defaultSpan: 4 },
-  { type: "widget:factoryPerformance", label: "Table • Factory performance", defaultSpan: 12 },
+  { type: "widget:companyPerformance", label: "Table • Company performance", defaultSpan: 12 },
   { type: "widget:overdueActions", label: "List • Overdue actions", defaultSpan: 4 },
   { type: "widget:recentUploads", label: "List • Recent uploads", defaultSpan: 4 },
   { type: "widget:expiringDocs", label: "Card • Expiring documents", defaultSpan: 4 },

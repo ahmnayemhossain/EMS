@@ -92,14 +92,14 @@ function formatReportNumber(reportId: string | null) {
   return `${yy}/${tail}`;
 }
 
-function getFactoryIdFromCode(code?: string | null) {
+function getCompanyIdFromCode(code?: string | null) {
   if (!code) return undefined;
   const norm = String(code).trim().toLowerCase();
   return facilities.find((f) => f.code.toLowerCase() === norm)?.id;
 }
 
-function getFactoryBnName(factoryId?: string | null) {
-  const code = facilities.find((f) => f.id === factoryId)?.code?.toLowerCase();
+function getCompanyBnName(companyId?: string | null) {
+  const code = facilities.find((f) => f.id === companyId)?.code?.toLowerCase();
   const dict: Record<string, string> = {
     hfl: "\u098F\u099A\u098F\u09AB\u098F\u09B2 (\u09B9\u09CD\u09AF\u09BE\u09AC\u09BF\u099F\u09BE\u09B8 \u09AB\u09CD\u09AF\u09BE\u09B6\u09A8 \u09B2\u09BF\u09AE\u09BF\u099F\u09C7\u09A1)",
     qfl: "\u0995\u09BF\u0989\u098F\u09AB\u098F\u09B2",
@@ -110,11 +110,11 @@ function getFactoryBnName(factoryId?: string | null) {
     sarah: "\u09B8\u09BE\u09B0\u09BE\u09B9 \u09B0\u09BF\u09B8\u09CB\u09B0\u09CD\u099F",
     dtr: "\u09A1\u09BE\u0989\u09A8\u099F\u09BE\u0989\u09A8 \u09B0\u09BF\u09B8\u09CB\u09B0\u09CD\u099F",
   };
-  return code && dict[code] ? dict[code] : factoryId ? getFacilityName(factoryId) : BN.invalidLink;
+  return code && dict[code] ? dict[code] : companyId ? getFacilityName(companyId) : BN.invalidLink;
 }
 
 async function submitToInbox(input: {
-  factoryId: string;
+  companyId: string;
   kind: "text" | "voice" | "photo";
   reportId?: string;
   text?: string;
@@ -181,9 +181,9 @@ function blobToDataUrl(blob: Blob) {
 export function PublicReportBoxPage() {
   const params = useParams();
 
-  const factoryId = React.useMemo(() => getFactoryIdFromCode(params.code), [params.code]);
-  const factoryValid = Boolean(factoryId);
-  const factoryNameBn = getFactoryBnName(factoryId);
+  const companyId = React.useMemo(() => getCompanyIdFromCode(params.code), [params.code]);
+  const companyValid = Boolean(companyId);
+  const companyNameBn = getCompanyBnName(companyId);
 
   const [composer, setComposer] = React.useState("");
   const [messages, setMessages] = React.useState<LocalMessage[]>([]);
@@ -330,7 +330,7 @@ export function PublicReportBoxPage() {
 
     const text = composer.trim();
     if (!text) return;
-    if (!factoryId) return;
+    if (!companyId) return;
     if (locked || remaining <= 0) return;
     if (sending) return;
 
@@ -340,7 +340,7 @@ export function PublicReportBoxPage() {
 
     setSending(true);
     const res = await submitToInbox({
-      factoryId,
+      companyId,
       reportId: sessionReportId || undefined,
       kind: "text",
       text,
@@ -363,11 +363,11 @@ export function PublicReportBoxPage() {
         status: "error",
       });
     }
-  }, [composer, editTarget, factoryId, locked, pushLocalMessage, remaining, saveEdit, sending, sessionReportId, updateLocalMessage]);
+  }, [composer, editTarget, companyId, locked, pushLocalMessage, remaining, saveEdit, sending, sessionReportId, updateLocalMessage]);
 
   const startVoice = React.useCallback(async () => {
     setVoiceError(null);
-    if (!factoryId) return;
+    if (!companyId) return;
     if (recording) return;
     if (locked || remaining <= 0) return;
     if (sending) return;
@@ -449,7 +449,7 @@ export function PublicReportBoxPage() {
 
       setSending(true);
       const res = await submitToInbox({
-        factoryId,
+        companyId,
         reportId: sessionReportId || undefined,
         kind: "voice",
         dataUrl,
@@ -484,7 +484,7 @@ export function PublicReportBoxPage() {
 
     recorder.start();
     setRecording(true);
-  }, [factoryId, locked, recording, remaining, sending, sessionReportId, pushLocalMessage, setCancelArmedSync, updateLocalMessage]);
+  }, [companyId, locked, recording, remaining, sending, sessionReportId, pushLocalMessage, setCancelArmedSync, updateLocalMessage]);
 
   const stopVoice = React.useCallback(() => {
     const r = recorderRef.current;
@@ -496,7 +496,7 @@ export function PublicReportBoxPage() {
   const onPickPhoto = React.useCallback(
     async (file: File | null) => {
       if (!file) return;
-      if (!factoryId) return;
+      if (!companyId) return;
       if (locked || remaining <= 0) return;
       if (sending) return;
       const at = new Date().toISOString();
@@ -507,7 +507,7 @@ export function PublicReportBoxPage() {
 
       setSending(true);
       const res = await submitToInbox({
-        factoryId,
+        companyId,
         reportId: sessionReportId || undefined,
         kind: "photo",
         dataUrl,
@@ -532,7 +532,7 @@ export function PublicReportBoxPage() {
         });
       }
     },
-    [factoryId, locked, remaining, pushLocalMessage, sending, sessionReportId, updateLocalMessage],
+    [companyId, locked, remaining, pushLocalMessage, sending, sessionReportId, updateLocalMessage],
   );
 
   function renderStatusIcon(m: LocalMessage) {
@@ -550,7 +550,7 @@ export function PublicReportBoxPage() {
         <header className="bg-background/90 supports-[backdrop-filter]:bg-background/75 sticky top-0 z-40 border-b backdrop-blur">
           <div className="px-3 py-3">
             <div className="truncate text-sm font-semibold leading-none">{BN.title}</div>
-            <div className="text-muted-foreground mt-1 truncate text-xs">{factoryNameBn}</div>
+            <div className="text-muted-foreground mt-1 truncate text-xs">{companyNameBn}</div>
           </div>
         </header>
 
@@ -587,7 +587,7 @@ export function PublicReportBoxPage() {
                 <div className="mt-3 grid gap-2">
                   <div className="text-muted-foreground text-xs">{BN.hint}</div>
                   {voiceError ? <div className="text-destructive text-xs">{voiceError}</div> : null}
-                  {!factoryValid ? <div className="text-destructive text-xs">{BN.invalidHint}</div> : null}
+                  {!companyValid ? <div className="text-destructive text-xs">{BN.invalidHint}</div> : null}
                 </div>
               </div>
             </div>
@@ -760,7 +760,7 @@ export function PublicReportBoxPage() {
               size="icon"
               aria-label={BN.attachPhoto}
               onClick={() => fileRef.current?.click()}
-              disabled={!factoryValid || locked || sending || remaining <= 0 || recording || voicePanelOpen}
+              disabled={!companyValid || locked || sending || remaining <= 0 || recording || voicePanelOpen}
             >
               <Camera className="size-4" />
             </Button>
@@ -831,7 +831,7 @@ export function PublicReportBoxPage() {
                           closeVoicePanelAfterStopRef.current = true;
                           stopVoice();
                         }}
-                        disabled={!factoryValid || locked || sending || remaining <= 0}
+                        disabled={!companyValid || locked || sending || remaining <= 0}
                       >
                         <Mic className="size-4" />
                       </Button>
@@ -866,7 +866,7 @@ export function PublicReportBoxPage() {
                       sendText();
                     }
                   }}
-                  disabled={!factoryValid || locked || sending || remaining <= 0 || recording}
+                  disabled={!companyValid || locked || sending || remaining <= 0 || recording}
                   className="min-h-11"
                 />
               )}
@@ -877,7 +877,7 @@ export function PublicReportBoxPage() {
                 size="icon"
                 aria-label={BN.send}
                 onClick={sendText}
-                disabled={!factoryValid || locked || sending || remaining <= 0 || recording || !composer.trim()}
+                disabled={!companyValid || locked || sending || remaining <= 0 || recording || !composer.trim()}
               >
                 <Send className="size-4" />
               </Button>
@@ -926,7 +926,7 @@ export function PublicReportBoxPage() {
                   stopVoice();
                   autoStopOnReleaseRef.current = false;
                 }}
-                disabled={!factoryValid || locked || sending || remaining <= 0}
+                disabled={!companyValid || locked || sending || remaining <= 0}
               >
                 <Mic className="size-4" />
               </Button>

@@ -1,7 +1,8 @@
 import * as React from "react";
 
 import { CreateActionDialog } from "@/components/CreateActionDialog";
-import type { Facility, UtilityType } from "@/types/ems";
+import type { CompanyOption } from "@/app/state/company";
+import type { UtilityType } from "@/types/ems";
 
 import {
   getDefaultUtilityUnit,
@@ -10,17 +11,17 @@ import {
 import { CreateUtilityForm } from "@/pages/UtilitiesPage/CreateUtilityForm";
 
 export function CreateUtilityDialog({
-  facilities,
-  defaultFactoryId,
+  companies,
+  defaultCompanyId,
   activeType,
   onCreateUsage,
 }: {
-  facilities: Facility[];
-  defaultFactoryId: string;
+  companies: CompanyOption[];
+  defaultCompanyId: string;
   activeType: UtilityType;
   onCreateUsage?: (payload: UtilityUsagePayload) => void | boolean | Promise<void | boolean>;
 }) {
-  const [factoryId, setFactoryId] = React.useState(defaultFactoryId);
+  const [companyId, setCompanyId] = React.useState(defaultCompanyId);
   const [type, setType] = React.useState<UtilityType>(activeType);
   const [meterName, setMeterName] = React.useState("");
   const [periodStart, setPeriodStart] = React.useState("");
@@ -31,8 +32,8 @@ export function CreateUtilityDialog({
   const [attachment, setAttachment] = React.useState<File | null>(null);
 
   React.useEffect(() => {
-    setFactoryId(defaultFactoryId);
-  }, [defaultFactoryId]);
+    setCompanyId(defaultCompanyId);
+  }, [defaultCompanyId]);
 
   React.useEffect(() => {
     setType(activeType);
@@ -50,7 +51,7 @@ export function CreateUtilityDialog({
   const status = typeof consumption === "number" ? "normal" : undefined;
 
   const errors = [
-    !factoryId ? "Factory is required." : "",
+    !companyId ? "Company is required." : "",
     !type ? "Utility type is required." : "",
     !periodStart ? "Period start is required." : "",
     !periodEnd ? "Period end is required." : "",
@@ -79,7 +80,7 @@ export function CreateUtilityDialog({
     const unit = getDefaultUtilityUnit(type);
 
     return {
-      factoryId,
+      companyId,
       utilityType: type,
       periodStart,
       periodEnd,
@@ -114,8 +115,8 @@ export function CreateUtilityDialog({
       }}
     >
       <CreateUtilityForm
-        facilities={facilities}
-        factoryId={factoryId}
+        companies={companies}
+        companyId={companyId}
         type={type}
         onTypeChange={setType}
         periodStart={periodStart}

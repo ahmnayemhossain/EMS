@@ -14,7 +14,7 @@ export type UtilityBaselineSetting = {
 };
 
 export type UtilityUsagePayload = {
-  factoryId: string;
+  companyId: string;
   utilityType: UtilityType;
   periodStart: string;
   periodEnd: string;

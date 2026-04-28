@@ -40,7 +40,7 @@ export function ComplaintList({
               <div className="truncate text-sm font-semibold">
                 {formatReportNumber(r.id)}{" "}
                 <span className="text-muted-foreground font-normal">•</span>{" "}
-                {r.facilityId ? getFacilityName(r.facilityId) : "Unknown factory"}
+                {r.facilityId ? getFacilityName(r.facilityId) : "Unknown company"}
               </div>
               <div className="text-muted-foreground mt-1 line-clamp-2 text-xs">{r.subject}</div>
             </div>

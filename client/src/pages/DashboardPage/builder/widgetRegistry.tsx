@@ -18,7 +18,7 @@ import type { Audit, Document, Facility, Notification } from "@/types/ems";
 import { AuditCalendarCard } from "../components/AuditCalendarCard";
 import { ComplianceAlertsCard } from "../components/ComplianceAlertsCard";
 import { ExpiringDocsCard } from "../components/ExpiringDocsCard";
-import { FactoryPerformanceCard } from "../components/FactoryPerformanceCard";
+import { CompanyPerformanceCard } from "../components/CompanyPerformanceCard";
 import { UtilityTrendCard, type UtilityTrendPoint } from "../components/UtilityTrendCard";
 
 import type { DashboardWidgetType } from "@/app/state/dashboard-builder.types";
@@ -81,7 +81,7 @@ export function renderDashboardWidget(type: DashboardWidgetType, data: Dashboard
     const selectedDate = new Date(data.audits[0]?.date ?? Date.now());
     return <AuditCalendarCard selectedDate={selectedDate} />;
   }
-  if (type === "widget:factoryPerformance") return <FactoryPerformanceCard facilities={data.facilities} />;
+  if (type === "widget:companyPerformance") return <CompanyPerformanceCard facilities={data.facilities} />;
   if (type === "widget:overdueActions") return <TimelineList title="Overdue actions" items={data.overdueActions} />;
   if (type === "widget:recentUploads") return <ActivityList title="Recent uploads" items={data.recentUploads} />;
   if (type === "widget:expiringDocs") return <ExpiringDocsCard documents={data.expiringDocuments} />;

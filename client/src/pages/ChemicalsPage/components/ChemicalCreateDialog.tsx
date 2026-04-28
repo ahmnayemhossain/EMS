@@ -13,13 +13,13 @@ export function ChemicalCreateDialog({ facilities }: { facilities: Facility[] })
     <CreateActionDialog title="Create chemical">
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="grid gap-1.5">
-          <div className="text-muted-foreground text-xs">Factory</div>
+          <div className="text-muted-foreground text-xs">Company</div>
           <SelectFilter
             value={undefined}
             onChange={(value) => {
               void value;
             }}
-            placeholder="Select factory"
+            placeholder="Select company"
             items={facilities.map((f) => ({ value: f.id, label: f.name }))}
           />
         </div>

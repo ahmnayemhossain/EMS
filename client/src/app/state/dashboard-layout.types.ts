@@ -9,7 +9,7 @@ export type DashboardKpiKey =
 export type DashboardSectionKey =
   | "kpis"
   | "topWidgets"
-  | "factoryPerformance"
+  | "companyPerformance"
   | "bottomWidgets";
 
 export type DashboardTopWidgetKey = "utilityTrend" | "alerts" | "calendar";

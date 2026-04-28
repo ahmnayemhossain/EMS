@@ -1,11 +1,9 @@
 import * as React from "react";
-import { Trash2 } from "lucide-react";
+import { Pencil, RefreshCw, Trash2, X } from "lucide-react";
 import { toast } from "@/app/lib/toast";
 
-import { facilities } from "@/data/mock";
-import { seedDepartments, seedDesignations } from "@/data/admin";
 import type { Employee } from "@/types/admin";
-import { useAdmin } from "@/app/state/admin";
+import { useUser } from "@/app/state/user";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { SectionCard } from "@/components/SectionCard";
@@ -15,21 +13,42 @@ import { SearchInput } from "@/components/SearchInput";
 import { SelectFilter } from "@/components/SelectFilter";
 import { DetailPanel } from "@/components/DetailPanel";
 import { CreateActionDialog } from "@/components/CreateActionDialog";
-import { ActionModal } from "@/components/ActionModal";
 import { StatusBadge } from "@/components/StatusBadge";
-import { getFacilityName } from "@/data/mock";
+import {
+  createEmployee,
+  deleteEmployee,
+  listEmployeeLookups,
+  listEmployees,
+  type EmployeeLookupOption,
+  updateEmployee,
+} from "./employeesApi";
+
+type EmployeeRow = Employee & {
+  createdByUserName?: string;
+  updatedByUserName?: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+type EmployeeLookups = {
+  facilities: EmployeeLookupOption[];
+  departments: EmployeeLookupOption[];
+  designations: EmployeeLookupOption[];
+};
+
+type EmployeeValidationErrors = Partial<Record<
+  "employeeId" | "name" | "email" | "companyId" | "departmentId" | "designationId" | "status",
+  string
+>>;
 
 function createId(prefix: string) {
   const rand = Math.random().toString(16).slice(2);
   return `${prefix}_${Date.now().toString(16)}_${rand}`;
 }
 
-function getDepartmentName(id: string) {
-  return seedDepartments.find((department) => department.id === id)?.name ?? id;
-}
-
-function getDesignationName(id: string) {
-  return seedDesignations.find((designation) => designation.id === id)?.name ?? id;
+function getOptionName(options: EmployeeLookupOption[], id?: string) {
+  if (!id) return "-";
+  return options.find((option) => option.id === id)?.name ?? id;
 }
 
 function nextEmployeeId(employees: Employee[]) {
@@ -37,85 +56,360 @@ function nextEmployeeId(employees: Employee[]) {
   return max + 1;
 }
 
-function createBlankEmployee(employees: Employee[]): Employee {
-  const employeeId = nextEmployeeId(employees);
-  const departmentId = seedDepartments[0]?.id ?? "dept_ehs";
-  const designationId = seedDesignations[0]?.id ?? "desig_officer";
-
+function createBlankEmployee(employees: Employee[], lookups: EmployeeLookups): Employee {
   return {
     id: createId("emp"),
     name: "",
-    employeeId,
-    factoryId: facilities[0]?.id ?? "fac_garments_a",
-    departmentId,
-    designationId,
-    department: getDepartmentName(departmentId),
-    designation: getDesignationName(designationId),
+    employeeId: nextEmployeeId(employees),
+    companyId: lookups.facilities[0]?.id ?? "",
+    departmentId: lookups.departments[0]?.id ?? "",
+    designationId: lookups.designations[0]?.id ?? "",
     status: 1,
     email: "",
     phone: "",
-    joinedOn: new Date().toISOString().slice(0, 10),
+    joinedOn: "",
   };
 }
 
-function normalizeEmployee(employee: Employee): Employee {
+function normalizeEmployee(employee: Employee, lookups: EmployeeLookups): Employee {
   return {
     ...employee,
     employeeId: Number(employee.employeeId),
-    department: getDepartmentName(employee.departmentId),
-    designation: getDesignationName(employee.designationId),
+    department: getOptionName(lookups.departments, employee.departmentId),
+    designation: getOptionName(lookups.designations, employee.designationId),
     phone: employee.phone?.trim() || undefined,
+    joinedOn: employee.joinedOn?.trim() || undefined,
   };
 }
 
+function getEmployeeValidationErrors(employee: Employee, employees: Employee[], currentId?: string) {
+  const errors: EmployeeValidationErrors = {};
+
+  if (!Number.isFinite(employee.employeeId) || employee.employeeId <= 0) {
+    errors.employeeId = "Employee ID must be a number";
+  } else if (employees.some((row) => row.id !== currentId && row.employeeId === employee.employeeId)) {
+    errors.employeeId = "Employee ID already exists";
+  }
+
+  if (!employee.name.trim()) errors.name = "Name is required";
+  if (!employee.email.trim()) {
+    errors.email = "Email is required";
+  } else if (employees.some((row) => row.id !== currentId && row.email.toLowerCase() === employee.email.toLowerCase())) {
+    errors.email = "Email already exists";
+  }
+  if (!employee.companyId) errors.companyId = "Company is required";
+  if (!employee.departmentId) errors.departmentId = "Department is required";
+  if (!employee.designationId) errors.designationId = "Designation is required";
+  if (![0, 1].includes(Number(employee.status))) errors.status = "Status is required";
+
+  return errors;
+}
+
+function firstValidationMessage(errors: EmployeeValidationErrors) {
+  return Object.values(errors)[0] ?? null;
+}
+
+function formatDate(value?: string) {
+  if (!value) return "-";
+  return value.slice(0, 10);
+}
+
+function EmployeeForm({
+  value,
+  onChange,
+  lookups,
+  errors = {},
+}: {
+  value: Employee;
+  onChange: (employee: Employee) => void;
+  lookups: EmployeeLookups;
+  errors?: EmployeeValidationErrors;
+}) {
+  return (
+    <div className="grid gap-4">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label="Employee ID" required error={errors.employeeId}>
+          <Input
+            type="number"
+            required
+            aria-required="true"
+            aria-invalid={Boolean(errors.employeeId) || undefined}
+            value={value.employeeId}
+            onChange={(e) => onChange({ ...value, employeeId: Number(e.target.value) })}
+            placeholder="1001"
+          />
+        </Field>
+        <Field label="Name" required error={errors.name}>
+          <Input
+            required
+            aria-required="true"
+            aria-invalid={Boolean(errors.name) || undefined}
+            value={value.name}
+            onChange={(e) => onChange({ ...value, name: e.target.value })}
+            placeholder="Employee name"
+          />
+        </Field>
+        <Field label="Email" required error={errors.email}>
+          <Input
+            type="email"
+            required
+            aria-required="true"
+            aria-invalid={Boolean(errors.email) || undefined}
+            value={value.email}
+            onChange={(e) => onChange({ ...value, email: e.target.value })}
+            placeholder="employee@example.com"
+          />
+        </Field>
+        <Field label="Phone">
+          <Input
+            value={value.phone ?? ""}
+            onChange={(e) => onChange({ ...value, phone: e.target.value })}
+            placeholder="Optional"
+          />
+        </Field>
+        <Field label="Company" required error={errors.companyId}>
+          <SelectFilter
+            value={value.companyId || undefined}
+            onChange={(v) => onChange({ ...value, companyId: v || value.companyId })}
+            placeholder="Company"
+            items={lookups.facilities.map((f) => ({ value: f.id, label: f.name }))}
+            invalid={Boolean(errors.companyId)}
+            className="w-full"
+          />
+        </Field>
+        <Field label="Department" required error={errors.departmentId}>
+          <SelectFilter
+            value={value.departmentId || undefined}
+            onChange={(v) => onChange({ ...value, departmentId: v || value.departmentId })}
+            placeholder="Department"
+            items={lookups.departments.map((department) => ({ value: department.id, label: department.name }))}
+            invalid={Boolean(errors.departmentId)}
+            className="w-full"
+          />
+        </Field>
+        <Field label="Designation" required error={errors.designationId}>
+          <SelectFilter
+            value={value.designationId || undefined}
+            onChange={(v) => onChange({ ...value, designationId: v || value.designationId })}
+            placeholder="Designation"
+            items={lookups.designations.map((designation) => ({ value: designation.id, label: designation.name }))}
+            invalid={Boolean(errors.designationId)}
+            className="w-full"
+          />
+        </Field>
+        <Field label="Active status" required error={errors.status}>
+          <SelectFilter
+            value={String(value.status)}
+            onChange={(v) => onChange({ ...value, status: v === "1" ? 1 : 0 })}
+            placeholder="Status"
+            invalid={Boolean(errors.status)}
+            className="w-full"
+            items={[
+              { value: "1", label: "Active" },
+              { value: "0", label: "Inactive" },
+            ]}
+          />
+        </Field>
+        <Field label="Date of joining" hint="Optional">
+          <Input
+            type="date"
+            value={value.joinedOn ?? ""}
+            onChange={(e) => onChange({ ...value, joinedOn: e.target.value })}
+          />
+        </Field>
+      </div>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  hint,
+  required,
+  error,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  required?: boolean;
+  error?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="grid gap-1.5">
+      <span className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+        <span>
+          {label}
+          {required ? <span className="ml-1 font-semibold text-destructive">*</span> : null}
+        </span>
+        {hint ? <span>{hint}</span> : null}
+      </span>
+      {children}
+      {error ? <span className="text-xs font-medium text-destructive">{error}</span> : null}
+    </label>
+  );
+}
+
+function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-start justify-between gap-3 border-b py-3 last:border-b-0">
+      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="max-w-[65%] text-right text-sm font-medium break-words">{children}</div>
+    </div>
+  );
+}
+
+function AvatarInitials({ label }: { label?: string }) {
+  const initials = String(label || "?")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+
+  return (
+    <div className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+      {initials || "?"}
+    </div>
+  );
+}
+
+function DrawerDeleteConfirm({
+  label,
+  onCancel,
+  onConfirm,
+}: {
+  label: string;
+  onCancel: () => void;
+  onConfirm: () => Promise<void>;
+}) {
+  const [busy, setBusy] = React.useState(false);
+
+  return (
+    <div className="absolute inset-0 z-[70] grid place-items-center bg-background/70 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-sm rounded-lg border bg-background p-5 text-center shadow-2xl">
+        <div className="mx-auto grid size-11 place-items-center rounded-full border border-destructive/20 bg-destructive/10 text-destructive">
+          <Trash2 className="size-5" />
+        </div>
+        <div className="mt-3 text-base font-semibold">Delete {label || "employee"}?</div>
+        <div className="mt-2 text-sm leading-6 text-muted-foreground">
+          This will remove the employee from the database and write a delete log.
+        </div>
+        <div className="mt-5 grid grid-cols-2 gap-2">
+          <Button type="button" variant="outline" disabled={busy} onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            disabled={busy}
+            onClick={async () => {
+              try {
+                setBusy(true);
+                await onConfirm();
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            {busy ? "Deleting..." : "Delete"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function EmployeesModule() {
-  const { employees, upsertEmployee, removeEmployee } = useAdmin();
+  const { userId } = useUser();
+  const [employees, setEmployees] = React.useState<EmployeeRow[]>([]);
+  const [facilities, setFacilities] = React.useState<EmployeeLookupOption[]>([]);
+  const [departments, setDepartments] = React.useState<EmployeeLookupOption[]>([]);
+  const [designations, setDesignations] = React.useState<EmployeeLookupOption[]>([]);
+  const [loading, setLoading] = React.useState(true);
   const [search, setSearch] = React.useState("");
-  const [factoryId, setFactoryId] = React.useState<string | undefined>();
-  const [selected, setSelected] = React.useState<Employee | null>(null);
-  const [confirm, setConfirm] = React.useState<{ id: string; label: string } | null>(null);
+  const [companyId, setCompanyId] = React.useState<string | undefined>();
+  const [selected, setSelected] = React.useState<EmployeeRow | null>(null);
+  const [editDraft, setEditDraft] = React.useState<Employee | null>(null);
+  const [editErrors, setEditErrors] = React.useState<EmployeeValidationErrors>({});
+  const [confirmDelete, setConfirmDelete] = React.useState(false);
   const [createOpen, setCreateOpen] = React.useState(false);
-  const [draft, setDraft] = React.useState<Employee>(() => createBlankEmployee(employees));
+  const [createErrors, setCreateErrors] = React.useState<EmployeeValidationErrors>({});
+  const lookups = React.useMemo(
+    () => ({ facilities, departments, designations }),
+    [departments, designations, facilities],
+  );
+  const [draft, setDraft] = React.useState<Employee>(() =>
+    createBlankEmployee([], { facilities: [], departments: [], designations: [] }),
+  );
+
+  const loadEmployees = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      const [nextEmployees, nextLookups] = await Promise.all([
+        listEmployees(userId),
+        listEmployeeLookups(),
+      ]);
+      setEmployees(nextEmployees);
+      setFacilities(nextLookups.facilities);
+      setDepartments(nextLookups.departments);
+      setDesignations(nextLookups.designations);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not load employees");
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
 
   React.useEffect(() => {
-    if (createOpen) setDraft(createBlankEmployee(employees));
-  }, [createOpen, employees]);
+    void loadEmployees();
+  }, [loadEmployees]);
+
+  React.useEffect(() => {
+    if (createOpen) {
+      setDraft(createBlankEmployee(employees, lookups));
+      setCreateErrors({});
+    }
+  }, [createOpen, employees, lookups]);
 
   const rows = React.useMemo(() => {
     const q = search.trim().toLowerCase();
     return employees
-      .filter((e) => (factoryId ? e.factoryId === factoryId : true))
+      .filter((e) => (companyId ? e.companyId === companyId : true))
       .filter((e) => {
         if (!q) return true;
-        const hay = `${e.name} ${e.employeeId} ${getDepartmentName(e.departmentId)} ${getDesignationName(e.designationId)} ${e.email} ${e.phone ?? ""}`.toLowerCase();
+        const hay = `${e.name} ${e.employeeId} ${getOptionName(departments, e.departmentId)} ${getOptionName(designations, e.designationId)} ${e.email} ${e.phone ?? ""}`.toLowerCase();
         return hay.includes(q);
       })
       .sort((a, b) => (a.employeeId > b.employeeId ? 1 : -1));
-  }, [employees, search, factoryId]);
+  }, [departments, designations, employees, search, companyId]);
 
-  const columns: Array<DataColumn<Employee>> = [
+  const columns: Array<DataColumn<EmployeeRow>> = [
     {
       id: "name",
       header: "Employee",
       cell: (e) => (
-        <div className="min-w-0">
-          <div className="truncate text-sm font-medium">{e.name}</div>
-          <div className="text-muted-foreground mt-0.5 text-xs">
-            ID {e.employeeId} • {getDepartmentName(e.departmentId)}
+        <div className="flex min-w-0 items-center gap-3">
+          <AvatarInitials label={e.name} />
+          <div className="min-w-0">
+            <div className="truncate text-sm font-medium">{e.name}</div>
+            <div className="mt-0.5 text-xs text-muted-foreground">
+              ID {e.employeeId} - {getOptionName(departments, e.departmentId)}
+            </div>
           </div>
         </div>
       ),
     },
     {
-      id: "factory",
-      header: "Factory",
-      cell: (e) => <div className="text-sm">{getFacilityName(e.factoryId)}</div>,
+      id: "company",
+      header: "Company",
+      cell: (e) => <div className="text-sm">{getOptionName(facilities, e.companyId)}</div>,
       className: "hidden lg:table-cell",
     },
     {
       id: "designation",
       header: "Designation",
-      cell: (e) => <div className="text-sm">{getDesignationName(e.designationId)}</div>,
+      cell: (e) => <div className="text-sm">{getOptionName(designations, e.designationId)}</div>,
       className: "hidden xl:table-cell",
     },
     {
@@ -130,9 +424,39 @@ export function EmployeesModule() {
     },
   ];
 
+  function openDetails(employee: EmployeeRow) {
+    setSelected(employee);
+    setEditDraft(null);
+    setEditErrors({});
+    setConfirmDelete(false);
+  }
+
+  async function saveEdit() {
+    if (!editDraft || !selected) return;
+    const employee = normalizeEmployee(editDraft, lookups);
+    const errors = getEmployeeValidationErrors(employee, employees, selected.id);
+    setEditErrors(errors);
+    const validation = firstValidationMessage(errors);
+    if (validation) return toast.error(validation);
+
+    try {
+      const updated = await updateEmployee(employee, userId);
+      setEmployees((rows) => rows.map((row) => (row.id === updated.id ? updated : row)));
+      setSelected(updated);
+      setEditDraft(null);
+      setEditErrors({});
+      toast.success("Saved");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Employee save failed");
+    }
+  }
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-end gap-2">
+        <Button variant="outline" size="icon" onClick={() => void loadEmployees()} disabled={loading}>
+          <RefreshCw className="size-4" />
+        </Button>
         <CreateActionDialog
           title="Create employee"
           triggerLabel="Create"
@@ -140,102 +464,34 @@ export function EmployeesModule() {
           open={createOpen}
           onOpenChange={setCreateOpen}
           contentClassName="sm:max-w-2xl"
-          onCreate={() => {
-            const employee = normalizeEmployee(draft);
-            if (!employee.name.trim()) return toast.error("Name is required"), false;
-            if (!Number.isFinite(employee.employeeId) || employee.employeeId <= 0) {
-              return toast.error("Employee ID must be a number"), false;
+          onCreate={async () => {
+            const employee = normalizeEmployee(draft, lookups);
+            const errors = getEmployeeValidationErrors(employee, employees);
+            setCreateErrors(errors);
+            const validation = firstValidationMessage(errors);
+            if (validation) return toast.error(validation), false;
+
+            try {
+              const created = await createEmployee(employee, userId);
+              setEmployees((rows) => [created, ...rows]);
+              setCreateErrors({});
+              toast.success("Employee created");
+              return true;
+            } catch (error) {
+              toast.error(error instanceof Error ? error.message : "Employee create failed");
+              return false;
             }
-            if (employees.some((row) => row.employeeId === employee.employeeId)) {
-              return toast.error("Employee ID already exists"), false;
-            }
-            if (!employee.email.trim()) return toast.error("Email is required"), false;
-            if (employees.some((row) => row.email.toLowerCase() === employee.email.toLowerCase())) {
-              return toast.error("Email already exists"), false;
-            }
-            upsertEmployee(employee);
-            setSelected(employee);
-            toast.success("Employee created");
-            return true;
           }}
         >
-          <div className="grid gap-3">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="grid gap-1.5">
-                <div className="text-muted-foreground text-xs">Employee ID</div>
-                <Input
-                  type="number"
-                  value={draft.employeeId}
-                  onChange={(e) => setDraft({ ...draft, employeeId: Number(e.target.value) })}
-                  placeholder="1001"
-                />
-              </div>
-              <div className="grid gap-1.5">
-                <div className="text-muted-foreground text-xs">Name</div>
-                <Input
-                  value={draft.name}
-                  onChange={(e) => setDraft({ ...draft, name: e.target.value })}
-                  placeholder="Employee name"
-                />
-              </div>
-              <div className="grid gap-1.5">
-                <div className="text-muted-foreground text-xs">Email</div>
-                <Input
-                  type="email"
-                  value={draft.email}
-                  onChange={(e) => setDraft({ ...draft, email: e.target.value })}
-                  placeholder="employee@example.com"
-                />
-              </div>
-              <div className="grid gap-1.5">
-                <div className="text-muted-foreground text-xs">Phone</div>
-                <Input
-                  value={draft.phone ?? ""}
-                  onChange={(e) => setDraft({ ...draft, phone: e.target.value })}
-                  placeholder="Optional"
-                />
-              </div>
-              <div className="grid gap-1.5">
-                <div className="text-muted-foreground text-xs">Factory</div>
-                <SelectFilter
-                  value={draft.factoryId}
-                  onChange={(v) => setDraft({ ...draft, factoryId: v || draft.factoryId })}
-                  placeholder="Factory"
-                  items={facilities.map((f) => ({ value: f.id, label: f.name }))}
-                />
-              </div>
-              <div className="grid gap-1.5">
-                <div className="text-muted-foreground text-xs">Department</div>
-                <SelectFilter
-                  value={draft.departmentId}
-                  onChange={(v) => setDraft({ ...draft, departmentId: v || draft.departmentId })}
-                  placeholder="Department"
-                  items={seedDepartments.map((department) => ({ value: department.id, label: department.name }))}
-                />
-              </div>
-              <div className="grid gap-1.5">
-                <div className="text-muted-foreground text-xs">Designation</div>
-                <SelectFilter
-                  value={draft.designationId}
-                  onChange={(v) => setDraft({ ...draft, designationId: v || draft.designationId })}
-                  placeholder="Designation"
-                  items={seedDesignations.map((designation) => ({ value: designation.id, label: designation.name }))}
-                />
-              </div>
-              <div className="grid gap-1.5">
-                <div className="text-muted-foreground text-xs">Active status</div>
-                <SelectFilter
-                  value={String(draft.status)}
-                  onChange={(v) => setDraft({ ...draft, status: v === "1" ? 1 : 0 })}
-                  placeholder="Status"
-                  items={[
-                    { value: "1", label: "Active (1)" },
-                    { value: "0", label: "Inactive (0)" },
-                  ]}
-                />
-              </div>
-            </div>
-          </div>
+          <EmployeeForm
+            value={draft}
+            onChange={(employee) => {
+              setDraft(employee);
+              if (Object.keys(createErrors).length) setCreateErrors({});
+            }}
+            lookups={lookups}
+            errors={createErrors}
+          />
         </CreateActionDialog>
       </div>
 
@@ -246,150 +502,120 @@ export function EmployeesModule() {
               <SearchInput value={search} onChange={setSearch} placeholder="Search employees..." />
             </div>
             <SelectFilter
-              value={factoryId}
-              onChange={setFactoryId}
-              placeholder="Factory"
+              value={companyId}
+              onChange={setCompanyId}
+              placeholder="Company"
               items={facilities.map((f) => ({ value: f.id, label: f.name }))}
             />
           </div>
         }
         onClear={() => {
           setSearch("");
-          setFactoryId(undefined);
+          setCompanyId(undefined);
         }}
       />
 
       <SectionCard title="Employees" description="Directory used by Users and ownership fields across the EMS.">
-        <DataTable rows={rows} columns={columns} rowKey={(r) => r.id} onRowClick={setSelected} />
+        {loading ? <div className="p-4 text-sm text-muted-foreground">Loading employees from database...</div> : null}
+        {!loading && rows.length === 0 ? (
+          <div className="p-4 text-sm text-muted-foreground">No employees found in database.</div>
+        ) : null}
+        <DataTable rows={rows} columns={columns} rowKey={(r) => r.id} onRowClick={openDetails} />
       </SectionCard>
 
       <DetailPanel
         open={Boolean(selected)}
-        onOpenChange={(o) => (!o ? setSelected(null) : null)}
-        title="Employee"
+        onOpenChange={(open) => {
+          if (open) return;
+          setSelected(null);
+          setEditDraft(null);
+          setEditErrors({});
+          setConfirmDelete(false);
+        }}
+        title={editDraft ? "Edit employee" : "Employee"}
         description={selected ? `ID ${selected.employeeId}` : undefined}
+        overlay={
+          selected && confirmDelete ? (
+            <DrawerDeleteConfirm
+              label={selected.name}
+              onCancel={() => setConfirmDelete(false)}
+              onConfirm={async () => {
+                await deleteEmployee(selected.id, userId);
+                setEmployees((rows) => rows.filter((employee) => employee.id !== selected.id));
+                setConfirmDelete(false);
+                setEditDraft(null);
+                setSelected(null);
+                toast.success("Deleted");
+              }}
+            />
+          ) : null
+        }
       >
         {selected ? (
-          <div className="space-y-4">
-            <div className="grid gap-3">
-              <div className="grid gap-1.5">
-                <div className="text-muted-foreground text-xs">Name</div>
-                <Input
-                  value={selected.name}
-                  onChange={(e) => setSelected({ ...selected, name: e.target.value })}
-                  placeholder="Employee name"
-                />
-              </div>
-              <div className="grid gap-1.5">
-                <div className="text-muted-foreground text-xs">Employee ID</div>
-                <Input
-                  type="number"
-                  value={selected.employeeId}
-                  onChange={(e) =>
-                    setSelected({ ...selected, employeeId: Number(e.target.value) })
-                  }
-                  placeholder="1001"
-                />
-              </div>
-              <div className="grid gap-1.5">
-                <div className="text-muted-foreground text-xs">Factory</div>
-                <SelectFilter
-                  value={selected.factoryId}
-                  onChange={(v) => setSelected({ ...selected, factoryId: v || selected.factoryId })}
-                  placeholder="Select factory"
-                  items={facilities.map((f) => ({ value: f.id, label: f.name }))}
-                />
-              </div>
-              <div className="grid gap-1.5">
-                <div className="text-muted-foreground text-xs">Department</div>
-                <SelectFilter
-                  value={selected.departmentId}
-                  onChange={(v) => setSelected({ ...selected, departmentId: v || selected.departmentId })}
-                  placeholder="Department"
-                  items={seedDepartments.map((department) => ({ value: department.id, label: department.name }))}
-                />
-              </div>
-              <div className="grid gap-1.5">
-                <div className="text-muted-foreground text-xs">Designation</div>
-                <SelectFilter
-                  value={selected.designationId}
-                  onChange={(v) => setSelected({ ...selected, designationId: v || selected.designationId })}
-                  placeholder="Designation"
-                  items={seedDesignations.map((designation) => ({ value: designation.id, label: designation.name }))}
-                />
-              </div>
-              <div className="grid gap-1.5">
-                <div className="text-muted-foreground text-xs">Email</div>
-                <Input
-                  type="email"
-                  value={selected.email}
-                  onChange={(e) => setSelected({ ...selected, email: e.target.value })}
-                  placeholder="employee@example.com"
-                />
-              </div>
-              <div className="grid gap-1.5">
-                <div className="text-muted-foreground text-xs">Phone</div>
-                <Input
-                  value={selected.phone ?? ""}
-                  onChange={(e) => setSelected({ ...selected, phone: e.target.value })}
-                  placeholder="Optional"
-                />
-              </div>
-              <div className="grid gap-1.5">
-                <div className="text-muted-foreground text-xs">Active status</div>
-                <SelectFilter
-                  value={String(selected.status)}
-                  onChange={(v) => setSelected({ ...selected, status: v === "1" ? 1 : 0 })}
-                  placeholder="Status"
-                  items={[
-                    { value: "1", label: "Active (1)" },
-                    { value: "0", label: "Inactive (0)" },
-                  ]}
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between gap-2">
-              <Button
-                variant="destructive"
-                onClick={() => setConfirm({ id: selected.id, label: selected.name || "Employee" })}
-              >
-                <Trash2 className="mr-2 size-4" />
-                Delete
-              </Button>
-              <Button
-                onClick={() => {
-                  if (!selected.name.trim()) return toast.error("Name is required");
-                  if (!Number.isFinite(selected.employeeId) || selected.employeeId <= 0) {
-                    return toast.error("Employee ID must be a number");
-                  }
-                  if (!selected.email.trim()) return toast.error("Email is required");
-                  upsertEmployee(normalizeEmployee(selected));
-                  toast.success("Saved");
+          editDraft ? (
+            <div className="space-y-4">
+              <EmployeeForm
+                value={editDraft}
+                onChange={(employee) => {
+                  setEditDraft(employee);
+                  if (Object.keys(editErrors).length) setEditErrors({});
                 }}
-              >
-                Save
-              </Button>
+                lookups={lookups}
+                errors={editErrors}
+              />
+              <div className="flex items-center justify-between gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setEditDraft(null);
+                    setEditErrors({});
+                  }}
+                >
+                  <X className="mr-2 size-4" />
+                  Cancel
+                </Button>
+                <Button onClick={() => void saveEdit()}>Save</Button>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="rounded-lg border px-3">
+                <DetailRow label="Name">{selected.name}</DetailRow>
+                <DetailRow label="Employee ID">{selected.employeeId}</DetailRow>
+                <DetailRow label="Company">{getOptionName(facilities, selected.companyId)}</DetailRow>
+                <DetailRow label="Department">{getOptionName(departments, selected.departmentId)}</DetailRow>
+                <DetailRow label="Designation">{getOptionName(designations, selected.designationId)}</DetailRow>
+                <DetailRow label="Status">
+                  <StatusBadge tone={selected.status === 1 ? "compliant" : "neutral"}>
+                    {selected.status === 1 ? "active" : "inactive"}
+                  </StatusBadge>
+                </DetailRow>
+                <DetailRow label="Email">{selected.email}</DetailRow>
+                <DetailRow label="Phone">{selected.phone || "-"}</DetailRow>
+                <DetailRow label="Date of joining">{formatDate(selected.joinedOn)}</DetailRow>
+                <DetailRow label="Created by">{selected.createdByUserName || "-"}</DetailRow>
+                <DetailRow label="Updated by">{selected.updatedByUserName || "-"}</DetailRow>
+              </div>
+
+              <div className="flex items-center justify-between gap-2">
+                <Button variant="destructive" onClick={() => setConfirmDelete(true)}>
+                  <Trash2 className="mr-2 size-4" />
+                  Delete
+                </Button>
+                <Button
+                  onClick={() => {
+                    setEditDraft({ ...selected });
+                    setEditErrors({});
+                  }}
+                >
+                  <Pencil className="mr-2 size-4" />
+                  Edit
+                </Button>
+              </div>
+            </div>
+          )
         ) : null}
       </DetailPanel>
-
-      <ActionModal
-        open={Boolean(confirm)}
-        onOpenChange={(o) => (!o ? setConfirm(null) : null)}
-        tone="destructive"
-        title={`Delete ${confirm?.label || "employee"}?`}
-        description="This will remove the employee from the local settings store."
-        confirmLabel="Delete"
-        onConfirm={() => {
-          if (!confirm) return;
-          removeEmployee(confirm.id);
-          setSelected(null);
-          setConfirm(null);
-          toast.success("Deleted");
-        }}
-      />
     </div>
   );
 }

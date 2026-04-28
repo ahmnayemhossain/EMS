@@ -54,6 +54,7 @@ export function AppShell() {
                         end={item.end}
                         icon={item.icon}
                         label={item.label}
+                        permission={item.permission}
                       />
                     </SidebarMenuItem>
                   ))}

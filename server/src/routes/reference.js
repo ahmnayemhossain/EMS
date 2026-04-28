@@ -7,7 +7,7 @@ export const referenceRouter = Router();
 
 // Reference data used across operations & settings.
 for (const key of [
-  "factories",
+  "companies",
   "departments",
   "designations",
   "uoms",

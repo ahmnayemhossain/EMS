@@ -18,14 +18,14 @@ export function ComplaintsTab({
   onOpenComplaint: (r: ReportBoxReport) => void;
 }) {
   const [complaintSearch, setComplaintSearch] = React.useState("");
-  const [complaintFactoryId, setComplaintFactoryId] = React.useState<string | undefined>();
+  const [complaintCompanyId, setComplaintCompanyId] = React.useState<string | undefined>();
   const [complaintStatus, setComplaintStatus] = React.useState<ReportBoxReport["status"] | "all">(
     "all",
   );
 
   const complaintRows = React.useMemo(() => {
     return reports
-      .filter((r) => (complaintFactoryId ? r.facilityId === complaintFactoryId : true))
+      .filter((r) => (complaintCompanyId ? r.facilityId === complaintCompanyId : true))
       .filter((r) => (complaintStatus === "all" ? true : r.status === complaintStatus))
       .filter((r) => (showFlaggedOnly ? r.flagged : true))
       .filter((r) => {
@@ -40,7 +40,7 @@ export function ComplaintsTab({
         );
       })
       .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
-  }, [complaintFactoryId, complaintSearch, complaintStatus, reports, showFlaggedOnly]);
+  }, [complaintCompanyId, complaintSearch, complaintStatus, reports, showFlaggedOnly]);
 
   return (
     <div className="space-y-4">
@@ -49,13 +49,13 @@ export function ComplaintsTab({
       <ComplaintsFiltersBar
         complaintSearch={complaintSearch}
         onComplaintSearchChange={setComplaintSearch}
-        complaintFactoryId={complaintFactoryId}
-        onComplaintFactoryIdChange={setComplaintFactoryId}
+        complaintCompanyId={complaintCompanyId}
+        onComplaintCompanyIdChange={setComplaintCompanyId}
         complaintStatus={complaintStatus}
         onComplaintStatusChange={setComplaintStatus}
         onClear={() => {
           setComplaintSearch("");
-          setComplaintFactoryId(undefined);
+          setComplaintCompanyId(undefined);
           setComplaintStatus("all");
         }}
       />

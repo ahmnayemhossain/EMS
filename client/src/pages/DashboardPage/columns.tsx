@@ -8,8 +8,8 @@ import type { Facility } from "@/types/ems";
 export function getFacilityColumns(): Array<DataColumn<Facility>> {
   return [
     {
-      id: "factory",
-      header: "Factory",
+      id: "company",
+      header: "Company",
       cell: (row) => (
         <div className="min-w-0">
           <div className="truncate font-medium">{row.name}</div>
@@ -61,7 +61,7 @@ export function getFacilityColumns(): Array<DataColumn<Facility>> {
       id: "action",
       header: "",
       cell: (row) => (
-        <Link to={`/factories/${row.id}`} className="text-primary text-sm font-medium hover:underline">
+        <Link to={`/companies/${row.id}`} className="text-primary text-sm font-medium hover:underline">
           Open
         </Link>
       ),

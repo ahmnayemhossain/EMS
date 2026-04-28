@@ -5,8 +5,8 @@ import { toast } from "@/app/lib/toast";
 import { Button } from "@/app/components/ui/button";
 import { Tabs, TabsContent } from "@/app/components/ui/tabs";
 import { useIsMobile } from "@/app/components/ui/use-mobile";
-import { facilities } from "@/data/mock";
-import { useSelectedFactory } from "@/app/state/factory";
+import { useSelectedCompany } from "@/app/state/company";
+import { useUser } from "@/app/state/user";
 import { DataTable } from "@/components/DataTable";
 import { DetailPanel } from "@/components/DetailPanel";
 import { PageHeader } from "@/components/PageHeader";
@@ -34,15 +34,23 @@ import { UtilitiesTrendCard } from "@/pages/UtilitiesPage/UtilitiesTrendCard";
 import { UtilityRecordDetail } from "@/pages/UtilitiesPage/UtilityRecordDetail";
 import { useUtilitiesRows } from "@/pages/UtilitiesPage/useUtilitiesRows";
 import { formatDate, formatUtilityType } from "@/utils/format";
-import { getFacilityName } from "@/data/mock";
 
 export function UtilitiesPage() {
   const isMobile = useIsMobile();
-  const { selectedFactoryId } = useSelectedFactory();
+  const { selectedCompanyId, companies } = useSelectedCompany();
+  const { userId } = useUser();
+  const selectedCompany = React.useMemo(
+    () => companies.find((company) => company.id === selectedCompanyId),
+    [companies, selectedCompanyId],
+  );
+  const getCompanyName = React.useCallback(
+    (id: string) => companies.find((company) => company.id === id)?.name || "Company",
+    [companies],
+  );
 
   const [active, setActive] = React.useState<UtilityType>("electricity");
   const [search, setSearch] = React.useState("");
-  const [facilityId, setFacilityId] = React.useState<string | undefined>();
+  const [facilityId, setFacilityId] = React.useState<string | undefined>(selectedCompanyId || undefined);
   const [selected, setSelected] = React.useState<UtilityRecord | null>(null);
   const [utilityRows, setUtilityRows] = React.useState<UtilityRecord[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -54,9 +62,14 @@ export function UtilitiesPage() {
     facilityId,
     search,
     extraRows: utilityRows,
+    companies,
   });
 
-  const columns = React.useMemo(() => getUtilityColumns(), []);
+  React.useEffect(() => {
+    setFacilityId(selectedCompanyId || undefined);
+  }, [selectedCompanyId]);
+
+  const columns = React.useMemo(() => getUtilityColumns(getCompanyName), [getCompanyName]);
   const trendData = React.useMemo(() => {
     const totalsByMonth = new Map<string, number>();
 
@@ -76,7 +89,7 @@ export function UtilitiesPage() {
     async function loadUtilities() {
       setLoading(true);
       try {
-        const records = await listUtilityRecords();
+        const records = await listUtilityRecords(userId);
         if (!cancelled) setUtilityRows(records);
       } catch (error) {
         if (!cancelled) {
@@ -92,11 +105,11 @@ export function UtilitiesPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [userId]);
 
   async function handleCreateUsage(payload: UtilityUsagePayload) {
     const record: UtilityRecordInput = {
-      facilityId: payload.factoryId,
+      facilityId: payload.companyId,
       type: payload.utilityType,
       periodStart: payload.periodStart,
       periodEnd: payload.periodEnd,
@@ -124,7 +137,7 @@ export function UtilitiesPage() {
     };
 
     try {
-      const created = await createUtilityRecord(record);
+      const created = await createUtilityRecord(record, userId);
       setUtilityRows((current) => [created, ...current]);
       toast.success("Utility usage saved");
       return true;
@@ -138,7 +151,7 @@ export function UtilitiesPage() {
     if (!selected) return false;
 
     const record: UtilityRecordInput = {
-      facilityId: payload.factoryId,
+      facilityId: payload.companyId,
       type: payload.utilityType,
       periodStart: payload.periodStart,
       periodEnd: payload.periodEnd,
@@ -161,7 +174,7 @@ export function UtilitiesPage() {
     };
 
     try {
-      const updated = await updateUtilityRecord(selected.id, record);
+      const updated = await updateUtilityRecord(selected.id, record, userId);
       setUtilityRows((current) => current.map((row) => (row.id === updated.id ? updated : row)));
       setSelected(updated);
       toast.success("Utility usage updated");
@@ -176,7 +189,7 @@ export function UtilitiesPage() {
     if (!selected) return;
 
     try {
-      await deleteUtilityRecord(selected.id);
+      await deleteUtilityRecord(selected.id, userId);
       setUtilityRows((current) => current.filter((row) => row.id !== selected.id));
       setSelected(null);
       setDeleteOpen(false);
@@ -191,8 +204,8 @@ export function UtilitiesPage() {
       <PageHeader
         actions={
           <CreateUtilityDialog
-            facilities={facilities}
-            defaultFactoryId={selectedFactoryId}
+            companies={selectedCompany ? [selectedCompany] : companies}
+            defaultCompanyId={selectedCompanyId}
             activeType={active}
             onCreateUsage={handleCreateUsage}
           />
@@ -206,12 +219,10 @@ export function UtilitiesPage() {
           <UtilitiesFiltersBar
             search={search}
             onSearchChange={setSearch}
-            facilityId={facilityId}
-            onFacilityIdChange={setFacilityId}
-            facilities={facilities}
+            companyName={selectedCompany?.name || "No company selected"}
             onClear={() => {
               setSearch("");
-              setFacilityId(undefined);
+              setFacilityId(selectedCompanyId || undefined);
             }}
           />
 
@@ -226,18 +237,22 @@ export function UtilitiesPage() {
             <div className="-mx-4 overflow-x-auto px-4">
               <div className="flex w-max gap-4 pb-1">
                 <UtilitiesTrendCard data={trendData} className="w-[92vw] max-w-[720px] shrink-0" />
-                <UtilitiesComparisonCard rows={rows} className="w-[92vw] max-w-[520px] shrink-0" />
+                <UtilitiesComparisonCard
+                  rows={rows}
+                  getCompanyName={getCompanyName}
+                  className="w-[92vw] max-w-[520px] shrink-0"
+                />
               </div>
             </div>
           ) : (
             <div className="grid gap-4 xl:grid-cols-3">
               <UtilitiesTrendCard data={trendData} />
-              <UtilitiesComparisonCard rows={rows} />
+              <UtilitiesComparisonCard rows={rows} getCompanyName={getCompanyName} />
             </div>
           )}
 
           {isMobile ? (
-            <UtilitiesRecordsMobile rows={rows} onSelect={setSelected} />
+            <UtilitiesRecordsMobile rows={rows} getCompanyName={getCompanyName} onSelect={setSelected} />
           ) : (
             <div className="space-y-3">
               <div className="text-sm font-semibold">Utility records</div>
@@ -261,7 +276,7 @@ export function UtilitiesPage() {
         title={selected ? `${formatUtilityType(selected.type)} — ${selected.meterName}` : "Utility record"}
         description={
           selected
-            ? `${selected.facilityId ? getFacilityName(selected.facilityId) : "Factory"} • ${formatDate(selected.periodStart)} to ${formatDate(selected.periodEnd)}`
+            ? `${companies.find((company) => company.id === selected.facilityId)?.name || "Company"} • ${formatDate(selected.periodStart)} to ${formatDate(selected.periodEnd)}`
             : undefined
         }
       >
@@ -277,7 +292,7 @@ export function UtilitiesPage() {
                 Delete
               </Button>
             </div>
-            <UtilityRecordDetail record={selected} />
+            <UtilityRecordDetail record={selected} companyName={getCompanyName(selected.facilityId)} />
           </div>
         ) : null}
       </DetailPanel>
@@ -285,7 +300,7 @@ export function UtilitiesPage() {
       <EditUtilityDialog
         open={editOpen}
         onOpenChange={setEditOpen}
-        facilities={facilities}
+        companies={companies}
         record={selected}
         onSave={handleUpdateUsage}
       />

@@ -22,7 +22,7 @@ export const auditTemplates: AuditTemplate[] = [
     id: "tmpl_garments_env_compliance",
     name: "Garments - Environmental Compliance (Full)",
     description:
-      "End-to-end environmental compliance for garments factories: legal permits, ETP, chemicals/SDS, waste, utilities, monitoring, training and evidence.",
+      "End-to-end environmental compliance for garments companies: legal permits, ETP, chemicals/SDS, waste, utilities, monitoring, training and evidence.",
     sections: [
       {
         id: "legal",
@@ -190,8 +190,8 @@ export const auditTemplates: AuditTemplate[] = [
     ],
   },
   {
-    id: "tmpl_green_factory",
-    name: "Green Factory (Readiness)",
+    id: "tmpl_green_company",
+    name: "Green Company (Readiness)",
     description:
       "Green readiness across utilities, ETP, waste, monitoring and documentation (template to adapt per authority/standard).",
     sections: [

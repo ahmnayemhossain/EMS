@@ -2,15 +2,16 @@ import { ChevronRight } from "lucide-react";
 
 import { cn } from "@/app/components/ui/utils";
 import { StatusBadge } from "@/components/StatusBadge";
-import { getFacilityName } from "@/data/mock";
 import type { UtilityRecord } from "@/types/ems";
 import { formatDate, formatNumber } from "@/utils/format";
 
 export function UtilitiesRecordsMobile({
   rows,
+  getCompanyName,
   onSelect,
 }: {
   rows: UtilityRecord[];
+  getCompanyName: (id: string) => string;
   onSelect: (row: UtilityRecord) => void;
 }) {
   return (
@@ -39,7 +40,7 @@ export function UtilitiesRecordsMobile({
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <div className="truncate text-sm font-medium">
-                        {getFacilityName(r.facilityId)}
+                        {getCompanyName(r.facilityId)}
                       </div>
                       <StatusBadge tone={tone} className="shrink-0">
                         {r.varianceFlag ?? "normal"}
@@ -70,4 +71,3 @@ export function UtilitiesRecordsMobile({
     </div>
   );
 }
-

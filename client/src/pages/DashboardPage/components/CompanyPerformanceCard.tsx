@@ -6,13 +6,13 @@ import type { Facility } from "@/types/ems";
 
 import { getFacilityColumns } from "../columns";
 
-export function FactoryPerformanceCard({ facilities }: { facilities: Facility[] }) {
+export function CompanyPerformanceCard({ facilities }: { facilities: Facility[] }) {
   const columns = React.useMemo(() => getFacilityColumns(), []);
 
   return (
     <Card className="shadow-xs min-w-0">
       <CardHeader>
-        <CardTitle>Factory performance</CardTitle>
+        <CardTitle>Company performance</CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
         <DataTable rows={facilities} columns={columns} rowKey={(r) => r.id} />

@@ -13,8 +13,8 @@ export function ChemicalFiltersBar({
   facilities,
   search,
   onSearchChange,
-  factoryId,
-  onFactoryIdChange,
+  companyId,
+  onCompanyIdChange,
   hazard,
   onHazardChange,
   approval,
@@ -28,8 +28,8 @@ export function ChemicalFiltersBar({
   facilities: Facility[];
   search: string;
   onSearchChange: (v: string) => void;
-  factoryId?: string;
-  onFactoryIdChange: (v: string | undefined) => void;
+  companyId?: string;
+  onCompanyIdChange: (v: string | undefined) => void;
   hazard?: string;
   onHazardChange: (v: string | undefined) => void;
   approval?: string;
@@ -53,9 +53,9 @@ export function ChemicalFiltersBar({
             <SearchInput value={search} onChange={onSearchChange} placeholder="Search chemical / supplier…" />
           </div>
           <SelectFilter
-            value={factoryId}
-            onChange={onFactoryIdChange}
-            placeholder="Factory"
+            value={companyId}
+            onChange={onCompanyIdChange}
+            placeholder="Company"
             items={facilities.map((f) => ({ value: f.id, label: f.name }))}
           />
           <SelectFilter

@@ -1,4 +1,4 @@
-import { getFacilityName } from "@/data/mock";
+import type { CompanyOption } from "@/app/state/company";
 import type { UtilityRecord, UtilityType } from "@/types/ems";
 
 export function useUtilitiesRows({
@@ -6,12 +6,15 @@ export function useUtilitiesRows({
   facilityId,
   search,
   extraRows = [],
+  companies = [],
 }: {
   active: UtilityType;
   facilityId?: string;
   search: string;
   extraRows?: UtilityRecord[];
+  companies?: CompanyOption[];
 }) {
+  const companyNameById = new Map(companies.map((company) => [company.id, company.name.toLowerCase()]));
   const rows: UtilityRecord[] = [...extraRows]
     .filter((r) => r.type === active)
     .filter((r) => (facilityId ? r.facilityId === facilityId : true))
@@ -20,7 +23,7 @@ export function useUtilitiesRows({
       if (!q) return true;
       return (
         r.meterName.toLowerCase().includes(q) ||
-        getFacilityName(r.facilityId).toLowerCase().includes(q)
+        (companyNameById.get(r.facilityId) || "").includes(q)
       );
     });
 

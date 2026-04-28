@@ -8,7 +8,8 @@ import { Input } from "@/app/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover";
 import { Textarea } from "@/app/components/ui/textarea";
 import { cn } from "@/app/components/ui/utils";
-import type { Facility, UtilityType } from "@/types/ems";
+import type { CompanyOption } from "@/app/state/company";
+import type { UtilityType } from "@/types/ems";
 import { SelectFilter } from "@/components/SelectFilter";
 import { StatusBadge } from "@/components/StatusBadge";
 import { formatNumber, formatUtilityType } from "@/utils/format";
@@ -163,8 +164,8 @@ function DatePickerField({
 }
 
 export function CreateUtilityForm({
-  facilities,
-  factoryId,
+  companies,
+  companyId,
   type,
   onTypeChange,
   periodStart,
@@ -184,8 +185,8 @@ export function CreateUtilityForm({
   attachment,
   onAttachmentChange,
 }: {
-  facilities: Facility[];
-  factoryId: string;
+  companies: CompanyOption[];
+  companyId: string;
   type: UtilityType;
   onTypeChange: (v: UtilityType) => void;
   periodStart: string;
@@ -205,11 +206,11 @@ export function CreateUtilityForm({
   attachment: File | null;
   onAttachmentChange: (v: File | null) => void;
 }) {
-  const selectedFactory = facilities.find((factory) => factory.id === factoryId);
+  const selectedCompany = companies.find((company) => company.id === companyId);
   const previousReadingNum = previousReading.trim() === "" ? undefined : Number(previousReading);
   const currentReadingNum = currentReading.trim() === "" ? undefined : Number(currentReading);
   const fieldErrors = {
-    factory: !factoryId ? "Factory is required." : "",
+    company: !companyId ? "Company is required." : "",
     type: !type ? "Utility type is required." : "",
     periodStart: !periodStart ? "Period start is required." : "",
     periodEnd: !periodEnd ? "Period end is required." : "",
@@ -238,11 +239,11 @@ export function CreateUtilityForm({
       <Section title="Basic Info">
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="grid gap-1.5">
-            <FieldLabel required>Factory</FieldLabel>
+            <FieldLabel required>Company</FieldLabel>
             <div className="rounded-lg border bg-muted/30 px-3 py-2 text-sm font-medium">
-              {selectedFactory?.name ?? "No factory assigned"}
+              {selectedCompany?.name ?? "No company assigned"}
             </div>
-            <FieldError>{fieldErrors.factory}</FieldError>
+            <FieldError>{fieldErrors.company}</FieldError>
           </div>
           <div className="grid gap-1.5">
             <FieldLabel required>Utility Type</FieldLabel>

@@ -3,21 +3,27 @@ import { Link, useMatch } from "react-router";
 
 import { SidebarMenuButton, useSidebar } from "@/app/components/ui/sidebar";
 import { cn } from "@/app/components/ui/utils";
+import { useCan } from "@/app/state/permissions";
 
 export function SidebarNavLink({
   to,
   end,
   icon,
   label,
+  permission,
 }: {
   to: string;
   end?: boolean;
   icon: React.ComponentType<{ className?: string }>;
   label: string;
+  permission?: string;
 }) {
   const match = useMatch({ path: to, end: end ?? false });
   const isActive = Boolean(match);
   const { isMobile, setOpenMobile } = useSidebar();
+  const canAccess = useCan(permission);
+
+  if (!canAccess) return null;
 
   return (
     <SidebarMenuButton asChild isActive={isActive} tooltip={label}>

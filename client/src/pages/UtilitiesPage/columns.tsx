@@ -3,17 +3,16 @@ import type { UtilityRecord } from "@/types/ems";
 
 import { Button } from "@/app/components/ui/button";
 import { StatusBadge } from "@/components/StatusBadge";
-import { getFacilityName } from "@/data/mock";
 import { formatDate, formatNumber, formatUtilityType } from "@/utils/format";
 
-export function getUtilityColumns(): Array<DataColumn<UtilityRecord>> {
+export function getUtilityColumns(getCompanyName: (id: string) => string): Array<DataColumn<UtilityRecord>> {
   return [
     {
-      id: "factory",
-      header: "Factory",
+      id: "company",
+      header: "Company",
       cell: (r) => (
         <div className="min-w-0">
-          <div className="truncate font-medium">{getFacilityName(r.facilityId)}</div>
+          <div className="truncate font-medium">{getCompanyName(r.facilityId)}</div>
           <div className="text-muted-foreground mt-1 text-xs">{r.meterName}</div>
         </div>
       ),
@@ -76,4 +75,3 @@ export function getUtilityColumns(): Array<DataColumn<UtilityRecord>> {
     },
   ];
 }
-

@@ -46,7 +46,7 @@ const columns: Array<DataColumn<CertificationRow>> = [
   },
   {
     id: "facility",
-    header: "Factory",
+    header: "Company",
     cell: (r) => <div className="text-sm">{getFacilityName(r.facilityId)}</div>,
     className: "hidden sm:table-cell whitespace-normal",
   },

@@ -101,7 +101,7 @@ export function WastePage() {
                 <SelectFilter
                   value={facilityId}
                   onChange={setFacilityId}
-                  placeholder="Factory"
+                  placeholder="Company"
                   items={facilities.map((f) => ({ value: f.id, label: f.name }))}
                 />
                 <DateRangePickerPlaceholder label="Log date" />

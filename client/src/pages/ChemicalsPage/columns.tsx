@@ -25,8 +25,8 @@ export function getChemicalColumns(): Array<DataColumn<Chemical>> {
       className: "min-w-[360px]",
     },
     {
-      id: "factory",
-      header: "Factory",
+      id: "company",
+      header: "Company",
       cell: (c) => <div className="text-sm">{getFacilityName(c.facilityId)}</div>,
       className: "min-w-[220px]",
     },

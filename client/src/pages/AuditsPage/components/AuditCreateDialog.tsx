@@ -58,7 +58,7 @@ export function AuditCreateDialog({
       contentClassName="sm:max-w-3xl max-h-[85vh] overflow-y-auto"
       onCreate={() => {
         if (!name.trim()) return toast.error("Audit name is required"), false;
-        if (!facilityId) return toast.error("Select a factory"), false;
+        if (!facilityId) return toast.error("Select a company"), false;
         if (!auditor) return toast.error("Select an auditor"), false;
 
         const now = new Date();

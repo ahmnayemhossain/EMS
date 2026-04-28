@@ -7,15 +7,15 @@ function escapeHtml(v: string) {
   return v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-function getRecordFactoryName(r: ReportBoxRecord) {
+function getRecordCompanyName(r: ReportBoxRecord) {
   const fid = r.snapshot.facilityId;
-  return fid ? getFacilityName(fid) : "Unknown factory";
+  return fid ? getFacilityName(fid) : "Unknown company";
 }
 
 export function buildRecordHtml(r: ReportBoxRecord) {
   const report = r.snapshot;
   const title = report.subject?.trim() || formatReportNumber(report.id);
-  const factoryName = report.facilityId ? getFacilityName(report.facilityId) : "Unknown factory";
+  const companyName = report.facilityId ? getFacilityName(report.facilityId) : "Unknown company";
   const createdAt = new Date(report.createdAt).toLocaleString();
   const recordedAt = new Date(r.recordedAt).toLocaleString();
 
@@ -73,7 +73,7 @@ export function buildRecordHtml(r: ReportBoxRecord) {
             <div class="pill">EMS Platform</div>
             <h1 class="h1" style="margin-top:10px;">${escapeHtml(title)}</h1>
             <div class="meta">
-              <div><b>Complaint #</b> ${formatReportNumber(report.id)} · <b>${escapeHtml(factoryName)}</b></div>
+              <div><b>Complaint #</b> ${formatReportNumber(report.id)} · <b>${escapeHtml(companyName)}</b></div>
               <div><b>Created</b> ${createdAt} · <b>Recorded</b> ${recordedAt}</div>
               <div><b>Status</b> ${escapeHtml(report.status)}${report.flagged ? " · <b>Flagged</b>" : ""}${report.category ? ` · <b>Category</b> ${escapeHtml(report.category)}` : ""}${report.assignedTo ? ` · <b>Supervisor</b> ${escapeHtml(report.assignedTo)}` : ""}${report.handledBy ? ` · <b>Handler</b> ${escapeHtml(report.handledBy)}` : ""}</div>
             </div>
@@ -122,7 +122,7 @@ export function getRecordSearchHaystack(r: ReportBoxRecord) {
     r.snapshot.subject,
     r.snapshot.assignedTo || "",
     r.snapshot.category || "",
-    getRecordFactoryName(r),
+    getRecordCompanyName(r),
   ]
     .join(" ")
     .toLowerCase();

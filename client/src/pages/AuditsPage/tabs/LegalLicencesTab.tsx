@@ -54,8 +54,8 @@ const columns: Array<DataColumn<LicenceRow>> = [
     className: "whitespace-normal",
   },
   {
-    id: "factory",
-    header: "Factory",
+    id: "company",
+    header: "Company",
     cell: (r) => <div className="text-sm">{getFacilityName(r.facilityId)}</div>,
     className: "hidden sm:table-cell whitespace-normal",
   },

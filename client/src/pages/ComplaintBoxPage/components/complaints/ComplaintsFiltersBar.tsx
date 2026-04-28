@@ -8,16 +8,16 @@ import type { ReportBoxReport } from "@/types/ems";
 export function ComplaintsFiltersBar({
   complaintSearch,
   onComplaintSearchChange,
-  complaintFactoryId,
-  onComplaintFactoryIdChange,
+  complaintCompanyId,
+  onComplaintCompanyIdChange,
   complaintStatus,
   onComplaintStatusChange,
   onClear,
 }: {
   complaintSearch: string;
   onComplaintSearchChange: (v: string) => void;
-  complaintFactoryId?: string;
-  onComplaintFactoryIdChange: (v: string | undefined) => void;
+  complaintCompanyId?: string;
+  onComplaintCompanyIdChange: (v: string | undefined) => void;
   complaintStatus: ReportBoxReport["status"] | "all";
   onComplaintStatusChange: (v: ReportBoxReport["status"] | "all") => void;
   onClear: () => void;
@@ -34,9 +34,9 @@ export function ComplaintsFiltersBar({
             />
           </div>
           <SelectFilter
-            value={complaintFactoryId}
-            onChange={onComplaintFactoryIdChange}
-            placeholder="Factory"
+            value={complaintCompanyId}
+            onChange={onComplaintCompanyIdChange}
+            placeholder="Company"
             items={facilities.map((f) => ({ value: f.id, label: f.name }))}
           />
           <Select value={complaintStatus} onValueChange={(v) => onComplaintStatusChange(v as any)}>

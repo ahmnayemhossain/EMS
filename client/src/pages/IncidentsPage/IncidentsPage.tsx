@@ -16,14 +16,14 @@ import { CreateIncidentDialog } from "./components/CreateIncidentDialog";
 
 export function IncidentsPage() {
   const [search, setSearch] = React.useState("");
-  const [factoryId, setFactoryId] = React.useState<string | undefined>();
+  const [companyId, setCompanyId] = React.useState<string | undefined>();
   const [createOpen, setCreateOpen] = React.useState(false);
   const [incidentRows, setIncidentRows] = React.useState<Incident[]>(() => incidents);
 
   const columns = React.useMemo(() => getIncidentColumns(), []);
 
   const rowsFiltered = incidentRows
-    .filter((i) => (factoryId ? i.facilityId === factoryId : true))
+    .filter((i) => (companyId ? i.facilityId === companyId : true))
     .filter((i) => {
       const q = search.trim().toLowerCase();
       if (!q) return true;
@@ -52,9 +52,9 @@ export function IncidentsPage() {
               <SearchInput value={search} onChange={setSearch} placeholder="Search incidents…" />
             </div>
             <SelectFilter
-              value={factoryId}
-              onChange={setFactoryId}
-              placeholder="Factory"
+              value={companyId}
+              onChange={setCompanyId}
+              placeholder="Company"
               items={facilities.map((f) => ({ value: f.id, label: f.name }))}
             />
             <DateRangePickerPlaceholder label="Date" />
@@ -62,7 +62,7 @@ export function IncidentsPage() {
         }
         onClear={() => {
           setSearch("");
-          setFactoryId(undefined);
+          setCompanyId(undefined);
         }}
       />
 

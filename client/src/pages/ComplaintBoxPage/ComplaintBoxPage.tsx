@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Tabs, TabsContent } from "@/app/components/ui/tabs";
-import { useSelectedFactory } from "@/app/state/factory";
+import { useSelectedCompany } from "@/app/state/company";
 import { useReportBox } from "@/app/state/report-box";
 import { useCurrentUser } from "@/app/state/user";
 import { formatUserLabel } from "@/data/users";
@@ -18,7 +18,7 @@ import { getPublicReportBoxUrl } from "@/pages/ComplaintBoxPage/utils";
 type Action = { kind: "delete-complaint"; report: ReportBoxReport } | { kind: "remove-record"; record: ReportBoxRecord } | null;
 
 export function ComplaintBoxPage() {
-  const { selectedFactoryId } = useSelectedFactory();
+  const { selectedCompanyId } = useSelectedCompany();
   const currentUser = useCurrentUser();
   const currentUserLabel = currentUser ? formatUserLabel(currentUser) : "User";
 
@@ -44,7 +44,7 @@ export function ComplaintBoxPage() {
   const [refreshingInbox, setRefreshingInbox] = React.useState(false);
   const [action, setAction] = React.useState<Action>(null);
 
-  const publicUrl = React.useMemo(() => getPublicReportBoxUrl(selectedFactoryId), [selectedFactoryId]);
+  const publicUrl = React.useMemo(() => getPublicReportBoxUrl(selectedCompanyId), [selectedCompanyId]);
   const flaggedCount = React.useMemo(() => reports.filter((r) => r.flagged).length, [reports]);
 
   React.useEffect(() => {

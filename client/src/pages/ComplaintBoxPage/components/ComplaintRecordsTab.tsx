@@ -11,9 +11,9 @@ import { downloadRecord, getRecordSearchHaystack, printRecord } from "@/pages/Co
 import { formatReportNumber } from "@/pages/ComplaintBoxPage/utils";
 import { getFacilityName } from "@/data/mock";
 
-function getRecordFactoryName(r: ReportBoxRecord) {
+function getRecordCompanyName(r: ReportBoxRecord) {
   const fid = r.snapshot.facilityId;
-  return fid ? getFacilityName(fid) : "Unknown factory";
+  return fid ? getFacilityName(fid) : "Unknown company";
 }
 
 export function ComplaintRecordsTab({
@@ -51,7 +51,7 @@ export function ComplaintRecordsTab({
                 <div className="min-w-0">
                   <div className="truncate text-sm font-semibold">
                     {r.title?.trim() || formatReportNumber(r.reportId)}{" "}
-                    <span className="text-muted-foreground font-normal">•</span> {getRecordFactoryName(r)}
+                    <span className="text-muted-foreground font-normal">•</span> {getRecordCompanyName(r)}
                   </div>
                   <div className="text-muted-foreground mt-1 text-xs">
                     Complaint #{formatReportNumber(r.reportId)} • Recorded {new Date(r.recordedAt).toLocaleString()}

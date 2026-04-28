@@ -273,7 +273,7 @@ function reportBoxInboxPlugin() {
         try {
           const body = (await parseJsonBody(req)) as {
             reportId?: string;
-            factoryId?: string;
+            companyId?: string;
             kind: "text" | "voice" | "photo";
             text?: string;
             dataUrl?: string;
@@ -317,7 +317,7 @@ function reportBoxInboxPlugin() {
             reportDoc = {
               id: reportId,
               createdAt,
-              factoryId: body.factoryId,
+              companyId: body.companyId,
               subject: DEFAULT_SUBJECT,
               messages: [],
             };
@@ -353,7 +353,7 @@ function reportBoxInboxPlugin() {
             reportDoc.subject && reportDoc.subject !== DEFAULT_SUBJECT
               ? reportDoc.subject
               : inferredSubject;
-          reportDoc.factoryId = reportDoc.factoryId || body.factoryId;
+          reportDoc.companyId = reportDoc.companyId || body.companyId;
           reportDoc.messages = Array.isArray(reportDoc.messages) ? reportDoc.messages : [];
           reportDoc.messages.push({
             id: msgId,
@@ -372,7 +372,7 @@ function reportBoxInboxPlugin() {
           const item = {
             id: reportId,
             createdAt: reportDoc.createdAt || createdAt,
-            factoryId: reportDoc.factoryId,
+            companyId: reportDoc.companyId,
             subject: reportDoc.subject,
             reportFile,
             flagged: Boolean(existingItem?.flagged),
@@ -421,6 +421,8 @@ export default defineConfig({
     host: true,
     allowedHosts: ["molecular-samiyah-unowned.ngrok-free.dev"],
     proxy: {
+      "/api/auth": "http://localhost:4000",
+      "/api/system": "http://localhost:4000",
       "/api/utilities": "http://localhost:4000",
     },
   },

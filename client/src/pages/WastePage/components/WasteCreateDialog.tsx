@@ -22,11 +22,11 @@ export function WasteCreateDialog({
     <CreateActionDialog title="Create waste log">
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="grid gap-1.5">
-          <div className="text-muted-foreground text-xs">Factory</div>
+          <div className="text-muted-foreground text-xs">Company</div>
           <SelectFilter
             value={facilityId}
             onChange={onFacilityIdChange}
-            placeholder="Select factory"
+            placeholder="Select company"
             items={facilities.map((f) => ({ value: f.id, label: f.name }))}
           />
         </div>

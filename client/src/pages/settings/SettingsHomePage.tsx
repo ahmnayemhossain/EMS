@@ -1,7 +1,6 @@
 import * as React from "react";
 import {
   Building2,
-  Factory,
   Gauge,
   Mail,
   MessagesSquare,
@@ -31,7 +30,7 @@ type SettingsCardKey =
   | "designations"
   | "uom"
   | "suppliers"
-  | "factories"
+  | "companies"
   | "email"
   | "complaint_box"
   | "thresholds"
@@ -71,7 +70,7 @@ const cards: SettingsCardDef[] = [
     key: "roles",
     tab: "system",
     title: "Roles",
-    description: "Permissions by role and scope (group / factory).",
+    description: "Permissions by role and scope (group / company).",
     icon: ShieldCheck,
     openAs: "page",
     to: "/settings/roles",
@@ -98,13 +97,13 @@ const cards: SettingsCardDef[] = [
 
   // Operations (big -> page later)
   {
-    key: "factories",
+    key: "companies",
     tab: "operations",
-    title: "Factories",
-    description: "Manage factories (name, code, type, location, risk).",
-    icon: Factory,
+    title: "Companies",
+    description: "Manage company name, short name, local name, address, and status.",
+    icon: Building2,
     openAs: "page",
-    to: "/settings/factories",
+    to: "/settings/companies",
   },
   {
     key: "uom",

@@ -12,7 +12,7 @@ export function TopbarSearch() {
     <>
       <div className="relative hidden max-w-[520px] flex-1 md:block">
         <Search className="text-muted-foreground absolute left-2.5 top-2.5 size-4" />
-        <Input className="pl-9" placeholder="Search factories, audits, chemicals..." />
+        <Input className="pl-9" placeholder="Search companies, audits, chemicals..." />
       </div>
 
       <div className="md:hidden">

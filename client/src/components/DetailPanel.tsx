@@ -64,10 +64,10 @@ export function DetailPanel({
         />
         <DialogPrimitive.Content
           className={cn(
-            "bg-card text-foreground fixed inset-y-0 right-0 z-50 flex h-full w-full max-w-none flex-col border-l shadow-2xl outline-none sm:w-[420px] sm:max-w-[92vw]",
+            "bg-card text-foreground fixed inset-y-0 right-0 z-50 flex h-full w-full max-w-none flex-col border-l shadow-2xl outline-none sm:w-[min(540px,92vw)] lg:w-[580px]",
           )}
         >
-          <div className="relative border-b p-4">
+          <div className="relative shrink-0 border-b p-4 pr-12">
             <DialogPrimitive.Title className="text-base font-semibold leading-none">
               {title}
             </DialogPrimitive.Title>
@@ -82,7 +82,7 @@ export function DetailPanel({
             </DialogPrimitive.Close>
           </div>
 
-          <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-4 pt-4">
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4 pt-4">
             <PanelErrorBoundary>{children}</PanelErrorBoundary>
           </div>
 

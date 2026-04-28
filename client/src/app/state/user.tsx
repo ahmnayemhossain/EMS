@@ -4,6 +4,7 @@ import { persist } from "zustand/middleware";
 import { shallow } from "zustand/shallow";
 
 import { createSafeJsonStorage } from "@/app/state/_shared/zustand-storage";
+import { useAuthStore } from "@/app/state/auth";
 
 type UserContextValue = {
   userId: string;
@@ -37,13 +38,25 @@ const useUserStore = create<UserStore>()(
 );
 
 export function useUser(): UserContextValue {
-  return useUserStore(
+  const stored = useUserStore(
     (s) => ({ userId: s.userId, setUserId: s.setUserId }),
     shallow,
   );
+  const authUser = useAuthStore((s) => s.user);
+
+  return authUser ? { ...stored, userId: authUser.id } : stored;
 }
 
 export function useCurrentUser() {
+  const authUser = useAuthStore((s) => s.user);
+  if (authUser) {
+    return {
+      id: authUser.id,
+      name: authUser.name,
+      employeeId: authUser.employeeId ? `EMP-${String(authUser.employeeId).padStart(4, "0")}` : authUser.username,
+    };
+  }
+
   const { userId } = useUser();
   return emsUsers.find((u) => u.id === userId) ?? emsUsers[0];
 }

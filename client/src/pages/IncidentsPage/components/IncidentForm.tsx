@@ -34,13 +34,13 @@ export function IncidentForm({
   return (
     <div className="grid gap-3">
       <div className="grid gap-2">
-        <div className="text-muted-foreground text-xs">Factory</div>
+        <div className="text-muted-foreground text-xs">Company</div>
         <Select
           value={draft.facilityId || ""}
           onValueChange={(v) => onDraftChange({ ...draft, facilityId: v })}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select factory" />
+            <SelectValue placeholder="Select company" />
           </SelectTrigger>
           <SelectContent>
             {facilities.map((f) => (

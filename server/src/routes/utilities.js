@@ -2,10 +2,11 @@ import { Router } from "express";
 
 import {
   ensureCoreSchema,
-  getFacilityIdByCode,
-  getRequestUserCode,
-  getUserIdByCode,
+  getFacilityIdByValue,
+  getRequestUserValue,
+  getUserIdByValue,
 } from "../shared/schema.js";
+import { requirePermission } from "../shared/permissions.js";
 import { query } from "../shared/postgres.js";
 
 const VALID_TYPES = new Set(["electricity", "water", "fuel", "steam", "refrigerant", "other"]);
@@ -24,7 +25,7 @@ function ensureReady() {
       await query(`
         CREATE TABLE IF NOT EXISTS utility_records (
           id BIGSERIAL PRIMARY KEY,
-          facility_id BIGINT NOT NULL REFERENCES facilities(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+          facility_id BIGINT NOT NULL REFERENCES companies(id) ON UPDATE CASCADE ON DELETE RESTRICT,
           type TEXT NOT NULL,
           period_start DATE NOT NULL,
           period_end DATE NOT NULL,
@@ -73,7 +74,7 @@ function toNumber(value) {
 function rowToRecord(row) {
   return {
     id: Number(row.id),
-    facilityId: row.facility_code,
+    facilityId: String(row.facility_id),
     type: row.type,
     periodStart: toDateString(row.period_start),
     periodEnd: toDateString(row.period_end),
@@ -91,8 +92,8 @@ function rowToRecord(row) {
     status: row.status || undefined,
     remarks: row.remarks || undefined,
     billFiles: Array.isArray(row.bill_files) ? row.bill_files : [],
-    createdByUserId: row.created_by_user_code || undefined,
-    updatedByUserId: row.updated_by_user_code || undefined,
+    createdByUserId: row.created_by_user_id ? String(row.created_by_user_id) : undefined,
+    updatedByUserId: row.updated_by_user_id ? String(row.updated_by_user_id) : undefined,
   };
 }
 
@@ -208,28 +209,56 @@ async function assertNoDateRangeOverlap(record, facilityDbId, excludeId) {
 
   throw createHttpError(
     409,
-    `An entry already exists for this factory, utility type, meter, and date range (${toDateString(overlap.period_start)} to ${toDateString(overlap.period_end)}).`,
+    `An entry already exists for this company, utility type, meter, and date range (${toDateString(overlap.period_start)} to ${toDateString(overlap.period_end)}).`,
   );
+}
+
+async function assertUserCompanyAccess(userId, companyId) {
+  if (!userId) throw createHttpError(403, "Company access is required.");
+
+  const result = await query(
+    `
+      SELECT 1
+      FROM user_companies
+      WHERE user_id = $1
+        AND company_id = $2
+      LIMIT 1
+    `,
+    [userId, companyId],
+  );
+
+  if (!result.rowCount) throw createHttpError(403, "You do not have access to this company.");
 }
 
 const selectUtilitySql = `
   SELECT
     ur.*,
-    f.code AS facility_code,
-    cu.code AS created_by_user_code,
-    uu.code AS updated_by_user_code
+    f.name AS facility_name,
+    cu.username AS created_by_username,
+    uu.username AS updated_by_username
   FROM utility_records ur
-  JOIN facilities f ON f.id = ur.facility_id
+  JOIN companies f ON f.id = ur.facility_id
   LEFT JOIN users cu ON cu.id = ur.created_by_user_id
   LEFT JOIN users uu ON uu.id = ur.updated_by_user_id
 `;
 
-utilitiesRouter.get("/", async (req, res, next) => {
+utilitiesRouter.get("/", requirePermission("utilities:read"), async (req, res, next) => {
   try {
     await ensureReady();
 
     const filters = [];
     const params = [];
+    const userDbId = await getUserIdByValue(getRequestUserValue(req));
+
+    params.push(userDbId || -1);
+    filters.push(`
+      EXISTS (
+        SELECT 1
+        FROM user_companies uf
+        WHERE uf.user_id = $${params.length}
+          AND uf.company_id = ur.facility_id
+      )
+    `);
 
     if (req.query.type) {
       params.push(String(req.query.type));
@@ -237,7 +266,7 @@ utilitiesRouter.get("/", async (req, res, next) => {
     }
 
     if (req.query.facilityId) {
-      const facilityDbId = await getFacilityIdByCode(String(req.query.facilityId));
+      const facilityDbId = await getFacilityIdByValue(String(req.query.facilityId));
       params.push(facilityDbId || -1);
       filters.push(`ur.facility_id = $${params.length}`);
     }
@@ -263,10 +292,23 @@ utilitiesRouter.get("/", async (req, res, next) => {
   }
 });
 
-utilitiesRouter.get("/:id", async (req, res, next) => {
+utilitiesRouter.get("/:id", requirePermission("utilities:read"), async (req, res, next) => {
   try {
     await ensureReady();
-    const result = await query(`${selectUtilitySql} WHERE ur.id = $1`, [req.params.id]);
+    const userDbId = await getUserIdByValue(getRequestUserValue(req));
+    const result = await query(
+      `
+        ${selectUtilitySql}
+        WHERE ur.id = $1
+          AND EXISTS (
+            SELECT 1
+            FROM user_companies uf
+            WHERE uf.user_id = $2
+              AND uf.company_id = ur.facility_id
+          )
+      `,
+      [req.params.id, userDbId || -1],
+    );
     if (!result.rowCount) return res.status(404).json({ error: "not_found" });
     res.json(rowToRecord(result.rows[0]));
   } catch (error) {
@@ -274,14 +316,15 @@ utilitiesRouter.get("/:id", async (req, res, next) => {
   }
 });
 
-utilitiesRouter.post("/", async (req, res, next) => {
+utilitiesRouter.post("/", requirePermission("utilities:write"), async (req, res, next) => {
   try {
     await ensureReady();
     const record = normalizeRecordInput(req.body || {});
-    const facilityDbId = await getFacilityIdByCode(record.facilityId);
+    const facilityDbId = await getFacilityIdByValue(record.facilityId);
     if (!facilityDbId) throw createHttpError(400, "Invalid facility.");
 
-    const userDbId = await getUserIdByCode(getRequestUserCode(req));
+    const userDbId = await getUserIdByValue(getRequestUserValue(req));
+    await assertUserCompanyAccess(userDbId, facilityDbId);
     await assertNoDateRangeOverlap(record, facilityDbId);
 
     const result = await query(
@@ -330,14 +373,15 @@ utilitiesRouter.post("/", async (req, res, next) => {
   }
 });
 
-utilitiesRouter.put("/:id", async (req, res, next) => {
+utilitiesRouter.put("/:id", requirePermission("utilities:update"), async (req, res, next) => {
   try {
     await ensureReady();
     const record = normalizeRecordInput({ ...req.body, id: req.params.id });
-    const facilityDbId = await getFacilityIdByCode(record.facilityId);
+    const facilityDbId = await getFacilityIdByValue(record.facilityId);
     if (!facilityDbId) throw createHttpError(400, "Invalid facility.");
 
-    const userDbId = await getUserIdByCode(getRequestUserCode(req));
+    const userDbId = await getUserIdByValue(getRequestUserValue(req));
+    await assertUserCompanyAccess(userDbId, facilityDbId);
     await assertNoDateRangeOverlap(record, facilityDbId, record.id);
 
     const result = await query(
@@ -399,10 +443,23 @@ utilitiesRouter.put("/:id", async (req, res, next) => {
   }
 });
 
-utilitiesRouter.delete("/:id", async (req, res, next) => {
+utilitiesRouter.delete("/:id", requirePermission("utilities:delete"), async (req, res, next) => {
   try {
     await ensureReady();
-    const result = await query("DELETE FROM utility_records WHERE id = $1", [req.params.id]);
+    const userDbId = await getUserIdByValue(getRequestUserValue(req));
+    const result = await query(
+      `
+        DELETE FROM utility_records ur
+        WHERE ur.id = $1
+          AND EXISTS (
+            SELECT 1
+            FROM user_companies uf
+            WHERE uf.user_id = $2
+              AND uf.company_id = ur.facility_id
+          )
+      `,
+      [req.params.id, userDbId || -1],
+    );
     if (!result.rowCount) return res.status(404).json({ error: "not_found" });
     res.json({ ok: true });
   } catch (error) {

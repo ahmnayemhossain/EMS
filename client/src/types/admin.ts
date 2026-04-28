@@ -7,7 +7,7 @@ export type Employee = {
   id: ID;
   name: string;
   employeeId: number;
-  factoryId: ID;
+  companyId: ID;
   departmentId: ID;
   designationId: ID;
   status: EmployeeActiveStatus;
@@ -15,7 +15,7 @@ export type Employee = {
   phone?: string;
   department?: string;
   designation?: string;
-  joinedOn: string; // ISO date
+  joinedOn?: string; // ISO date
 };
 
 export type UserStatus = "active" | "suspended";
@@ -30,21 +30,9 @@ export type AppUser = {
   lastLoginAt?: string; // ISO date-time
 };
 
-export type PermissionKey =
-  | "dashboard:view"
-  | "utilities:manage"
-  | "chemicals:manage"
-  | "sds:manage"
-  | "waste:manage"
-  | "wastewater:manage"
-  | "audits:manage"
-  | "capa:manage"
-  | "documents:manage"
-  | "complaints:triage"
-  | "complaints:handle"
-  | "settings:manage";
+export type PermissionKey = string;
 
-export type RoleScope = "group" | "factory";
+export type RoleScope = "group" | "company";
 
 export type Role = {
   id: ID;

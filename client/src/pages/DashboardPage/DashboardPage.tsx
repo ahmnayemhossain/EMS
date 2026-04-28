@@ -31,7 +31,7 @@ import { DashboardKpis } from "./components/DashboardKpis";
 import { DashboardSectionItem } from "./components/DashboardSectionItem";
 import { DashboardTopWidgets } from "./components/DashboardTopWidgets";
 import { DashboardBottomWidgets } from "./components/DashboardBottomWidgets";
-import { FactoryPerformanceCard } from "./components/FactoryPerformanceCard";
+import { CompanyPerformanceCard } from "./components/CompanyPerformanceCard";
 
 export function DashboardPage() {
   const isMobile = useIsMobile();
@@ -66,7 +66,7 @@ export function DashboardPage() {
       key: "readiness",
       title: "Audit readiness score",
       value: `${avgReadiness}%`,
-      helper: "Weighted across active factories",
+      helper: "Weighted across active companies",
       tone: avgReadiness >= 85 ? "compliant" : avgReadiness >= 70 ? "warning" : "critical",
       icon: ShieldCheck,
     },
@@ -161,7 +161,7 @@ export function DashboardPage() {
         rearrangeEnabled={enabled}
       />
     ),
-    factoryPerformance: <FactoryPerformanceCard facilities={facilities} />,
+    companyPerformance: <CompanyPerformanceCard facilities={facilities} />,
     bottomWidgets: (
       <DashboardBottomWidgets
         overdueActions={overdueActions}

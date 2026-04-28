@@ -3,13 +3,13 @@ import type { FacilityType, UtilityType } from "@/types/ems";
 export function formatFacilityType(type: FacilityType) {
   switch (type) {
     case "garments":
-      return "Garments factory";
+      return "Garments company";
     case "knitting":
       return "Knitting unit";
     case "dyeing_wet_processing":
       return "Dyeing & wet processing";
     case "shoe":
-      return "Shoe factory";
+      return "Shoe company";
     case "resort":
       return "Resort";
   }

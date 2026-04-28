@@ -45,8 +45,8 @@ export function DocumentsPage() {
       className: "min-w-[360px]",
     },
     {
-      id: "factory",
-      header: "Factory",
+      id: "company",
+      header: "Company",
       cell: (d) => <div className="text-sm">{getFacilityName(d.facilityId)}</div>,
       className: "min-w-[240px]",
     },
@@ -124,7 +124,7 @@ export function DocumentsPage() {
             <SelectFilter
               value={facilityId}
               onChange={setFacilityId}
-              placeholder="Factory"
+              placeholder="Company"
               items={facilities.map((f) => ({ value: f.id, label: f.name }))}
             />
             <DateRangePickerPlaceholder label="Expiry" />

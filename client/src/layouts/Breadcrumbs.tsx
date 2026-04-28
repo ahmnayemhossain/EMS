@@ -13,8 +13,8 @@ import {
 const LABELS: Record<string, string> = {
   dashboard: "Dashboard",
   "audit-calendar": "Audit calendar",
-  facilities: "Factories",
-  factories: "Factories",
+  facilities: "Companies",
+  companies: "Companies",
   utilities: "Utilities",
   chemicals: "Chemicals",
   sds: "SDS",

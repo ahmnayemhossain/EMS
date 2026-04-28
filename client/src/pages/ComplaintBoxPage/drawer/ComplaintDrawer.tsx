@@ -50,7 +50,7 @@ export function ComplaintDrawer({
         description={
           complaint
             ? `${formatReportNumber(complaint.id)} • ${
-                complaint.facilityId ? getFacilityName(complaint.facilityId) : "Unknown factory"
+                complaint.facilityId ? getFacilityName(complaint.facilityId) : "Unknown company"
               } • ${new Date(complaint.createdAt).toLocaleString()}`
             : undefined
         }

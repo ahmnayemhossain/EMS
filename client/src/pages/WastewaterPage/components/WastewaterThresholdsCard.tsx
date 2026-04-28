@@ -34,7 +34,7 @@ export function WastewaterThresholdsCard({
             <StatusBadge tone="neutral">≤ {thresholds.BOD.max} mg/L</StatusBadge>
           </div>
           <div className="text-muted-foreground text-xs">
-            Threshold panel placeholder; make factory-specific later.
+            Threshold panel placeholder; make company-specific later.
           </div>
         </div>
       </CardContent>

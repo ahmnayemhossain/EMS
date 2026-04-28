@@ -16,7 +16,7 @@ import { daysUntil } from "./utils";
 
 export function ChemicalsPage() {
   const [search, setSearch] = React.useState("");
-  const [factoryId, setFactoryId] = React.useState<string | undefined>();
+  const [companyId, setCompanyId] = React.useState<string | undefined>();
   const [hazard, setHazard] = React.useState<string | undefined>();
   const [approval, setApproval] = React.useState<string | undefined>();
   const [expiryFrom, setExpiryFrom] = React.useState<string>("");
@@ -29,7 +29,7 @@ export function ChemicalsPage() {
   const expiryToTs = expiryTo ? new Date(expiryTo).getTime() : undefined;
 
   const rows = chemicals
-    .filter((c) => (factoryId ? c.facilityId === factoryId : true))
+    .filter((c) => (companyId ? c.facilityId === companyId : true))
     .filter((c) => (hazard ? c.hazardClasses.includes(hazard as HazardClass) : true))
     .filter((c) =>
       approval ? c.approvalStatus === (approval as Chemical["approvalStatus"]) : true,
@@ -67,7 +67,7 @@ export function ChemicalsPage() {
 
   const clearFilters = React.useCallback(() => {
     setSearch("");
-    setFactoryId(undefined);
+    setCompanyId(undefined);
     setHazard(undefined);
     setApproval(undefined);
     setExpiryFrom("");
@@ -91,8 +91,8 @@ export function ChemicalsPage() {
         facilities={facilities}
         search={search}
         onSearchChange={setSearch}
-        factoryId={factoryId}
-        onFactoryIdChange={setFactoryId}
+        companyId={companyId}
+        onCompanyIdChange={setCompanyId}
         hazard={hazard}
         onHazardChange={setHazard}
         approval={approval}

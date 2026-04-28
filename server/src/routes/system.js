@@ -1,40 +1,73 @@
 import { Router } from "express";
 
-import { createCrudRouter } from "../shared/crud-router.js";
-import { store } from "../shared/store.js";
+import { auditLogsRouter } from "./audit-logs.js";
+import { employeesRouter } from "./employees.js";
+import { companiesRouter } from "./companies.js";
+import { createReferenceSettingsRouter } from "./reference-settings.js";
+import { rolesRouter } from "./roles.js";
+import { usersRouter } from "./users.js";
+import { ensureCoreSchema, getRequestUserValue, getUserIdByValue } from "../shared/schema.js";
+import { query } from "../shared/postgres.js";
 
 export const systemRouter = Router();
 
-systemRouter.use(
-  "/employees",
-  createCrudRouter({
-    list: () => store.getAll("employees"),
-    get: (id) => store.getById("employees", id),
-    create: (input) => store.create("employees", input),
-    update: (id, input) => store.update("employees", id, input),
-    remove: (id) => store.remove("employees", id),
-  }),
-);
+systemRouter.get("/me", async (req, res, next) => {
+  try {
+    await ensureCoreSchema();
+    const requestUser = getRequestUserValue(req);
+    const userId = await getUserIdByValue(requestUser);
 
-systemRouter.use(
-  "/users",
-  createCrudRouter({
-    list: () => store.getAll("users"),
-    get: (id) => store.getById("users", id),
-    create: (input) => store.create("users", input),
-    update: (id, input) => store.update("users", id, input),
-    remove: (id) => store.remove("users", id),
-  }),
-);
+    if (!userId) {
+      return res.json({
+        id: null,
+        requestUser,
+        permissionKeys: [],
+      });
+    }
 
-systemRouter.use(
-  "/roles",
-  createCrudRouter({
-    list: () => store.getAll("roles"),
-    get: (id) => store.getById("roles", id),
-    create: (input) => store.create("roles", input),
-    update: (id, input) => store.update("roles", id, input),
-    remove: (id) => store.remove("roles", id),
-  }),
-);
+    const result = await query(
+      `
+        SELECT
+          u.id::text AS id,
+          u.username,
+          u.email,
+          COALESCE(e.name, u.username) AS name,
+          COALESCE(
+            array_remove(array_agg(DISTINCT p.key), NULL),
+            ARRAY[]::text[]
+          ) AS permission_keys
+        FROM users u
+        LEFT JOIN employees e ON e.id = u.employee_id
+        LEFT JOIN user_roles ur ON ur.user_id = u.id
+        LEFT JOIN role_permissions rp ON rp.role_id = ur.role_id
+        LEFT JOIN permissions p ON p.id = rp.permission_id
+        WHERE u.id = $1
+        GROUP BY u.id, e.id
+      `,
+      [userId],
+    );
 
+    const row = result.rows[0];
+    res.json({
+      id: row?.id || String(userId),
+      username: row?.username,
+      email: row?.email,
+      name: row?.name,
+      requestUser,
+      permissionKeys: Array.isArray(row?.permission_keys) ? row.permission_keys : [],
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+systemRouter.use("/employees", employeesRouter);
+systemRouter.use("/audit-logs", auditLogsRouter);
+systemRouter.use("/users", usersRouter);
+systemRouter.use("/roles", rolesRouter);
+systemRouter.use("/companies", companiesRouter);
+systemRouter.use("/factories", companiesRouter);
+systemRouter.use("/departments", createReferenceSettingsRouter("departments"));
+systemRouter.use("/designations", createReferenceSettingsRouter("designations"));
+systemRouter.use("/uom", createReferenceSettingsRouter("uom"));
+systemRouter.use("/suppliers", createReferenceSettingsRouter("suppliers"));

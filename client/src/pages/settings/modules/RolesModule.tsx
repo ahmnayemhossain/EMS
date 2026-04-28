@@ -1,98 +1,493 @@
 import * as React from "react";
-import { Trash2 } from "lucide-react";
+import { Pencil, RefreshCw, Trash2, X } from "lucide-react";
 import { toast } from "@/app/lib/toast";
 
-import { permissionCatalog, seedRoles } from "@/data/admin";
-import type { Role } from "@/types/admin";
-import { useAdmin } from "@/app/state/admin";
+import { useUser } from "@/app/state/user";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
+import { cn } from "@/app/components/ui/utils";
 import { SectionCard } from "@/components/SectionCard";
 import { DataTable, type DataColumn } from "@/components/DataTable";
 import { FilterBar } from "@/components/FilterBar";
 import { SearchInput } from "@/components/SearchInput";
 import { DetailPanel } from "@/components/DetailPanel";
 import { CreateActionDialog } from "@/components/CreateActionDialog";
-import { ActionModal } from "@/components/ActionModal";
 import { StatusBadge } from "@/components/StatusBadge";
 import { SelectFilter } from "@/components/SelectFilter";
-import { cn } from "@/app/components/ui/utils";
+import {
+  createRole,
+  deleteRole,
+  listRoleLookups,
+  listRoles,
+  type RoleEntity,
+  updateRole,
+} from "./settingsEntityApi";
 
-function createId(prefix: string) {
-  const rand = Math.random().toString(16).slice(2);
-  return `${prefix}_${Date.now().toString(16)}_${rand}`;
+type RoleValidationErrors = Partial<Record<"name" | "permissionKeys" | "status", string>>;
+type PermissionOption = {
+  key: string;
+  label: string;
+  group?: string;
+  action?: string;
+};
+const permissionColumns = ["read", "write", "update", "delete"] as const;
+const permissionColumnLabels: Record<(typeof permissionColumns)[number], string> = {
+  read: "Read",
+  write: "Write",
+  update: "Update",
+  delete: "Delete",
+};
+
+function blankRole(permissionKeys: string[]): RoleEntity {
+  return {
+    id: "",
+    name: "",
+    scope: "company",
+    description: "",
+    permissionKeys: permissionKeys.length ? [permissionKeys[0]] : [],
+    status: 1,
+  };
 }
 
-function isSystemRole(roleId: string) {
-  return seedRoles.some((x) => x.id === roleId);
+function validateRole(role: RoleEntity, roles: RoleEntity[], currentId?: string) {
+  const errors: RoleValidationErrors = {};
+  if (!role.name.trim()) {
+    errors.name = "Role name is required";
+  } else if (roles.some((row) => row.id !== currentId && row.name.toLowerCase() === role.name.toLowerCase())) {
+    errors.name = "Role name already exists";
+  }
+  if (!role.permissionKeys.length) errors.permissionKeys = "At least one permission is required";
+  if (![0, 1].includes(Number(role.status))) errors.status = "Status is required";
+  return errors;
+}
+
+function firstError(errors: RoleValidationErrors) {
+  return Object.values(errors)[0] ?? null;
+}
+
+function Field({
+  label,
+  required,
+  error,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  error?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="grid gap-1.5">
+      <span className="text-xs text-muted-foreground">
+        {label}
+        {required ? <span className="ml-1 font-semibold text-destructive">*</span> : null}
+      </span>
+      {children}
+      {error ? <span className="text-xs font-medium text-destructive">{error}</span> : null}
+    </div>
+  );
+}
+
+function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-start justify-between gap-3 border-b py-3 last:border-b-0">
+      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="max-w-[65%] text-right text-sm font-medium break-words">{children}</div>
+    </div>
+  );
+}
+
+function groupPermissions(permissions: PermissionOption[]) {
+  const groups: Array<{
+    name: string;
+    permissions: Partial<Record<(typeof permissionColumns)[number], PermissionOption>>;
+  }> = [];
+  const byName = new Map<string, Partial<Record<(typeof permissionColumns)[number], PermissionOption>>>();
+
+  for (const permission of permissions) {
+    const group = permission.group || permission.label.split(" - ")[0] || "Other";
+    const action = (permission.action || permission.key.split(":").pop() || "").toLowerCase();
+    if (!permissionColumns.includes(action as (typeof permissionColumns)[number])) continue;
+
+    if (!byName.has(group)) {
+      byName.set(group, {});
+      groups.push({ name: group, permissions: byName.get(group)! });
+    }
+    byName.get(group)![action as (typeof permissionColumns)[number]] = permission;
+  }
+
+  return groups;
+}
+
+function DrawerDeleteConfirm({
+  label,
+  onCancel,
+  onConfirm,
+}: {
+  label: string;
+  onCancel: () => void;
+  onConfirm: () => Promise<void>;
+}) {
+  const [busy, setBusy] = React.useState(false);
+
+  return (
+    <div className="absolute inset-0 z-[70] grid place-items-center bg-background/70 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-sm rounded-lg border bg-background p-5 text-center shadow-2xl">
+        <div className="mx-auto grid size-11 place-items-center rounded-full border border-destructive/20 bg-destructive/10 text-destructive">
+          <Trash2 className="size-5" />
+        </div>
+        <div className="mt-3 text-base font-semibold">Delete {label || "role"}?</div>
+        <div className="mt-2 text-sm leading-6 text-muted-foreground">
+          This will remove the role from the database and write a delete log.
+        </div>
+        <div className="mt-5 grid grid-cols-2 gap-2">
+          <Button type="button" variant="outline" disabled={busy} onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            disabled={busy}
+            onClick={async () => {
+              try {
+                setBusy(true);
+                await onConfirm();
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            {busy ? "Deleting..." : "Delete"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PermissionListView({
+  permissionKeys,
+  permissions,
+}: {
+  permissionKeys: string[];
+  permissions: PermissionOption[];
+}) {
+  const selected = new Set(permissionKeys);
+  const rows = groupPermissions(permissions)
+    .map((group) => ({
+      name: group.name,
+      actions: permissionColumns
+        .filter((column) => {
+          const permission = group.permissions[column];
+          return permission && selected.has(permission.key);
+        })
+        .map((column) => permissionColumnLabels[column]),
+    }))
+    .filter((row) => row.actions.length);
+
+  if (!rows.length) {
+    return <div className="text-sm text-muted-foreground">No permissions selected.</div>;
+  }
+
+  return (
+    <div className="w-full rounded-md border bg-background text-left">
+      {rows.map((row) => (
+        <div key={row.name} className="grid grid-cols-[minmax(0,1fr)_auto] border-b last:border-b-0">
+          <div className="min-w-0 px-3 py-2 text-sm font-medium">
+            <span className="block truncate">{row.name}</span>
+          </div>
+          <div className="px-3 py-2 text-right text-xs text-muted-foreground">
+            {row.actions.join(", ")}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function RoleForm({
+  value,
+  onChange,
+  permissions,
+  errors = {},
+}: {
+  value: RoleEntity;
+  onChange: (role: RoleEntity) => void;
+  permissions: PermissionOption[];
+  errors?: RoleValidationErrors;
+}) {
+  const permissionGroups = React.useMemo(() => groupPermissions(permissions), [permissions]);
+
+  function setPermission(key: string, checked: boolean) {
+    const next = checked
+      ? Array.from(new Set([...value.permissionKeys, key]))
+      : value.permissionKeys.filter((permissionKey) => permissionKey !== key);
+    onChange({ ...value, permissionKeys: next });
+  }
+
+  function setPermissionColumn(column: (typeof permissionColumns)[number], checked: boolean) {
+    const columnKeys = permissionGroups
+      .map((group) => group.permissions[column]?.key)
+      .filter((key): key is string => Boolean(key));
+    const next = checked
+      ? Array.from(new Set([...value.permissionKeys, ...columnKeys]))
+      : value.permissionKeys.filter((permissionKey) => !columnKeys.includes(permissionKey));
+    onChange({ ...value, permissionKeys: next });
+  }
+
+  return (
+    <div className="grid gap-5">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label="Role name" required error={errors.name}>
+          <Input
+            value={value.name}
+            aria-invalid={Boolean(errors.name) || undefined}
+            onChange={(event) => onChange({ ...value, name: event.target.value })}
+            placeholder="Role name"
+          />
+        </Field>
+        <Field label="Status" required error={errors.status}>
+          <SelectFilter
+            value={String(value.status)}
+            onChange={(status) => onChange({ ...value, status: status === "0" ? 0 : 1 })}
+            placeholder="Status"
+            invalid={Boolean(errors.status)}
+            className="w-full"
+            items={[
+              { value: "1", label: "Active" },
+              { value: "0", label: "Inactive" },
+            ]}
+          />
+        </Field>
+        <div className="sm:col-span-2">
+          <Field label="Description">
+            <Input
+              value={value.description ?? ""}
+              onChange={(event) => onChange({ ...value, description: event.target.value })}
+              placeholder="Optional"
+            />
+          </Field>
+        </div>
+      </div>
+
+      <Field label="Permissions" required error={errors.permissionKeys}>
+        <div
+          className={cn(
+            "max-h-[52vh] overflow-y-auto overflow-x-hidden rounded-md border bg-background shadow-xs",
+            errors.permissionKeys && "border-destructive ring-[3px] ring-destructive/20",
+          )}
+        >
+          <div className="w-full">
+            <div className="sticky top-0 z-10 grid grid-cols-[minmax(120px,1fr)_repeat(4,minmax(42px,56px))] rounded-t-md border-b bg-background/95 text-[11px] font-medium text-muted-foreground shadow-[0_1px_0_0_var(--border)] backdrop-blur sm:grid-cols-[minmax(220px,1fr)_repeat(4,minmax(72px,92px))] sm:text-xs">
+              <div className="flex items-center px-3 py-2.5">Feature</div>
+              {permissionColumns.map((column) => {
+                const columnKeys = permissionGroups
+                  .map((group) => group.permissions[column]?.key)
+                  .filter((key): key is string => Boolean(key));
+                const checkedCount = columnKeys.filter((key) => value.permissionKeys.includes(key)).length;
+                const allChecked = columnKeys.length > 0 && checkedCount === columnKeys.length;
+                const someChecked = checkedCount > 0 && !allChecked;
+
+                return (
+                  <label
+                    key={column}
+                    className="flex min-w-0 cursor-pointer flex-col items-center justify-center gap-1 border-l px-1.5 py-2 text-center transition-colors hover:bg-muted/40 sm:flex-row sm:gap-2 sm:px-3 sm:py-2.5"
+                    title={`Toggle all ${permissionColumnLabels[column]} permissions`}
+                  >
+                    <input
+                      type="checkbox"
+                      className="size-3.5 shrink-0 rounded border-border accent-primary"
+                      checked={allChecked}
+                      ref={(node) => {
+                        if (node) node.indeterminate = someChecked;
+                      }}
+                      onChange={(event) => setPermissionColumn(column, event.target.checked)}
+                    />
+                    <span className="hidden sm:inline">{permissionColumnLabels[column]}</span>
+                    <span className="sm:hidden">{permissionColumnLabels[column].slice(0, 1)}</span>
+                  </label>
+                );
+              })}
+            </div>
+
+            {permissionGroups.map((group) => (
+              <div
+                key={group.name}
+                className="grid grid-cols-[minmax(120px,1fr)_repeat(4,minmax(42px,56px))] border-b transition-colors last:border-b-0 hover:bg-muted/35 sm:grid-cols-[minmax(220px,1fr)_repeat(4,minmax(72px,92px))]"
+              >
+                <div className="flex min-h-11 min-w-0 items-center px-3 text-sm font-medium">
+                  <span className="truncate">{group.name}</span>
+                </div>
+                {permissionColumns.map((column) => {
+                  const permission = group.permissions[column];
+                  const checked = permission ? value.permissionKeys.includes(permission.key) : false;
+
+                  return (
+                    <div key={column} className="grid min-h-11 place-items-center border-l px-1.5 sm:px-3">
+                      {permission ? (
+                        <input
+                          type="checkbox"
+                          className="size-4 rounded border-border accent-primary"
+                          checked={checked}
+                          aria-label={`${group.name} ${permissionColumnLabels[column]}`}
+                          title={permission.key}
+                          onChange={(event) => setPermission(permission.key, event.target.checked)}
+                        />
+                      ) : (
+                        <span className="text-xs text-muted-foreground/50">-</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
+      </Field>
+    </div>
+  );
 }
 
 export function RolesModule() {
-  const { roles, upsertRole, removeRole } = useAdmin();
+  const { userId } = useUser();
+  const [roles, setRoles] = React.useState<RoleEntity[]>([]);
+  const [permissions, setPermissions] = React.useState<PermissionOption[]>([]);
+  const [loading, setLoading] = React.useState(true);
   const [search, setSearch] = React.useState("");
-  const [selected, setSelected] = React.useState<Role | null>(null);
-  const [confirm, setConfirm] = React.useState<{ id: string; label: string } | null>(null);
+  const [selected, setSelected] = React.useState<RoleEntity | null>(null);
+  const [editDraft, setEditDraft] = React.useState<RoleEntity | null>(null);
+  const [confirmDelete, setConfirmDelete] = React.useState(false);
+  const [createOpen, setCreateOpen] = React.useState(false);
+  const [draft, setDraft] = React.useState<RoleEntity>(() => blankRole([]));
+  const [createErrors, setCreateErrors] = React.useState<RoleValidationErrors>({});
+  const [editErrors, setEditErrors] = React.useState<RoleValidationErrors>({});
+
+  const loadRoles = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      const [nextRoles, lookups] = await Promise.all([listRoles(userId), listRoleLookups()]);
+      setRoles(nextRoles);
+      setPermissions(lookups.permissions);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not load roles");
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
+
+  React.useEffect(() => {
+    void loadRoles();
+  }, [loadRoles]);
+
+  React.useEffect(() => {
+    if (createOpen) {
+      setDraft(blankRole(permissions.map((permission) => permission.key)));
+      setCreateErrors({});
+    }
+  }, [createOpen, permissions]);
 
   const rows = React.useMemo(() => {
     const q = search.trim().toLowerCase();
     return roles
-      .filter((r) => {
+      .filter((role) => {
         if (!q) return true;
-        const hay = `${r.name} ${r.scope} ${r.description || ""}`.toLowerCase();
+        const hay = `${role.name} ${role.description || ""}`.toLowerCase();
         return hay.includes(q);
       })
       .sort((a, b) => (a.name > b.name ? 1 : -1));
   }, [roles, search]);
 
-  const columns: Array<DataColumn<Role>> = [
+  const columns: Array<DataColumn<RoleEntity>> = [
     {
       id: "name",
       header: "Role",
-      cell: (r) => (
+      cell: (role) => (
         <div className="min-w-0">
-          <div className="truncate text-sm font-medium">{r.name}</div>
-          <div className="text-muted-foreground mt-0.5 text-xs">
-            {r.scope} • {r.permissionKeys.length} permissions
+          <div className="truncate text-sm font-medium">{role.name}</div>
+          <div className="mt-0.5 text-xs text-muted-foreground">
+            {role.permissionKeys.length} permissions
           </div>
         </div>
       ),
     },
     {
-      id: "builtIn",
-      header: "Built-in",
-      cell: (r) => (
-        <StatusBadge tone={isSystemRole(r.id) ? "info" : "neutral"}>
-          {isSystemRole(r.id) ? "system" : "custom"}
+      id: "status",
+      header: "Status",
+      cell: (role) => (
+        <StatusBadge tone={role.status === 1 ? "compliant" : "neutral"}>
+          {role.status === 1 ? "active" : "inactive"}
         </StatusBadge>
       ),
       className: "text-right",
     },
   ];
 
+  function openDetails(role: RoleEntity) {
+    setSelected(role);
+    setEditDraft(null);
+    setEditErrors({});
+    setConfirmDelete(false);
+  }
+
+  async function saveEdit() {
+    if (!selected || !editDraft) return;
+    const errors = validateRole(editDraft, roles, selected.id);
+    setEditErrors(errors);
+    const message = firstError(errors);
+    if (message) return toast.error(message);
+
+    try {
+      const updated = await updateRole(editDraft, userId);
+      setRoles((rows) => rows.map((row) => (row.id === updated.id ? updated : row)));
+      setSelected(updated);
+      setEditDraft(null);
+      setEditErrors({});
+      toast.success("Saved");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Role save failed");
+    }
+  }
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-end gap-2">
+        <Button variant="outline" size="icon" onClick={() => void loadRoles()} disabled={loading}>
+          <RefreshCw className="size-4" />
+        </Button>
         <CreateActionDialog
           title="Create role"
           triggerLabel="Create"
           submitLabel="Create"
-          contentClassName="sm:max-w-2xl"
-          onCreate={() => {
-            const id = createId("role");
-            const role: Role = {
-              id,
-              name: "",
-              scope: "factory",
-              description: "",
-              permissionKeys: ["dashboard:view"],
-            };
-            upsertRole(role);
-            setSelected(role);
+          open={createOpen}
+          onOpenChange={setCreateOpen}
+          contentClassName="sm:max-w-4xl"
+          onCreate={async () => {
+            const errors = validateRole(draft, roles);
+            setCreateErrors(errors);
+            const message = firstError(errors);
+            if (message) return toast.error(message), false;
+
+            try {
+              const created = await createRole(draft, userId);
+              setRoles((rows) => [created, ...rows]);
+              setCreateErrors({});
+              toast.success("Role created");
+              return true;
+            } catch (error) {
+              toast.error(error instanceof Error ? error.message : "Role create failed");
+              return false;
+            }
           }}
         >
-          <div className="rounded-xl border bg-muted/10 p-3 text-sm">
-            Create opens the right panel to complete details.
-          </div>
+          <RoleForm
+            value={draft}
+            onChange={(role) => {
+              setDraft(role);
+              if (Object.keys(createErrors).length) setCreateErrors({});
+            }}
+            permissions={permissions}
+            errors={createErrors}
+          />
         </CreateActionDialog>
       </div>
 
@@ -106,122 +501,100 @@ export function RolesModule() {
       />
 
       <SectionCard title="Roles" description="Roles define permissions. Assign roles to users.">
-        <DataTable rows={rows} columns={columns} rowKey={(r) => r.id} onRowClick={setSelected} />
+        {loading ? <div className="p-4 text-sm text-muted-foreground">Loading roles from database...</div> : null}
+        {!loading && rows.length === 0 ? <div className="p-4 text-sm text-muted-foreground">No roles found.</div> : null}
+        <DataTable rows={rows} columns={columns} rowKey={(row) => row.id} onRowClick={openDetails} />
       </SectionCard>
 
       <DetailPanel
         open={Boolean(selected)}
-        onOpenChange={(o) => (!o ? setSelected(null) : null)}
-        title="Role"
-        description={selected ? selected.scope : undefined}
+        onOpenChange={(open) => {
+          if (open) return;
+          setSelected(null);
+          setEditDraft(null);
+          setEditErrors({});
+          setConfirmDelete(false);
+        }}
+        title={editDraft ? "Edit role" : "Role"}
+        description={selected ? selected.name : undefined}
+        overlay={
+          selected && confirmDelete ? (
+            <DrawerDeleteConfirm
+              label={selected.name}
+              onCancel={() => setConfirmDelete(false)}
+              onConfirm={async () => {
+                await deleteRole(selected.id, userId);
+                setRoles((rows) => rows.filter((role) => role.id !== selected.id));
+                setConfirmDelete(false);
+                setEditDraft(null);
+                setSelected(null);
+                toast.success("Deleted");
+              }}
+            />
+          ) : null
+        }
       >
         {selected ? (
-          <div className="space-y-4">
-            <div className="grid gap-3">
-              <div className="grid gap-1.5">
-                <div className="text-muted-foreground text-xs">Name</div>
-                <Input
-                  value={selected.name}
-                  onChange={(e) => setSelected({ ...selected, name: e.target.value })}
-                  placeholder="Role name"
-                  disabled={isSystemRole(selected.id)}
-                />
-                {isSystemRole(selected.id) ? (
-                  <div className="text-muted-foreground text-xs">
-                    System roles are read-only. Create a custom role to edit.
-                  </div>
-                ) : null}
-              </div>
-              <div className="grid gap-1.5">
-                <div className="text-muted-foreground text-xs">Scope</div>
-                <SelectFilter
-                  value={selected.scope}
-                  onChange={(v) => setSelected({ ...selected, scope: (v as any) || selected.scope })}
-                  placeholder="Scope"
-                  items={[
-                    { value: "group", label: "Group" },
-                    { value: "factory", label: "Factory" },
-                  ]}
-                  disabled={isSystemRole(selected.id)}
-                />
-              </div>
-              <div className="grid gap-1.5">
-                <div className="text-muted-foreground text-xs">Permissions</div>
-                <div className="grid gap-2 rounded-xl border p-3">
-                  {permissionCatalog.map((p) => {
-                    const checked = selected.permissionKeys.includes(p.key);
-                    return (
-                      <label
-                        key={p.key}
-                        className={cn(
-                          "flex cursor-pointer items-start gap-3",
-                          isSystemRole(selected.id) && "opacity-70",
-                        )}
-                      >
-                        <input
-                          type="checkbox"
-                          className="mt-1"
-                          checked={checked}
-                          disabled={isSystemRole(selected.id)}
-                          onChange={(e) => {
-                            const next = e.target.checked
-                              ? Array.from(new Set([...selected.permissionKeys, p.key]))
-                              : selected.permissionKeys.filter((x) => x !== p.key);
-                            setSelected({ ...selected, permissionKeys: next });
-                          }}
-                        />
-                        <div className="min-w-0">
-                          <div className="text-sm font-medium">{p.label}</div>
-                          <div className="text-muted-foreground mt-0.5 text-xs">{p.key}</div>
-                        </div>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between gap-2">
-              <Button
-                variant="destructive"
-                disabled={isSystemRole(selected.id)}
-                onClick={() => setConfirm({ id: selected.id, label: selected.name || "Role" })}
-              >
-                <Trash2 className="mr-2 size-4" />
-                Delete
-              </Button>
-              <Button
-                onClick={() => {
-                  if (!selected.name.trim()) return toast.error("Role name is required");
-                  if (!selected.permissionKeys.length) return toast.error("Select at least one permission");
-                  upsertRole(selected);
-                  toast.success("Saved");
+          editDraft ? (
+            <div className="space-y-4">
+              <RoleForm
+                value={editDraft}
+                onChange={(role) => {
+                  setEditDraft(role);
+                  if (Object.keys(editErrors).length) setEditErrors({});
                 }}
-                disabled={isSystemRole(selected.id)}
-              >
-                Save
-              </Button>
+                permissions={permissions}
+                errors={editErrors}
+              />
+              <div className="flex items-center justify-between gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setEditDraft(null);
+                    setEditErrors({});
+                  }}
+                >
+                  <X className="mr-2 size-4" />
+                  Cancel
+                </Button>
+                <Button onClick={() => void saveEdit()}>Save</Button>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="rounded-lg border px-3">
+                <DetailRow label="Name">{selected.name}</DetailRow>
+                <DetailRow label="Description">{selected.description || "-"}</DetailRow>
+                <DetailRow label="Status">
+                  <StatusBadge tone={selected.status === 1 ? "compliant" : "neutral"}>
+                    {selected.status === 1 ? "active" : "inactive"}
+                  </StatusBadge>
+                </DetailRow>
+                <DetailRow label="Permissions">
+                  <PermissionListView permissionKeys={selected.permissionKeys} permissions={permissions} />
+                </DetailRow>
+                <DetailRow label="Created by">{selected.createdByUserName || "-"}</DetailRow>
+                <DetailRow label="Updated by">{selected.updatedByUserName || "-"}</DetailRow>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <Button variant="destructive" onClick={() => setConfirmDelete(true)}>
+                  <Trash2 className="mr-2 size-4" />
+                  Delete
+                </Button>
+                <Button
+                  onClick={() => {
+                    setEditDraft({ ...selected });
+                    setEditErrors({});
+                  }}
+                >
+                  <Pencil className="mr-2 size-4" />
+                  Edit
+                </Button>
+              </div>
+            </div>
+          )
         ) : null}
       </DetailPanel>
-
-      <ActionModal
-        open={Boolean(confirm)}
-        onOpenChange={(o) => (!o ? setConfirm(null) : null)}
-        tone="destructive"
-        title={`Delete ${confirm?.label || "role"}?`}
-        description="This will remove the role from the local settings store."
-        confirmLabel="Delete"
-        onConfirm={() => {
-          if (!confirm) return;
-          removeRole(confirm.id);
-          setSelected(null);
-          setConfirm(null);
-          toast.success("Deleted");
-        }}
-      />
     </div>
   );
 }
-

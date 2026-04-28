@@ -17,8 +17,8 @@ export function getWastewaterColumns({
 }): Array<DataColumn<WastewaterRecord>> {
   return [
     {
-      id: "factory",
-      header: "Factory",
+      id: "company",
+      header: "Company",
       cell: (r) => (
         <div className="min-w-0">
           <div className="truncate font-medium">{getFacilityName(r.facilityId)}</div>

@@ -25,8 +25,8 @@ export const facilities: Facility[] = [
   {
     id: "fac_garments_a",
     groupId: group.id,
-    name: "Factory A",
-    code: "Factory A",
+    name: "Company A",
+    code: "Company A",
     type: "garments",
     location: { city: "Region A", region: "Division A", country: "Local" },
     riskLevel: "medium",
@@ -36,8 +36,8 @@ export const facilities: Facility[] = [
   {
     id: "fac_knitting_b",
     groupId: group.id,
-    name: "Factory B",
-    code: "Factory B",
+    name: "Company B",
+    code: "Company B",
     type: "knitting",
     location: { city: "Region B", region: "Division A", country: "Local" },
     riskLevel: "medium",
@@ -47,8 +47,8 @@ export const facilities: Facility[] = [
   {
     id: "fac_dyeing_d",
     groupId: group.id,
-    name: "Factory C",
-    code: "Factory C",
+    name: "Company C",
+    code: "Company C",
     type: "dyeing_wet_processing",
     location: { city: "Region A", region: "Division A", country: "Local" },
     riskLevel: "high",
@@ -58,8 +58,8 @@ export const facilities: Facility[] = [
   {
     id: "fac_shoe_s",
     groupId: group.id,
-    name: "Factory D",
-    code: "Factory D",
+    name: "Company D",
+    code: "Company D",
     type: "shoe",
     location: { city: "Region C", region: "Region C Division", country: "Local" },
     riskLevel: "medium",
@@ -80,8 +80,8 @@ export const facilities: Facility[] = [
   {
     id: "fac_kadl",
     groupId: group.id,
-    name: "Factory F",
-    code: "Factory F",
+    name: "Company F",
+    code: "Company F",
     type: "dyeing_wet_processing",
     location: { city: "Region A", region: "Division A", country: "Local" },
     riskLevel: "high",
@@ -102,8 +102,8 @@ export const facilities: Facility[] = [
   {
     id: "fac_rsbl",
     groupId: group.id,
-    name: "Factory H",
-    code: "Factory H",
+    name: "Company H",
+    code: "Company H",
     type: "garments",
     location: { city: "Region E", region: "Division A", country: "Local" },
     riskLevel: "medium",
@@ -303,10 +303,10 @@ export const chemicals: Chemical[] = [
       { name: "Caustic Soda (Solution)", hazardClasses: ["corrosive"] as const, supplier: "Nexa Trading" },
     ] as const;
 
-    const factoriesForChem = facilities.filter((f) => f.type !== "resort");
+    const companiesForChem = facilities.filter((f) => f.type !== "resort");
 
     return items.map((it, idx) => {
-      const f = factoriesForChem[idx % factoriesForChem.length];
+      const f = companiesForChem[idx % companiesForChem.length];
       const approvalStatus =
         idx % 11 === 0 ? "restricted" : idx % 7 === 0 ? "pending" : "approved";
       const sdsId =
@@ -371,12 +371,12 @@ export const wastewaterRecords: WastewaterRecord[] = [
   },
   // Generated rows so lab table has at least 20 records
   ...(() => {
-    const factoryIds = facilities
+    const companyIds = facilities
       .filter((f) => f.type === "dyeing_wet_processing")
       .map((f) => f.id);
     const out: WastewaterRecord[] = [];
     for (let i = 0; i < 22; i++) {
-      const facilityId = factoryIds[i % factoryIds.length] ?? "fac_dyeing_d";
+      const facilityId = companyIds[i % companyIds.length] ?? "fac_dyeing_d";
       const day = String(1 + (i % 28)).padStart(2, "0");
       const sampleDate = `2026-03-${day}`;
       const pH = 6.8 + ((i % 7) * 0.3);
@@ -548,7 +548,7 @@ export const documents: Document[] = [
     ownerDepartment: "EHS (User Seven EMP-0007)",
     expiresOn: "2026-04-30",
     status: "expiring",
-    fileName: "Regulator_Discharge_Permit_Factory C_2025-2026.pdf",
+    fileName: "Regulator_Discharge_Permit_Company C_2025-2026.pdf",
   },
   {
     id: "doc_002",
@@ -558,7 +558,7 @@ export const documents: Document[] = [
     ownerDepartment: "Admin (User Five EMP-0005)",
     expiresOn: "2026-03-31",
     status: "expired",
-    fileName: "HazWaste_Contract_Factory A_2025.pdf",
+    fileName: "HazWaste_Contract_Company A_2025.pdf",
   },
   {
     id: "doc_003",
@@ -640,7 +640,7 @@ export const notifications: Notification[] = [
     facilityId: "fac_garments_a",
     tone: "warning",
     title: "Permit expiring soon",
-    description: "Regulator Discharge Permit for Factory C expires on 2026-04-30. Start renewal workflow.",
+    description: "Regulator Discharge Permit for Company C expires on 2026-04-30. Start renewal workflow.",
     read: true,
     actionTo: "/documents",
     actionLabel: "Open documents",
@@ -662,5 +662,5 @@ export function getFacilityById(id: string) {
 }
 
 export function getFacilityName(id: string) {
-  return getFacilityById(id)?.name ?? "Unknown factory";
+  return getFacilityById(id)?.name ?? "Unknown company";
 }

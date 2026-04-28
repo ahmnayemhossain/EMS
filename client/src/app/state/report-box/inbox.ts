@@ -5,7 +5,7 @@ import { INBOX_INDEX_URL } from "@/app/state/report-box/constants";
 export type InboxIndexItem = {
   id: string;
   createdAt: string;
-  factoryId?: string;
+  companyId?: string;
   subject: string;
   reportFile?: string; // relative to /report-box/inbox/
   flagged?: boolean;
@@ -71,7 +71,7 @@ export async function hydrateInboxReport(
   return {
     id: item.id,
     createdAt: item.createdAt,
-    facilityId: item.factoryId,
+    facilityId: item.companyId,
     channel: "public",
     origin: "inbox",
     status: item.status ?? "new",

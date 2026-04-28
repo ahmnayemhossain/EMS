@@ -27,7 +27,7 @@ export const DEFAULT_KPI_SPANS: DashboardSpanMap<DashboardKpiKey> = {
 export const DEFAULT_SECTION_ORDER: DashboardSectionKey[] = [
   "kpis",
   "topWidgets",
-  "factoryPerformance",
+  "companyPerformance",
   "bottomWidgets",
 ];
 

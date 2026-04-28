@@ -1,6 +1,6 @@
 import { SidebarTrigger } from "@/app/components/ui/sidebar";
 
-import { FactorySwitcher } from "@/layouts/AppTopbar/FactorySwitcher";
+import { CompanySwitcher } from "@/layouts/AppTopbar/CompanySwitcher";
 import { NotificationsButton } from "@/layouts/AppTopbar/NotificationsButton";
 import { ThemeSwitcher } from "@/layouts/AppTopbar/ThemeSwitcher";
 import { TopbarSearch } from "@/layouts/AppTopbar/TopbarSearch";
@@ -16,7 +16,7 @@ export function AppTopbar() {
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2">
-          <FactorySwitcher />
+          <CompanySwitcher />
           <ThemeSwitcher />
           <NotificationsButton />
           <UserMenu />

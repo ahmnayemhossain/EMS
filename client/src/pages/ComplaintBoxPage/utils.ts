@@ -2,15 +2,15 @@ import type { ReportBoxAttachment, ReportBoxReport } from "@/types/ems";
 
 import { facilities } from "@/data/mock";
 
-export function getPublicReportBoxUrl(selectedFactoryId: string) {
+export function getPublicReportBoxUrl(selectedCompanyId: string) {
   if (typeof window === "undefined") return "";
   const { origin, pathname, hash } = window.location;
-  const factoryCode =
-    facilities.find((f) => f.id === selectedFactoryId)?.code?.toLowerCase() ||
+  const companyCode =
+    facilities.find((f) => f.id === selectedCompanyId)?.code?.toLowerCase() ||
     "hfl";
   const base = hash.startsWith("#/")
-    ? `${origin}${pathname}#/rb/${factoryCode}`
-    : `${origin}/rb/${factoryCode}`;
+    ? `${origin}${pathname}#/rb/${companyCode}`
+    : `${origin}/rb/${companyCode}`;
   return base;
 }
 

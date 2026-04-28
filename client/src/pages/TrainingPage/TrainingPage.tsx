@@ -56,7 +56,7 @@ export function TrainingPage() {
             <SelectFilter
               value={facilityId}
               onChange={setFacilityId}
-              placeholder="Factory"
+              placeholder="Company"
               items={facilities.map((f) => ({ value: f.id, label: f.name }))}
             />
             <SelectFilter value={audience} onChange={setAudience} placeholder="Team" items={audienceOptions} />

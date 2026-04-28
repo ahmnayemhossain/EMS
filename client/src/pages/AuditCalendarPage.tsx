@@ -105,10 +105,10 @@ export function AuditCalendarPage() {
   const [createOpen, setCreateOpen] = React.useState(false);
   const [listQuery, setListQuery] = React.useState("");
   const [listFilter, setListFilter] = React.useState<
-    "all" | "date" | "factory" | "audit" | "auditor"
+    "all" | "date" | "company" | "audit" | "auditor"
   >("all");
 
-  const [createFactoryId, setCreateFactoryId] = React.useState<string>(facilities[0]?.id ?? "");
+  const [createCompanyId, setCreateCompanyId] = React.useState<string>(facilities[0]?.id ?? "");
   const [createName, setCreateName] = React.useState<string>(auditTemplates[0] ?? "");
   const [createAuditor, setCreateAuditor] = React.useState<string>(auditors[0] ?? "");
   const [createDate, setCreateDate] = React.useState<string>(() => {
@@ -141,15 +141,15 @@ export function AuditCalendarPage() {
 
     return upcoming.filter((a) => {
       const dateLabel = formatDate(a.date).toLowerCase();
-      const factory = getFacilityName(a.facilityId).toLowerCase();
+      const company = getFacilityName(a.facilityId).toLowerCase();
       const audit = a.name.toLowerCase();
       const auditor = a.auditor.toLowerCase();
 
       switch (listFilter) {
         case "date":
           return a.date.toLowerCase().includes(q) || dateLabel.includes(q);
-        case "factory":
-          return factory.includes(q);
+        case "company":
+          return company.includes(q);
         case "audit":
           return audit.includes(q);
         case "auditor":
@@ -159,7 +159,7 @@ export function AuditCalendarPage() {
           return (
             a.date.toLowerCase().includes(q) ||
             dateLabel.includes(q) ||
-            factory.includes(q) ||
+            company.includes(q) ||
             audit.includes(q) ||
             auditor.includes(q)
           );
@@ -273,12 +273,12 @@ export function AuditCalendarPage() {
             onOpenChange={setCreateOpen}
             submitDisabled={createHasConflict}
             onCreate={() => {
-              if (!createFactoryId || !createName || !createAuditor || !createDate) return false;
+              if (!createCompanyId || !createName || !createAuditor || !createDate) return false;
 
               const id = `audit_${Date.now()}`;
               const newAudit: ScheduledAudit = {
                 id,
-                facilityId: createFactoryId,
+                facilityId: createCompanyId,
                 name: createName,
                 date: createDate,
                 auditor: createAuditor,
@@ -302,11 +302,11 @@ export function AuditCalendarPage() {
           >
             <div className="grid gap-3 sm:grid-cols-2">
             <div className="grid gap-1.5">
-              <div className="text-muted-foreground text-xs">Factory</div>
+              <div className="text-muted-foreground text-xs">Company</div>
               <SelectFilter
-                value={createFactoryId}
-                onChange={setCreateFactoryId}
-                placeholder="Select factory"
+                value={createCompanyId}
+                onChange={setCreateCompanyId}
+                placeholder="Select company"
                 items={facilities.map((f) => ({ value: f.id, label: f.name }))}
               />
             </div>
@@ -546,7 +546,7 @@ export function AuditCalendarPage() {
                   items={[
                     { value: "all", label: "All fields" },
                     { value: "date", label: "Date" },
-                    { value: "factory", label: "Factory" },
+                    { value: "company", label: "Company" },
                     { value: "audit", label: "Audit name" },
                     { value: "auditor", label: "Auditor" },
                   ]}

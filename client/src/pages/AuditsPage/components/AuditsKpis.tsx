@@ -28,7 +28,7 @@ export function AuditsKpis({
         helper="Across audits"
         tone={criticalFindings > 0 ? "critical" : "compliant"}
       />
-      <KPIStatCard title="Factories" value={facilities.length} icon={CalendarDays} tone="neutral" />
+      <KPIStatCard title="Companies" value={facilities.length} icon={CalendarDays} tone="neutral" />
     </PageKpiGrid>
   );
 }

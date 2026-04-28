@@ -11,7 +11,7 @@ export type DashboardWidgetType =
   | "widget:overdueActions"
   | "widget:recentUploads"
   | "widget:expiringDocs"
-  | "widget:factoryPerformance";
+  | "widget:companyPerformance";
 
 export type DashboardWidget = {
   id: string;

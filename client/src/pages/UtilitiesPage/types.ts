@@ -7,7 +7,7 @@ export type UtilitiesFilters = {
 };
 
 export type UtilitiesCreateDraft = {
-  factoryId: string;
+  companyId: string;
   type: UtilityType;
   meterName: string;
   periodStart: string;

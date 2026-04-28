@@ -12,7 +12,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 const reportCards = [
   {
     title: "Audit readiness report",
-    description: "Score, open items, evidence and expiring documents by factory.",
+    description: "Score, open items, evidence and expiring documents by company.",
     icon: ShieldCheck,
     tone: "compliant" as const,
   },

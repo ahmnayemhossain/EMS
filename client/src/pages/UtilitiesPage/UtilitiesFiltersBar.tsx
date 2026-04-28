@@ -2,22 +2,16 @@ import { Button } from "@/app/components/ui/button";
 import { DateRangePickerPlaceholder } from "@/components/DateRangePickerPlaceholder";
 import { FilterBar } from "@/components/FilterBar";
 import { SearchInput } from "@/components/SearchInput";
-import { SelectFilter } from "@/components/SelectFilter";
-import type { Facility } from "@/types/ems";
 
 export function UtilitiesFiltersBar({
   search,
   onSearchChange,
-  facilityId,
-  onFacilityIdChange,
-  facilities,
+  companyName,
   onClear,
 }: {
   search: string;
   onSearchChange: (next: string) => void;
-  facilityId?: string;
-  onFacilityIdChange: (next: string | undefined) => void;
-  facilities: Facility[];
+  companyName: string;
   onClear: () => void;
 }) {
   return (
@@ -28,15 +22,12 @@ export function UtilitiesFiltersBar({
             <SearchInput
               value={search}
               onChange={onSearchChange}
-              placeholder="Search meter / factory…"
+              placeholder="Search meter / company…"
             />
           </div>
-          <SelectFilter
-            value={facilityId}
-            onChange={onFacilityIdChange}
-            placeholder="Factory"
-            items={facilities.map((f) => ({ value: f.id, label: f.name }))}
-          />
+          <div className="border-input bg-input-background text-foreground flex h-9 w-full items-center rounded-md border px-3 text-sm sm:w-[220px]">
+            <span className="truncate">{companyName}</span>
+          </div>
           <DateRangePickerPlaceholder />
         </div>
       }
@@ -45,4 +36,3 @@ export function UtilitiesFiltersBar({
     />
   );
 }
-

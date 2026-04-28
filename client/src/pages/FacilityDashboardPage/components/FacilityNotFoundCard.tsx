@@ -6,10 +6,10 @@ export function FacilityNotFoundCard() {
   return (
     <Card className="shadow-xs">
       <CardHeader>
-        <CardTitle>Factory not found</CardTitle>
+        <CardTitle>Company not found</CardTitle>
       </CardHeader>
       <CardContent className="text-muted-foreground text-sm">
-        Unknown factory id.
+        Unknown company id.
       </CardContent>
     </Card>
   );

@@ -2,7 +2,8 @@ import * as React from "react";
 
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/app/components/ui/dialog";
 import { Button } from "@/app/components/ui/button";
-import type { Facility, UtilityRecord, UtilityType } from "@/types/ems";
+import type { CompanyOption } from "@/app/state/company";
+import type { UtilityRecord, UtilityType } from "@/types/ems";
 
 import { getDefaultUtilityUnit, type UtilityUsagePayload } from "@/pages/UtilitiesPage/baseline-settings";
 import { CreateUtilityForm } from "@/pages/UtilitiesPage/CreateUtilityForm";
@@ -10,13 +11,13 @@ import { CreateUtilityForm } from "@/pages/UtilitiesPage/CreateUtilityForm";
 export function EditUtilityDialog({
   open,
   onOpenChange,
-  facilities,
+  companies,
   record,
   onSave,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  facilities: Facility[];
+  companies: CompanyOption[];
   record: UtilityRecord | null;
   onSave: (payload: UtilityUsagePayload) => void | boolean | Promise<void | boolean>;
 }) {
@@ -71,7 +72,7 @@ export function EditUtilityDialog({
     if (!record || !canSave || typeof consumption !== "number" || !status) return;
 
     const result = await onSave({
-      factoryId: record.facilityId,
+      companyId: record.facilityId,
       utilityType: type,
       periodStart,
       periodEnd,
@@ -104,8 +105,8 @@ export function EditUtilityDialog({
         <form className="grid gap-4" onSubmit={handleSubmit}>
           {record ? (
             <CreateUtilityForm
-              facilities={facilities}
-              factoryId={record.facilityId}
+              companies={companies}
+              companyId={record.facilityId}
               type={type}
               onTypeChange={setType}
               periodStart={periodStart}

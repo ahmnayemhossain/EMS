@@ -1,9 +1,14 @@
 import { StatusBadge } from "@/components/StatusBadge";
 import { formatDate, formatNumber, formatUtilityType } from "@/utils/format";
 import type { UtilityRecord } from "@/types/ems";
-import { getFacilityName } from "@/data/mock";
 
-export function UtilityRecordDetail({ record }: { record: UtilityRecord }) {
+export function UtilityRecordDetail({
+  record,
+  companyName,
+}: {
+  record: UtilityRecord;
+  companyName: string;
+}) {
   const tone =
     record.varianceFlag === "high"
       ? "critical"
@@ -15,9 +20,9 @@ export function UtilityRecordDetail({ record }: { record: UtilityRecord }) {
     <div className="space-y-4">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="rounded-lg border p-3">
-          <div className="text-muted-foreground text-xs">Factory</div>
+          <div className="text-muted-foreground text-xs">Company</div>
           <div className="mt-1 text-sm font-semibold">
-            {getFacilityName(record.facilityId)}
+            {companyName}
           </div>
           <div className="text-muted-foreground mt-1 text-xs">{record.meterName}</div>
         </div>

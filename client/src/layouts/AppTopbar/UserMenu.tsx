@@ -1,4 +1,5 @@
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, LogOut, UserRound } from "lucide-react";
+import { useNavigate } from "react-router";
 
 import { Button } from "@/app/components/ui/button";
 import {
@@ -9,11 +10,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
+import { useAuth } from "@/app/state/auth";
 import { useCurrentUser } from "@/app/state/user";
 import { formatUserLabel } from "@/data/users";
 
 export function UserMenu() {
   const currentUser = useCurrentUser();
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/sign-in", { replace: true });
+  };
 
   return (
     <DropdownMenu>
@@ -29,14 +38,32 @@ export function UserMenu() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>Account</DropdownMenuLabel>
+        <DropdownMenuLabel className="p-3">
+          <div className="flex items-center gap-3">
+            <span className="bg-primary/10 text-primary grid size-9 shrink-0 place-items-center rounded-full">
+              <UserRound className="size-4" />
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate text-sm font-semibold">
+                {currentUser ? formatUserLabel(currentUser) : "User"}
+              </span>
+              {user?.email ? (
+                <span className="text-muted-foreground block truncate text-xs font-normal">
+                  {user.email}
+                </span>
+              ) : null}
+            </span>
+          </div>
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>Profile</DropdownMenuItem>
-        <DropdownMenuItem>Preferences</DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>Sign out</DropdownMenuItem>
+        <DropdownMenuItem
+          className="gap-2 text-destructive focus:text-destructive"
+          onSelect={() => void handleSignOut()}
+        >
+          <LogOut className="size-4" />
+          Sign out
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
 }
-

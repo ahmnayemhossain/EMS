@@ -1,13 +1,14 @@
 import { Card, CardContent } from "@/app/components/ui/card";
 import { cn } from "@/app/components/ui/utils";
-import { getFacilityName } from "@/data/mock";
 import type { UtilityRecord } from "@/types/ems";
 
 export function UtilitiesComparisonCard({
   rows,
+  getCompanyName,
   className,
 }: {
   rows: UtilityRecord[];
+  getCompanyName: (id: string) => string;
   className?: string;
 }) {
   const topVariance = [...rows]
@@ -20,7 +21,7 @@ export function UtilitiesComparisonCard({
       <CardContent className="pt-6">
         <div className="text-sm font-semibold">Comparison widget</div>
         <div className="text-muted-foreground mt-1 text-sm">
-          Compare factory meters vs baseline.
+          Compare company meters vs baseline.
         </div>
         {rows.length ? (
           <div className="mt-4 grid gap-2">
@@ -28,7 +29,7 @@ export function UtilitiesComparisonCard({
               <div className="text-muted-foreground text-xs">Top variance</div>
               <div className="mt-1 font-medium">
                 {topVariance
-                  ? `${topVariance.meterName} (${getFacilityName(topVariance.facilityId)})`
+                  ? `${topVariance.meterName} (${getCompanyName(topVariance.facilityId)})`
                   : "No variance calculated"}
               </div>
             </div>

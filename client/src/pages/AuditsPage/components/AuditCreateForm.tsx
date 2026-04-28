@@ -60,11 +60,11 @@ export function AuditCreateForm({
       </div>
 
       <div className="grid gap-1.5">
-        <div className="text-muted-foreground text-xs">Factory</div>
+        <div className="text-muted-foreground text-xs">Company</div>
         <SelectFilter
           value={facilityId}
           onChange={(v) => onFacilityIdChange(v ?? "")}
-          placeholder="Select factory"
+          placeholder="Select company"
           items={facilities.map((f) => ({ value: f.id, label: f.name }))}
         />
       </div>

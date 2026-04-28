@@ -11,16 +11,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/app/components/ui/dropdown-menu";
-import { facilities } from "@/data/mock";
-import { useSelectedFactory } from "@/app/state/factory";
+import { useSelectedCompany } from "@/app/state/company";
 
-export function FactorySwitcher() {
+export function CompanySwitcher() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { selectedFactoryId, setSelectedFactoryId } = useSelectedFactory();
+  const { selectedCompanyId, companies, loading, error, setSelectedCompanyId } = useSelectedCompany();
 
-  const selectedFactoryName =
-    facilities.find((f) => f.id === selectedFactoryId)?.name ?? "Select factory";
+  const selectedCompanyName =
+    companies.find((f) => f.id === selectedCompanyId)?.name ??
+    (loading ? "Loading companies" : "Select company");
 
   return (
     <DropdownMenu>
@@ -31,27 +31,34 @@ export function FactorySwitcher() {
           className="max-w-[160px] justify-between gap-2 px-2 md:max-w-none md:px-3"
         >
           <Building2 className="size-4 shrink-0 sm:hidden" />
-          <span className="hidden truncate sm:inline">{selectedFactoryName}</span>
+          <span className="hidden truncate sm:inline">{selectedCompanyName}</span>
           <ChevronDown className="hidden size-4 shrink-0 sm:inline" />
-          <span className="sr-only sm:hidden">Switch factory</span>
+          <span className="sr-only sm:hidden">Switch company</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>Switch factory</DropdownMenuLabel>
+        <DropdownMenuLabel>Switch company</DropdownMenuLabel>
         <DropdownMenuSeparator />
+        {error ? (
+          <div className="text-muted-foreground px-2 py-1.5 text-sm">{error}</div>
+        ) : null}
+        {!error && !loading && !companies.length ? (
+          <div className="text-muted-foreground px-2 py-1.5 text-sm">No active companies</div>
+        ) : null}
         <DropdownMenuRadioGroup
-          value={selectedFactoryId}
+          value={selectedCompanyId}
           onValueChange={(nextId) => {
-            setSelectedFactoryId(nextId);
-            const onFactoryPage = /^\/(factories|facilities)\/[^/]+/.test(
+            if (!nextId) return;
+            setSelectedCompanyId(nextId);
+            const onCompanyPage = /^\/(companies|facilities)\/[^/]+/.test(
               location.pathname,
             );
-            navigate(onFactoryPage ? `/factories/${nextId}` : `/factories/${nextId}`);
+            if (onCompanyPage) navigate(`/companies/${nextId}`);
           }}
         >
-          {facilities.map((f) => (
+          {companies.map((f) => (
             <DropdownMenuRadioItem key={f.id} value={f.id}>
-              {f.name}
+              <span className="truncate">{f.name}</span>
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>

@@ -1,6 +1,7 @@
 import * as React from "react";
-import { createBrowserRouter, createHashRouter, Navigate } from "react-router";
+import { createBrowserRouter, createHashRouter, Navigate, useLocation } from "react-router";
 
+import { useAuth } from "@/app/state/auth";
 import { AppShell } from "@/layouts/AppShell";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { RouteErrorPage } from "@/pages/RouteErrorPage";
@@ -24,10 +25,32 @@ import { SettingsHomePage } from "@/pages/settings/SettingsHomePage";
 import { SettingsEmployeesPage } from "@/pages/settings/SettingsEmployeesPage";
 import { SettingsUsersPage } from "@/pages/settings/SettingsUsersPage";
 import { SettingsRolesPage } from "@/pages/settings/SettingsRolesPage";
+import { SettingsCompaniesPage } from "@/pages/settings/SettingsCompaniesPage";
+import { SettingsDepartmentsPage } from "@/pages/settings/SettingsDepartmentsPage";
+import { SettingsDesignationsPage } from "@/pages/settings/SettingsDesignationsPage";
+import { SettingsUomPage } from "@/pages/settings/SettingsUomPage";
+import { SettingsSuppliersPage } from "@/pages/settings/SettingsSuppliersPage";
 import { NotificationsPage } from "@/pages/NotificationsPage";
 import { PublicReportBoxPage } from "@/pages/PublicReportBoxPage";
+import { SignInPage } from "@/pages/SignInPage";
+
+function ProtectedAppShell() {
+  const { token } = useAuth();
+  const location = useLocation();
+
+  if (!token) {
+    return <Navigate to="/sign-in" replace state={{ from: location.pathname }} />;
+  }
+
+  return <AppShell />;
+}
 
 const routes = [
+  {
+    path: "/sign-in",
+    element: <SignInPage />,
+    errorElement: <RouteErrorPage />,
+  },
   {
     path: "/report-box",
     element: <Navigate to="/rb/hfl" replace />,
@@ -50,15 +73,15 @@ const routes = [
   },
   {
     path: "/",
-    element: <AppShell />,
+    element: <ProtectedAppShell />,
     errorElement: <RouteErrorPage />,
     children: [
       { index: true, element: <Navigate to="/dashboard" replace /> },
       { path: "index.html", element: <Navigate to="/dashboard" replace /> },
       { path: "dashboard", element: <DashboardPage /> },
       { path: "audit-calendar", element: <AuditCalendarPage /> },
-      // Prefer "factories" in URLs, but keep legacy "facilities" for compatibility.
-      { path: "factories/:id", element: <FacilityDashboardPage /> },
+      // Prefer "companies" in URLs, but keep legacy "facilities" for compatibility.
+      { path: "companies/:id", element: <FacilityDashboardPage /> },
       { path: "facilities/:id", element: <FacilityDashboardPage /> },
       { path: "utilities", element: <UtilitiesPage /> },
       { path: "chemicals", element: <ChemicalsPage /> },
@@ -80,12 +103,11 @@ const routes = [
           { path: "employees", element: <SettingsEmployeesPage /> },
           { path: "users", element: <SettingsUsersPage /> },
           { path: "roles", element: <SettingsRolesPage /> },
-          // Big modules (scaffold routes to avoid 404; implement later)
-          { path: "departments", element: <SettingsHomePage /> },
-          { path: "designations", element: <SettingsHomePage /> },
-          { path: "factories", element: <SettingsHomePage /> },
-          { path: "uom", element: <SettingsHomePage /> },
-          { path: "suppliers", element: <SettingsHomePage /> },
+          { path: "departments", element: <SettingsDepartmentsPage /> },
+          { path: "designations", element: <SettingsDesignationsPage /> },
+          { path: "companies", element: <SettingsCompaniesPage /> },
+          { path: "uom", element: <SettingsUomPage /> },
+          { path: "suppliers", element: <SettingsSuppliersPage /> },
         ],
       },
       { path: "notifications", element: <NotificationsPage /> },
