@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import { getRequestActor, writeAuditLog } from "../shared/audit-log.js";
+import { assertReferenceDeleteAllowed } from "../shared/delete-guards.js";
 import { requirePermission } from "../shared/permissions.js";
 import { ensureCoreSchema } from "../shared/schema.js";
 import { pool, query } from "../shared/postgres.js";
@@ -9,6 +10,7 @@ const allowed = {
   departments: { label: "Department" },
   designations: { label: "Designation" },
   uom: { label: "UOM" },
+  sources: { label: "Source" },
   suppliers: { label: "Supplier" },
 };
 
@@ -87,12 +89,13 @@ export function createReferenceSettingsRouter(tableName) {
       const client = await pool.connect();
       try {
         await client.query("BEGIN");
+        const insertSql = `
+          INSERT INTO ${tableName} (name, is_active, created_by_user_id, updated_by_user_id)
+          VALUES ($1, $2, $3, $3)
+          RETURNING id
+        `;
         const result = await client.query(
-          `
-            INSERT INTO ${tableName} (name, is_active, created_by_user_id, updated_by_user_id)
-            VALUES ($1, $2, $3, $3)
-            RETURNING id
-          `,
+          insertSql,
           [item.name, item.status, actor.id],
         );
         const created = await getRow(result.rows[0].id, client);
@@ -132,15 +135,16 @@ export function createReferenceSettingsRouter(tableName) {
       const client = await pool.connect();
       try {
         await client.query("BEGIN");
+        const updateSql = `
+          UPDATE ${tableName}
+          SET name = $2,
+              is_active = $3,
+              updated_by_user_id = $4,
+              updated_at = NOW()
+          WHERE id = $1
+        `;
         await client.query(
-          `
-            UPDATE ${tableName}
-            SET name = $2,
-                is_active = $3,
-                updated_by_user_id = $4,
-                updated_at = NOW()
-            WHERE id = $1
-          `,
+          updateSql,
           [existing.id, item.name, item.status, actor.id],
         );
         const updated = await getRow(existing.id, client);
@@ -173,6 +177,7 @@ export function createReferenceSettingsRouter(tableName) {
       await ensureReady();
       const existing = await getRow(req.params.id);
       if (!existing) return res.status(404).json({ error: "not_found" });
+      await assertReferenceDeleteAllowed(tableName, existing.id, config.label);
       const actor = await getRequestActor(req);
 
       const client = await pool.connect();

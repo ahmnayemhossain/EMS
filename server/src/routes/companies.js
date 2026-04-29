@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import { getRequestActor, writeAuditLog } from "../shared/audit-log.js";
+import { assertCompanyDeleteAllowed } from "../shared/delete-guards.js";
 import { requirePermission } from "../shared/permissions.js";
 import { ensureCoreSchema, getRequestUserValue, getUserIdByValue } from "../shared/schema.js";
 import { pool, query } from "../shared/postgres.js";
@@ -209,6 +210,7 @@ companiesRouter.delete("/:id", requirePermission("settings:companies:delete"), a
     await ensureCoreSchema();
     const existing = await getCompanyRow(req.params.id);
     if (!existing) return res.status(404).json({ error: "not_found" });
+    await assertCompanyDeleteAllowed(existing.id);
 
     const actor = await getRequestActor(req);
     const client = await pool.connect();

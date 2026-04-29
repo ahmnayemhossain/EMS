@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import { getRequestActor, writeAuditLog } from "../shared/audit-log.js";
+import { assertEmployeeDeleteAllowed } from "../shared/delete-guards.js";
 import { requirePermission } from "../shared/permissions.js";
 import { ensureCoreSchema, getCompanyIdByValue } from "../shared/schema.js";
 import { pool, query } from "../shared/postgres.js";
@@ -295,6 +296,7 @@ employeesRouter.delete("/:id", requirePermission("settings:employees:delete"), a
     await ensureReady();
     const existing = await getEmployeeRow(req.params.id);
     if (!existing) return res.status(404).json({ error: "not_found" });
+    await assertEmployeeDeleteAllowed(existing.id);
 
     const actor = await getRequestActor(req);
     const client = await pool.connect();

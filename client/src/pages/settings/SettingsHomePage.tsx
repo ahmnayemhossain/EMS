@@ -29,6 +29,7 @@ type SettingsCardKey =
   | "departments"
   | "designations"
   | "uom"
+  | "sources"
   | "suppliers"
   | "companies"
   | "email"
@@ -113,6 +114,15 @@ const cards: SettingsCardDef[] = [
     icon: Ruler,
     openAs: "page",
     to: "/settings/uom",
+  },
+  {
+    key: "sources",
+    tab: "operations",
+    title: "Sources",
+    description: "Manage utility sources and source wiring by utility type.",
+    icon: Gauge,
+    openAs: "page",
+    to: "/settings/sources",
   },
   {
     key: "suppliers",

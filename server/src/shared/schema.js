@@ -114,6 +114,18 @@ const defaultPermissions = [
   "settings:uom:write",
   "settings:uom:update",
   "settings:uom:delete",
+  "settings:uom-wiring:read",
+  "settings:uom-wiring:write",
+  "settings:uom-wiring:update",
+  "settings:uom-wiring:delete",
+  "settings:sources:read",
+  "settings:sources:write",
+  "settings:sources:update",
+  "settings:sources:delete",
+  "settings:source-wiring:read",
+  "settings:source-wiring:write",
+  "settings:source-wiring:update",
+  "settings:source-wiring:delete",
   "settings:suppliers:read",
   "settings:suppliers:write",
   "settings:suppliers:update",
@@ -165,6 +177,9 @@ const legacyPermissionAliases = {
   "settings:designations:manage": "settings:designations:update",
   "settings:companies:manage": "settings:companies:update",
   "settings:uom:manage": "settings:uom:update",
+  "settings:uom-wiring:manage": "settings:uom-wiring:update",
+  "settings:sources:manage": "settings:sources:update",
+  "settings:source-wiring:manage": "settings:source-wiring:update",
   "settings:suppliers:manage": "settings:suppliers:update",
 };
 
@@ -178,6 +193,36 @@ const defaultRoles = [
 const defaultDepartments = [["IT & ERP Department"]];
 
 const defaultDesignations = [["Jr. Executive"]];
+
+const defaultUtilityTypes = [
+  ["electricity", "Electricity"],
+  ["water", "Water"],
+  ["fuel", "Fuel"],
+  ["steam", "Steam"],
+  ["refrigerant", "Refrigerant"],
+  ["other", "Other"],
+];
+
+const defaultUom = [["kWh"], ["m3"], ["L"], ["Nm3"], ["kg"], ["pcs"]];
+
+const defaultUomWiring = [
+  ["electricity", "kWh"],
+  ["water", "m3"],
+  ["fuel", "L"],
+  ["steam", "Nm3"],
+  ["refrigerant", "kg"],
+  ["other", "pcs"],
+];
+
+const defaultSources = [["Grid"], ["Generator"], ["Solar"], ["WASA"], ["Deep Tube Well"]];
+
+const defaultSourceWiring = [
+  ["electricity", "Grid"],
+  ["electricity", "Generator"],
+  ["electricity", "Solar"],
+  ["water", "WASA"],
+  ["water", "Deep Tube Well"],
+];
 
 const defaultEmployees = [
   [
@@ -353,12 +398,70 @@ export function ensureCoreSchema() {
 
         CREATE TABLE IF NOT EXISTS uom (
           id BIGSERIAL PRIMARY KEY,
+          name TEXT NOT NULL,
+          is_active SMALLINT NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
+          created_by_user_id BIGINT,
+          updated_by_user_id BIGINT,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+
+        CREATE TABLE IF NOT EXISTS utility_types (
+          id BIGSERIAL PRIMARY KEY,
+          key TEXT UNIQUE NOT NULL,
+          name TEXT UNIQUE NOT NULL,
+          is_active SMALLINT NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+
+        CREATE TABLE IF NOT EXISTS uom_wiring (
+          id BIGSERIAL PRIMARY KEY,
+          uom_id BIGINT NOT NULL REFERENCES uom(id) ON UPDATE CASCADE ON DELETE CASCADE,
+          utility_type_id BIGINT NOT NULL REFERENCES utility_types(id) ON UPDATE CASCADE ON DELETE CASCADE,
+          is_active SMALLINT NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
+          created_by_user_id BIGINT,
+          updated_by_user_id BIGINT,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          UNIQUE (uom_id, utility_type_id)
+        );
+
+        CREATE TABLE IF NOT EXISTS sources (
+          id BIGSERIAL PRIMARY KEY,
           name TEXT UNIQUE NOT NULL,
           is_active SMALLINT NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
           created_by_user_id BIGINT,
           updated_by_user_id BIGINT,
           created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
           updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+
+        CREATE TABLE IF NOT EXISTS source_wiring (
+          id BIGSERIAL PRIMARY KEY,
+          source_id BIGINT NOT NULL REFERENCES sources(id) ON UPDATE CASCADE ON DELETE CASCADE,
+          utility_type_id BIGINT NOT NULL REFERENCES utility_types(id) ON UPDATE CASCADE ON DELETE CASCADE,
+          is_active SMALLINT NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
+          created_by_user_id BIGINT,
+          updated_by_user_id BIGINT,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          UNIQUE (source_id, utility_type_id)
+        );
+
+        CREATE TABLE IF NOT EXISTS meters (
+          id BIGSERIAL PRIMARY KEY,
+          name TEXT NOT NULL,
+          company_id BIGINT NOT NULL REFERENCES companies(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+          utility_type_id BIGINT NOT NULL REFERENCES utility_types(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+          source_id BIGINT REFERENCES sources(id) ON UPDATE CASCADE ON DELETE SET NULL,
+          uom_id BIGINT NOT NULL REFERENCES uom(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+          is_active SMALLINT NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
+          created_by_user_id BIGINT,
+          updated_by_user_id BIGINT,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          UNIQUE (company_id, utility_type_id, name)
         );
 
         CREATE TABLE IF NOT EXISTS suppliers (
@@ -452,9 +555,28 @@ export function ensureCoreSchema() {
           created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         );
 
+        CREATE TABLE IF NOT EXISTS file_assets (
+          id BIGSERIAL PRIMARY KEY,
+          module TEXT NOT NULL,
+          entity_type TEXT NOT NULL,
+          entity_id BIGINT NOT NULL,
+          company_id BIGINT REFERENCES companies(id) ON UPDATE CASCADE ON DELETE SET NULL,
+          original_name TEXT NOT NULL,
+          stored_name TEXT NOT NULL,
+          storage_disk TEXT NOT NULL DEFAULT 'local-cdn',
+          storage_path TEXT NOT NULL,
+          mime_type TEXT NOT NULL,
+          file_size BIGINT NOT NULL,
+          uploaded_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+
         CREATE INDEX IF NOT EXISTS idx_audit_logs_table_row ON audit_logs(table_name, row_id);
         CREATE INDEX IF NOT EXISTS idx_audit_logs_actor_user_id ON audit_logs(actor_user_id);
         CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at);
+        CREATE INDEX IF NOT EXISTS idx_file_assets_entity ON file_assets(module, entity_type, entity_id);
+        CREATE INDEX IF NOT EXISTS idx_file_assets_company ON file_assets(company_id);
       `);
 
       await query(`
@@ -555,6 +677,32 @@ export function ensureCoreSchema() {
         ALTER TABLE uom DROP COLUMN IF EXISTS code;
         ALTER TABLE uom ADD COLUMN IF NOT EXISTS created_by_user_id BIGINT;
         ALTER TABLE uom ADD COLUMN IF NOT EXISTS updated_by_user_id BIGINT;
+        DO $$
+        DECLARE
+          uom_name_unique record;
+        BEGIN
+          FOR uom_name_unique IN
+            SELECT conname
+            FROM pg_constraint
+            WHERE conrelid = 'public.uom'::regclass
+              AND contype = 'u'
+          LOOP
+            EXECUTE format('ALTER TABLE uom DROP CONSTRAINT IF EXISTS %I', uom_name_unique.conname);
+          END LOOP;
+        END $$;
+        DROP INDEX IF EXISTS idx_uom_name_utility_type_unique;
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_uom_name_unique ON uom (name);
+        ALTER TABLE uom_wiring ADD COLUMN IF NOT EXISTS created_by_user_id BIGINT;
+        ALTER TABLE uom_wiring ADD COLUMN IF NOT EXISTS updated_by_user_id BIGINT;
+        ALTER TABLE sources DROP COLUMN IF EXISTS code;
+        ALTER TABLE sources ADD COLUMN IF NOT EXISTS created_by_user_id BIGINT;
+        ALTER TABLE sources ADD COLUMN IF NOT EXISTS updated_by_user_id BIGINT;
+        ALTER TABLE source_wiring ADD COLUMN IF NOT EXISTS created_by_user_id BIGINT;
+        ALTER TABLE source_wiring ADD COLUMN IF NOT EXISTS updated_by_user_id BIGINT;
+        ALTER TABLE meters ADD COLUMN IF NOT EXISTS created_by_user_id BIGINT;
+        ALTER TABLE meters ADD COLUMN IF NOT EXISTS updated_by_user_id BIGINT;
+        ALTER TABLE meters ADD COLUMN IF NOT EXISTS source_id BIGINT REFERENCES sources(id) ON UPDATE CASCADE ON DELETE SET NULL;
+        ALTER TABLE meters ADD COLUMN IF NOT EXISTS uom_id BIGINT REFERENCES uom(id) ON UPDATE CASCADE ON DELETE RESTRICT;
         ALTER TABLE suppliers DROP COLUMN IF EXISTS code;
         ALTER TABLE suppliers ADD COLUMN IF NOT EXISTS created_by_user_id BIGINT;
         ALTER TABLE suppliers ADD COLUMN IF NOT EXISTS updated_by_user_id BIGINT;
@@ -776,6 +924,94 @@ export function ensureCoreSchema() {
           END IF;
 
           IF NOT EXISTS (
+            SELECT 1 FROM pg_constraint WHERE conname = 'uom_wiring_created_by_user_id_fkey'
+          ) THEN
+            ALTER TABLE uom_wiring
+              ADD CONSTRAINT uom_wiring_created_by_user_id_fkey
+              FOREIGN KEY (created_by_user_id)
+              REFERENCES users(id)
+              ON UPDATE CASCADE
+              ON DELETE SET NULL;
+          END IF;
+
+          IF NOT EXISTS (
+            SELECT 1 FROM pg_constraint WHERE conname = 'uom_wiring_updated_by_user_id_fkey'
+          ) THEN
+            ALTER TABLE uom_wiring
+              ADD CONSTRAINT uom_wiring_updated_by_user_id_fkey
+              FOREIGN KEY (updated_by_user_id)
+              REFERENCES users(id)
+              ON UPDATE CASCADE
+              ON DELETE SET NULL;
+          END IF;
+
+          IF NOT EXISTS (
+            SELECT 1 FROM pg_constraint WHERE conname = 'sources_created_by_user_id_fkey'
+          ) THEN
+            ALTER TABLE sources
+              ADD CONSTRAINT sources_created_by_user_id_fkey
+              FOREIGN KEY (created_by_user_id)
+              REFERENCES users(id)
+              ON UPDATE CASCADE
+              ON DELETE SET NULL;
+          END IF;
+
+          IF NOT EXISTS (
+            SELECT 1 FROM pg_constraint WHERE conname = 'sources_updated_by_user_id_fkey'
+          ) THEN
+            ALTER TABLE sources
+              ADD CONSTRAINT sources_updated_by_user_id_fkey
+              FOREIGN KEY (updated_by_user_id)
+              REFERENCES users(id)
+              ON UPDATE CASCADE
+              ON DELETE SET NULL;
+          END IF;
+
+          IF NOT EXISTS (
+            SELECT 1 FROM pg_constraint WHERE conname = 'source_wiring_created_by_user_id_fkey'
+          ) THEN
+            ALTER TABLE source_wiring
+              ADD CONSTRAINT source_wiring_created_by_user_id_fkey
+              FOREIGN KEY (created_by_user_id)
+              REFERENCES users(id)
+              ON UPDATE CASCADE
+              ON DELETE SET NULL;
+          END IF;
+
+          IF NOT EXISTS (
+            SELECT 1 FROM pg_constraint WHERE conname = 'source_wiring_updated_by_user_id_fkey'
+          ) THEN
+            ALTER TABLE source_wiring
+              ADD CONSTRAINT source_wiring_updated_by_user_id_fkey
+              FOREIGN KEY (updated_by_user_id)
+              REFERENCES users(id)
+              ON UPDATE CASCADE
+              ON DELETE SET NULL;
+          END IF;
+
+          IF NOT EXISTS (
+            SELECT 1 FROM pg_constraint WHERE conname = 'meters_created_by_user_id_fkey'
+          ) THEN
+            ALTER TABLE meters
+              ADD CONSTRAINT meters_created_by_user_id_fkey
+              FOREIGN KEY (created_by_user_id)
+              REFERENCES users(id)
+              ON UPDATE CASCADE
+              ON DELETE SET NULL;
+          END IF;
+
+          IF NOT EXISTS (
+            SELECT 1 FROM pg_constraint WHERE conname = 'meters_updated_by_user_id_fkey'
+          ) THEN
+            ALTER TABLE meters
+              ADD CONSTRAINT meters_updated_by_user_id_fkey
+              FOREIGN KEY (updated_by_user_id)
+              REFERENCES users(id)
+              ON UPDATE CASCADE
+              ON DELETE SET NULL;
+          END IF;
+
+          IF NOT EXISTS (
             SELECT 1 FROM pg_constraint WHERE conname = 'suppliers_created_by_user_id_fkey'
           ) THEN
             ALTER TABLE suppliers
@@ -858,6 +1094,92 @@ export function ensureCoreSchema() {
           [name],
         );
       }
+
+      for (const [key, name] of defaultUtilityTypes) {
+        await query(
+          `
+            INSERT INTO utility_types (key, name)
+            VALUES ($1, $2)
+            ON CONFLICT (key) DO UPDATE
+            SET name = EXCLUDED.name
+          `,
+          [key, name],
+        );
+      }
+
+      for (const [name] of defaultUom) {
+        await query(
+          `
+            INSERT INTO uom (name)
+            VALUES ($1)
+            ON CONFLICT (name) DO UPDATE
+            SET name = EXCLUDED.name
+          `,
+          [name],
+        );
+      }
+
+      for (const [utilityTypeKey, uomName] of defaultUomWiring) {
+        await query(
+          `
+            INSERT INTO uom_wiring (utility_type_id, uom_id)
+            SELECT ut.id, u.id
+            FROM utility_types ut
+            JOIN uom u ON u.name = $2
+            WHERE ut.key = $1
+            ON CONFLICT (uom_id, utility_type_id) DO NOTHING
+          `,
+          [utilityTypeKey, uomName],
+        );
+      }
+
+      for (const [name] of defaultSources) {
+        await query(
+          `
+            INSERT INTO sources (name)
+            VALUES ($1)
+            ON CONFLICT (name) DO UPDATE
+            SET name = EXCLUDED.name
+          `,
+          [name],
+        );
+      }
+
+      for (const [utilityTypeKey, sourceName] of defaultSourceWiring) {
+        await query(
+          `
+            INSERT INTO source_wiring (utility_type_id, source_id)
+            SELECT ut.id, s.id
+            FROM utility_types ut
+            JOIN sources s ON s.name = $2
+            WHERE ut.key = $1
+            ON CONFLICT (source_id, utility_type_id) DO NOTHING
+          `,
+          [utilityTypeKey, sourceName],
+        );
+      }
+
+      await query(`
+        DO $$
+        BEGIN
+          IF EXISTS (
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND table_name = 'uom'
+              AND column_name = 'utility_type'
+          ) THEN
+            INSERT INTO uom_wiring (uom_id, utility_type_id)
+            SELECT DISTINCT u.id, ut.id
+            FROM uom u
+            JOIN utility_types ut ON ut.key = lower(u.utility_type)
+            WHERE COALESCE(u.utility_type, '') <> ''
+            ON CONFLICT (uom_id, utility_type_id) DO NOTHING;
+          END IF;
+        END $$;
+      `);
+
+      await query("ALTER TABLE uom DROP COLUMN IF EXISTS utility_type");
 
       for (const key of defaultPermissions) {
         await query(

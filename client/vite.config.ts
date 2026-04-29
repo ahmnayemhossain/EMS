@@ -424,6 +424,7 @@ export default defineConfig({
       "/api/auth": "http://localhost:4000",
       "/api/system": "http://localhost:4000",
       "/api/utilities": "http://localhost:4000",
+      "/cdn": "http://localhost:4000",
     },
   },
 });

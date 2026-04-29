@@ -52,6 +52,7 @@ export function UtilitiesRecordsMobile({
                     <div className="text-muted-foreground mt-2 text-[11px]">
                       {formatDate(r.periodStart)} → {formatDate(r.periodEnd)}
                     </div>
+                    {r.sourceName ? <div className="text-muted-foreground mt-1 text-[11px]">Source: {r.sourceName}</div> : null}
                   </div>
 
                   <div className="shrink-0 text-right">

@@ -29,6 +29,7 @@ import { SettingsCompaniesPage } from "@/pages/settings/SettingsCompaniesPage";
 import { SettingsDepartmentsPage } from "@/pages/settings/SettingsDepartmentsPage";
 import { SettingsDesignationsPage } from "@/pages/settings/SettingsDesignationsPage";
 import { SettingsUomPage } from "@/pages/settings/SettingsUomPage";
+import { SettingsSourcesPage } from "@/pages/settings/SettingsSourcesPage";
 import { SettingsSuppliersPage } from "@/pages/settings/SettingsSuppliersPage";
 import { NotificationsPage } from "@/pages/NotificationsPage";
 import { PublicReportBoxPage } from "@/pages/PublicReportBoxPage";
@@ -107,6 +108,7 @@ const routes = [
           { path: "designations", element: <SettingsDesignationsPage /> },
           { path: "companies", element: <SettingsCompaniesPage /> },
           { path: "uom", element: <SettingsUomPage /> },
+          { path: "sources", element: <SettingsSourcesPage /> },
           { path: "suppliers", element: <SettingsSuppliersPage /> },
         ],
       },

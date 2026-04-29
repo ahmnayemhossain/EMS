@@ -84,7 +84,7 @@ export const permissionCatalog: Array<{ key: PermissionKey; label: string }> = [
   { key: "notifications:delete", label: "Notifications - Delete" },
   { key: "settings:read", label: "Settings - Read" },
   { key: "settings:manage", label: "Manage settings" },
-  ...["employees", "users", "roles", "departments", "designations", "companies", "uom", "suppliers"].flatMap(
+  ...["employees", "users", "roles", "departments", "designations", "companies", "uom", "uom-wiring", "sources", "source-wiring", "suppliers"].flatMap(
     (module) => [
       { key: `settings:${module}:read`, label: `Settings ${module} - Read` },
       { key: `settings:${module}:write`, label: `Settings ${module} - Write` },

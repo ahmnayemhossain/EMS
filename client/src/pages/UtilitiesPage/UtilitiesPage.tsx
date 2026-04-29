@@ -10,7 +10,7 @@ import { useUser } from "@/app/state/user";
 import { DataTable } from "@/components/DataTable";
 import { DetailPanel } from "@/components/DetailPanel";
 import { PageHeader } from "@/components/PageHeader";
-import type { UtilityRecord, UtilityType } from "@/types/ems";
+import type { UtilityRecord, UtilitySourceOption, UtilityType, UtilityUomOption } from "@/types/ems";
 
 import { ActionModal } from "@/components/ActionModal";
 import { CreateUtilityDialog } from "@/pages/UtilitiesPage/CreateUtilityDialog";
@@ -18,6 +18,9 @@ import {
   createUtilityRecord,
   deleteUtilityRecord,
   listUtilityRecords,
+  listUtilitySourceOptions,
+  listUtilityUomOptions,
+  uploadUtilityAttachment,
   updateUtilityRecord,
   type UtilityRecordInput,
 } from "@/pages/UtilitiesPage/api";
@@ -53,6 +56,8 @@ export function UtilitiesPage() {
   const [facilityId, setFacilityId] = React.useState<string | undefined>(selectedCompanyId || undefined);
   const [selected, setSelected] = React.useState<UtilityRecord | null>(null);
   const [utilityRows, setUtilityRows] = React.useState<UtilityRecord[]>([]);
+  const [uomOptions, setUomOptions] = React.useState<UtilityUomOption[]>([]);
+  const [sourceOptions, setSourceOptions] = React.useState<UtilitySourceOption[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [editOpen, setEditOpen] = React.useState(false);
   const [deleteOpen, setDeleteOpen] = React.useState(false);
@@ -89,8 +94,16 @@ export function UtilitiesPage() {
     async function loadUtilities() {
       setLoading(true);
       try {
-        const records = await listUtilityRecords(userId);
-        if (!cancelled) setUtilityRows(records);
+        const [records, uoms, sources] = await Promise.all([
+          listUtilityRecords(userId),
+          listUtilityUomOptions(userId),
+          listUtilitySourceOptions(userId),
+        ]);
+        if (!cancelled) {
+          setUtilityRows(records);
+          setUomOptions(uoms);
+          setSourceOptions(sources);
+        }
       } catch (error) {
         if (!cancelled) {
           toast.error(error instanceof Error ? error.message : "Failed to load utility records.");
@@ -107,13 +120,24 @@ export function UtilitiesPage() {
     };
   }, [userId]);
 
+  async function fileToBase64(file: File) {
+    const buffer = await file.arrayBuffer();
+    let binary = "";
+    const bytes = new Uint8Array(buffer);
+    for (let index = 0; index < bytes.length; index += 1) {
+      binary += String.fromCharCode(bytes[index]);
+    }
+    return btoa(binary);
+  }
+
   async function handleCreateUsage(payload: UtilityUsagePayload) {
     const record: UtilityRecordInput = {
       facilityId: payload.companyId,
       type: payload.utilityType,
+      meterName: payload.meterName,
+      sourceId: payload.sourceId,
       periodStart: payload.periodStart,
       periodEnd: payload.periodEnd,
-      meterName: payload.meterName,
       previousReading: payload.previousReading,
       currentReading: payload.currentReading,
       uom: payload.unit,
@@ -131,13 +155,27 @@ export function UtilitiesPage() {
             : "normal",
       status: payload.status,
       remarks: payload.remarks,
-      billFiles: payload.attachment
-        ? [{ name: payload.attachment.name, uploadedAt: payload.attachment.uploadedAt }]
-        : undefined,
     };
 
     try {
-      const created = await createUtilityRecord(record, userId);
+      let created = await createUtilityRecord(record, userId);
+      if (payload.attachment) {
+        try {
+          created = await uploadUtilityAttachment(
+            created.id,
+            {
+              fileName: payload.attachment.name,
+              mimeType: payload.attachment.type,
+              dataBase64: await fileToBase64(payload.attachment),
+            },
+            userId,
+          );
+        } catch (error) {
+          setUtilityRows((current) => [created, ...current]);
+          toast.error(error instanceof Error ? `Usage saved, but PDF upload failed: ${error.message}` : "Usage saved, but PDF upload failed.");
+          return true;
+        }
+      }
       setUtilityRows((current) => [created, ...current]);
       toast.success("Utility usage saved");
       return true;
@@ -153,9 +191,10 @@ export function UtilitiesPage() {
     const record: UtilityRecordInput = {
       facilityId: payload.companyId,
       type: payload.utilityType,
+      meterName: payload.meterName,
+      sourceId: payload.sourceId,
       periodStart: payload.periodStart,
       periodEnd: payload.periodEnd,
-      meterName: payload.meterName,
       previousReading: payload.previousReading,
       currentReading: payload.currentReading,
       uom: payload.unit,
@@ -168,13 +207,28 @@ export function UtilitiesPage() {
             : "normal",
       status: payload.status,
       remarks: payload.remarks,
-      billFiles: payload.attachment
-        ? [{ name: payload.attachment.name, uploadedAt: payload.attachment.uploadedAt }]
-        : selected.billFiles,
     };
 
     try {
-      const updated = await updateUtilityRecord(selected.id, record, userId);
+      let updated = await updateUtilityRecord(selected.id, record, userId);
+      if (payload.attachment) {
+        try {
+          updated = await uploadUtilityAttachment(
+            selected.id,
+            {
+              fileName: payload.attachment.name,
+              mimeType: payload.attachment.type,
+              dataBase64: await fileToBase64(payload.attachment),
+            },
+            userId,
+          );
+        } catch (error) {
+          setUtilityRows((current) => current.map((row) => (row.id === updated.id ? updated : row)));
+          setSelected(updated);
+          toast.error(error instanceof Error ? `Usage updated, but PDF upload failed: ${error.message}` : "Usage updated, but PDF upload failed.");
+          return true;
+        }
+      }
       setUtilityRows((current) => current.map((row) => (row.id === updated.id ? updated : row)));
       setSelected(updated);
       toast.success("Utility usage updated");
@@ -207,6 +261,8 @@ export function UtilitiesPage() {
             companies={selectedCompany ? [selectedCompany] : companies}
             defaultCompanyId={selectedCompanyId}
             activeType={active}
+            uomOptions={uomOptions}
+            sourceOptions={sourceOptions}
             onCreateUsage={handleCreateUsage}
           />
         }
@@ -301,6 +357,8 @@ export function UtilitiesPage() {
         open={editOpen}
         onOpenChange={setEditOpen}
         companies={companies}
+        uomOptions={uomOptions}
+        sourceOptions={sourceOptions}
         record={selected}
         onSave={handleUpdateUsage}
       />

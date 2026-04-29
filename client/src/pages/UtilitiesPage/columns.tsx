@@ -27,7 +27,7 @@ export function getUtilityColumns(getCompanyName: (id: string) => string): Array
             {formatDate(r.periodStart)} → {formatDate(r.periodEnd)}
           </div>
           <div className="text-muted-foreground mt-1 text-xs">
-            {formatUtilityType(r.type)}
+            {formatUtilityType(r.type)}{r.sourceName ? ` • ${r.sourceName}` : ""}
           </div>
         </div>
       ),

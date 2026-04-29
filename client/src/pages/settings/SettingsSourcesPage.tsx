@@ -3,9 +3,9 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router";
 
 import { Button } from "@/app/components/ui/button";
-import { UomSettingsModule } from "@/pages/settings/modules/UomSettingsModule";
+import { SourceSettingsModule } from "@/pages/settings/modules/SourceSettingsModule";
 
-export function SettingsUomPage() {
+export function SettingsSourcesPage() {
   const navigate = useNavigate();
   return (
     <div className="space-y-4">
@@ -15,7 +15,7 @@ export function SettingsUomPage() {
           Settings
         </Button>
       </div>
-      <UomSettingsModule />
+      <SourceSettingsModule />
     </div>
   );
 }

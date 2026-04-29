@@ -9,15 +9,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/pop
 import { Textarea } from "@/app/components/ui/textarea";
 import { cn } from "@/app/components/ui/utils";
 import type { CompanyOption } from "@/app/state/company";
-import type { UtilityType } from "@/types/ems";
+import type { UtilitySourceOption, UtilityType, UtilityUomOption } from "@/types/ems";
 import { SelectFilter } from "@/components/SelectFilter";
 import { StatusBadge } from "@/components/StatusBadge";
 import { formatNumber, formatUtilityType } from "@/utils/format";
-import {
-  getDefaultUtilityUnit,
-  type UtilityUsageStatus,
-} from "@/pages/UtilitiesPage/baseline-settings";
-import { utilityTypes } from "@/pages/UtilitiesPage/constants";
+import { type UtilityUsageStatus } from "@/pages/UtilitiesPage/baseline-settings";
+import { utilityAttachmentConfig, utilityTypeFieldConfig, utilityTypes } from "@/pages/UtilitiesPage/constants";
 
 function pad2(n: number) {
   return String(n).padStart(2, "0");
@@ -168,6 +165,12 @@ export function CreateUtilityForm({
   companyId,
   type,
   onTypeChange,
+  unit,
+  onUnitChange,
+  uomOptions,
+  sourceId,
+  onSourceChange,
+  sourceOptions,
   periodStart,
   onPeriodStartChange,
   periodEnd,
@@ -178,17 +181,26 @@ export function CreateUtilityForm({
   onPreviousReadingChange,
   currentReading,
   onCurrentReadingChange,
+  consumptionInput,
+  onConsumptionInputChange,
   consumption,
   status,
   remarks,
   onRemarksChange,
   attachment,
+  attachmentError,
   onAttachmentChange,
 }: {
   companies: CompanyOption[];
   companyId: string;
   type: UtilityType;
   onTypeChange: (v: UtilityType) => void;
+  unit: string;
+  onUnitChange: (v: string) => void;
+  uomOptions: UtilityUomOption[];
+  sourceId: string;
+  onSourceChange: (v: string) => void;
+  sourceOptions: UtilitySourceOption[];
   periodStart: string;
   onPeriodStartChange: (v: string) => void;
   periodEnd: string;
@@ -199,30 +211,43 @@ export function CreateUtilityForm({
   onPreviousReadingChange: (v: string) => void;
   currentReading: string;
   onCurrentReadingChange: (v: string) => void;
+  consumptionInput: string;
+  onConsumptionInputChange: (v: string) => void;
   consumption?: number;
   status?: UtilityUsageStatus;
   remarks: string;
   onRemarksChange: (v: string) => void;
   attachment: File | null;
+  attachmentError?: string;
   onAttachmentChange: (v: File | null) => void;
 }) {
+  const config = utilityTypeFieldConfig[type];
+  const sourceEnabled = config.allowSource && sourceOptions.length > 0;
+  const readingEnabled = config.allowMeterReading;
   const selectedCompany = companies.find((company) => company.id === companyId);
   const previousReadingNum = previousReading.trim() === "" ? undefined : Number(previousReading);
   const currentReadingNum = currentReading.trim() === "" ? undefined : Number(currentReading);
+  const consumptionInputNum = consumptionInput.trim() === "" ? undefined : Number(consumptionInput);
   const fieldErrors = {
     company: !companyId ? "Company is required." : "",
     type: !type ? "Utility type is required." : "",
+    unit: !unit ? "UOM is required." : "",
+    source: sourceEnabled && !sourceId ? "Source is required." : "",
     periodStart: !periodStart ? "Period start is required." : "",
     periodEnd: !periodEnd ? "Period end is required." : "",
     meterName: !meterName.trim() ? "Meter name is required." : "",
     previousReading:
-      previousReading.trim() === ""
+      !readingEnabled
+        ? ""
+        : previousReading.trim() === ""
         ? "Previous reading is required."
         : typeof previousReadingNum !== "number" || Number.isNaN(previousReadingNum) || previousReadingNum < 0
           ? "Previous reading must be >= 0."
           : "",
     currentReading:
-      currentReading.trim() === ""
+      !readingEnabled
+        ? ""
+        : currentReading.trim() === ""
         ? "Current reading is required."
         : typeof currentReadingNum !== "number" || Number.isNaN(currentReadingNum)
           ? "Current reading is required."
@@ -231,9 +256,15 @@ export function CreateUtilityForm({
             : typeof consumption === "number" && consumption <= 0
               ? "Consumption must be > 0."
               : "",
+    consumption:
+      readingEnabled
+        ? ""
+        : consumptionInput.trim() === ""
+          ? `${config.manualValueLabel} is required.`
+          : typeof consumptionInputNum !== "number" || Number.isNaN(consumptionInputNum) || consumptionInputNum <= 0
+            ? `${config.manualValueLabel} must be > 0.`
+            : "",
   };
-  const unit = getDefaultUtilityUnit(type);
-
   return (
     <div className="grid max-h-[72vh] gap-4 overflow-y-auto pr-1">
       <Section title="Basic Info">
@@ -254,6 +285,27 @@ export function CreateUtilityForm({
               items={utilityTypes.map((t) => ({ value: t, label: formatUtilityType(t) }))}
             />
             <FieldError>{fieldErrors.type}</FieldError>
+          </div>
+          <div className="grid gap-1.5">
+            <FieldLabel required={sourceEnabled}>Source</FieldLabel>
+            <SelectFilter
+              value={sourceId}
+              onChange={onSourceChange}
+              placeholder={sourceOptions.length ? "Select source" : "No source configured"}
+              items={sourceOptions.map((item) => ({ value: item.id, label: item.name }))}
+              disabled={!sourceEnabled}
+            />
+            <FieldError>{fieldErrors.source}</FieldError>
+          </div>
+          <div className="grid gap-1.5">
+            <FieldLabel required>UOM</FieldLabel>
+            <SelectFilter
+              value={unit}
+              onChange={onUnitChange}
+              placeholder={uomOptions.length ? "Select UOM" : "No UOM configured"}
+              items={uomOptions.map((item) => ({ value: item.name, label: item.name }))}
+            />
+            <FieldError>{fieldErrors.unit}</FieldError>
           </div>
           <div className="grid gap-1.5">
             <FieldLabel required>Period Start</FieldLabel>
@@ -284,7 +336,7 @@ export function CreateUtilityForm({
             <FieldError>{fieldErrors.periodEnd}</FieldError>
           </div>
           <div className="grid gap-1.5 sm:col-span-2">
-            <FieldLabel required>Meter Name</FieldLabel>
+            <FieldLabel required>{config.meterLabel}</FieldLabel>
             <Input
               value={meterName}
               onChange={(e) => onMeterNameChange(e.target.value)}
@@ -298,26 +350,40 @@ export function CreateUtilityForm({
       <Section title="Meter Reading">
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="grid gap-1.5">
-            <FieldLabel required>Previous Reading</FieldLabel>
+            <FieldLabel required={readingEnabled}>Previous Reading</FieldLabel>
             <Input
               type="number"
               min={0}
               value={previousReading}
               onChange={(e) => onPreviousReadingChange(e.target.value)}
               placeholder="0"
+              disabled={!readingEnabled}
             />
             <FieldError>{fieldErrors.previousReading}</FieldError>
           </div>
           <div className="grid gap-1.5">
-            <FieldLabel required>Current Reading</FieldLabel>
+            <FieldLabel required={readingEnabled}>Current Reading</FieldLabel>
             <Input
               type="number"
               min={0}
               value={currentReading}
               onChange={(e) => onCurrentReadingChange(e.target.value)}
               placeholder="0"
+              disabled={!readingEnabled}
             />
             <FieldError>{fieldErrors.currentReading}</FieldError>
+          </div>
+          <div className="grid gap-1.5 sm:col-span-2">
+            <FieldLabel required={!readingEnabled}>{config.manualValueLabel}</FieldLabel>
+            <Input
+              type="number"
+              min={0}
+              value={readingEnabled ? (typeof consumption === "number" ? String(consumption) : "") : consumptionInput}
+              onChange={(e) => onConsumptionInputChange(e.target.value)}
+              placeholder="0"
+              disabled={readingEnabled}
+            />
+            <FieldError>{fieldErrors.consumption}</FieldError>
           </div>
         </div>
       </Section>
@@ -359,9 +425,12 @@ export function CreateUtilityForm({
               <Input
                 type="file"
                 className="sm:max-w-[280px]"
+                accept={utilityAttachmentConfig.accept}
                 onChange={(e) => onAttachmentChange(e.target.files?.[0] ?? null)}
               />
             </div>
+            <div className="text-muted-foreground text-xs">PDF only, up to 10 MB.</div>
+            <FieldError>{attachmentError}</FieldError>
           </div>
         </div>
       </Section>

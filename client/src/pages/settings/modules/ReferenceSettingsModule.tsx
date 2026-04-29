@@ -32,7 +32,9 @@ function validateItem(item: SettingsEntity, rows: SettingsEntity[], label: strin
   const errors: ValidationErrors = {};
   if (!item.name.trim()) {
     errors.name = `${label} name is required`;
-  } else if (rows.some((row) => row.id !== currentId && row.name.toLowerCase() === item.name.toLowerCase())) {
+  } else if (
+    rows.some((row) => row.id !== currentId && row.name.toLowerCase() === item.name.toLowerCase())
+  ) {
     errors.name = `${label} name already exists`;
   }
   if (![0, 1].includes(Number(item.status))) errors.status = "Status is required";

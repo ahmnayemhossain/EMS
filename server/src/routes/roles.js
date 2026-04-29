@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import { getRequestActor, writeAuditLog } from "../shared/audit-log.js";
+import { assertRoleDeleteAllowed } from "../shared/delete-guards.js";
 import { requirePermission } from "../shared/permissions.js";
 import { ensureCoreSchema } from "../shared/schema.js";
 import { pool, query } from "../shared/postgres.js";
@@ -102,6 +103,18 @@ const permissionCatalog = [
   ["Settings - UOM", "settings:uom:write", "Write"],
   ["Settings - UOM", "settings:uom:update", "Update"],
   ["Settings - UOM", "settings:uom:delete", "Delete"],
+  ["Settings - UOM Wiring", "settings:uom-wiring:read", "Read"],
+  ["Settings - UOM Wiring", "settings:uom-wiring:write", "Write"],
+  ["Settings - UOM Wiring", "settings:uom-wiring:update", "Update"],
+  ["Settings - UOM Wiring", "settings:uom-wiring:delete", "Delete"],
+  ["Settings - Sources", "settings:sources:read", "Read"],
+  ["Settings - Sources", "settings:sources:write", "Write"],
+  ["Settings - Sources", "settings:sources:update", "Update"],
+  ["Settings - Sources", "settings:sources:delete", "Delete"],
+  ["Settings - Source Wiring", "settings:source-wiring:read", "Read"],
+  ["Settings - Source Wiring", "settings:source-wiring:write", "Write"],
+  ["Settings - Source Wiring", "settings:source-wiring:update", "Update"],
+  ["Settings - Source Wiring", "settings:source-wiring:delete", "Delete"],
   ["Settings - Suppliers", "settings:suppliers:read", "Read"],
   ["Settings - Suppliers", "settings:suppliers:write", "Write"],
   ["Settings - Suppliers", "settings:suppliers:update", "Update"],
@@ -348,6 +361,7 @@ rolesRouter.delete("/:id", requirePermission("settings:roles:delete"), async (re
     await ensureReady();
     const existing = await getRoleRow(req.params.id);
     if (!existing) return res.status(404).json({ error: "not_found" });
+    await assertRoleDeleteAllowed(existing.id);
     const actor = await getRequestActor(req);
 
     const client = await pool.connect();

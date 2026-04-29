@@ -34,6 +34,7 @@ export function UtilityRecordDetail({
           <div className="text-muted-foreground mt-1 text-xs">
             {formatDate(record.periodStart)} → {formatDate(record.periodEnd)}
           </div>
+          {record.sourceName ? <div className="text-muted-foreground mt-1 text-xs">Source: {record.sourceName}</div> : null}
         </div>
       </div>
 
@@ -102,7 +103,15 @@ export function UtilityRecordDetail({
           {record.billFiles?.length ? (
             record.billFiles.map((b) => (
               <div key={b.name} className="flex items-center justify-between gap-3">
-                <div className="min-w-0 truncate">{b.name}</div>
+                <div className="min-w-0 truncate">
+                  {b.url ? (
+                    <a href={b.url} target="_blank" rel="noreferrer" className="hover:underline">
+                      {b.name}
+                    </a>
+                  ) : (
+                    b.name
+                  )}
+                </div>
                 <div className="text-muted-foreground shrink-0 text-xs">
                   {formatDate(b.uploadedAt)}
                 </div>

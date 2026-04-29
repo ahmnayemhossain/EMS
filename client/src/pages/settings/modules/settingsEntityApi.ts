@@ -4,6 +4,7 @@ export type SettingsEntity = {
   id: string;
   name: string;
   status: 0 | 1;
+  utilityType?: string;
   createdByUserId?: string;
   createdByUserName?: string;
   updatedByUserId?: string;
@@ -95,7 +96,7 @@ export async function deleteRole(id: string, userId: string) {
   return parseJsonResponse<{ ok: true }>(response, "Role delete failed.");
 }
 
-export type SettingsEntityKind = "departments" | "designations" | "uom" | "suppliers";
+export type SettingsEntityKind = "departments" | "designations" | "uom" | "sources" | "suppliers";
 
 export async function listSettingsEntities(kind: SettingsEntityKind, userId: string) {
   const response = await fetch(`${SYSTEM_API}/${kind}`, { cache: "no-store", headers: headers(userId) });

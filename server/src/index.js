@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 
 import { apiRouter } from "./routes/api.js";
+import { ensureDirectory, getCdnPublicBase, getCdnRoot } from "./shared/storage.js";
 
 const app = express();
 
@@ -16,7 +17,9 @@ app.use(
     credentials: true,
   }),
 );
-app.use(express.json({ limit: "2mb" }));
+app.use(express.json({ limit: "20mb" }));
+await ensureDirectory(getCdnRoot());
+app.use(getCdnPublicBase(), express.static(getCdnRoot()));
 
 app.get("/api/health", (_req, res) => {
   res.json({

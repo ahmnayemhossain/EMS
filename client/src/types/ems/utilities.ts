@@ -8,6 +8,18 @@ export type UtilityType =
   | "refrigerant"
   | "other";
 
+export type UtilityUomOption = {
+  id: string;
+  name: string;
+  utilityType: UtilityType;
+};
+
+export type UtilitySourceOption = {
+  id: string;
+  name: string;
+  utilityType: UtilityType;
+};
+
 export type UtilityRecord = {
   id: number;
   facilityId: ID;
@@ -15,9 +27,11 @@ export type UtilityRecord = {
   periodStart: string; // ISO date
   periodEnd: string; // ISO date
   meterName: string;
+  sourceId?: ID;
+  sourceName?: string;
   previousReading?: number;
   currentReading?: number;
-  uom: "kWh" | "m3" | "L" | "kg" | "Nm3";
+  uom: string;
   value: number;
   baselineValue?: number;
   minThreshold?: number;
@@ -27,7 +41,16 @@ export type UtilityRecord = {
   varianceFlag?: "normal" | "watch" | "high";
   status?: "normal" | "watch" | "high" | "alert";
   remarks?: string;
-  billFiles?: Array<{ name: string; uploadedAt: string }>;
+  billFiles?: Array<{
+    id?: number;
+    name: string;
+    storedName?: string;
+    mimeType?: string;
+    fileSize?: number;
+    storagePath?: string;
+    url?: string;
+    uploadedAt: string;
+  }>;
   createdByUserId?: ID;
   updatedByUserId?: ID;
 };
