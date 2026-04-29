@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 
 import { apiRouter } from "./routes/api.js";
+import { ensureCoreSchema } from "./shared/schema.js";
 import { ensureDirectory, getCdnPublicBase, getCdnRoot } from "./shared/storage.js";
 
 const app = express();
@@ -19,6 +20,7 @@ app.use(
 );
 app.use(express.json({ limit: "20mb" }));
 await ensureDirectory(getCdnRoot());
+await ensureCoreSchema();
 app.use(getCdnPublicBase(), express.static(getCdnRoot()));
 
 app.get("/api/health", (_req, res) => {

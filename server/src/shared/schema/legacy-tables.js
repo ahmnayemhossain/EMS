@@ -1,0 +1,15 @@
+export const legacyTables = [
+  "utility_records",
+  "facilities",
+  "factories",
+  "user_factories",
+  "user_roles",
+  "role_permissions",
+  "users",
+  "employees",
+  "roles",
+  "permissions",
+  "departments",
+  "designations",
+  "companies",
+];

@@ -1,12 +1,11 @@
 import * as React from "react";
 import { toast } from "@/app/lib/toast";
 
-import type { ReportBoxReport } from "@/types/ems";
-
-import { ConversationThread } from "@/pages/ComplaintBoxPage/drawer/ConversationThread";
+import { ComplaintConversationSection } from "@/pages/ComplaintBoxPage/drawer/ComplaintConversationSection";
 import { DrawerHeaderBar } from "@/pages/ComplaintBoxPage/drawer/DrawerHeaderBar";
 import { DrawerMetaFields } from "@/pages/ComplaintBoxPage/drawer/DrawerMetaFields";
-import { DrawerNoteComposer } from "@/pages/ComplaintBoxPage/drawer/DrawerNoteComposer";
+import { ComplaintDrawerNoteSection } from "@/pages/ComplaintBoxPage/drawer/ComplaintDrawerNoteSection";
+import type { ComplaintDrawerBodyProps } from "@/pages/ComplaintBoxPage/drawer/types";
 import { useComplaintDrawerState } from "@/pages/ComplaintBoxPage/drawer/useComplaintDrawerState";
 
 export function ComplaintDrawerBody({
@@ -23,21 +22,7 @@ export function ComplaintDrawerBody({
   toggleFlag,
   setStatus,
   addMessage,
-}: {
-  complaint: ReportBoxReport;
-  currentUserLabel: string;
-  reportAssignees: string[];
-  addRecord: (reportId: string) => string | undefined;
-  onSwitchToRecords: () => void;
-  onRequestDeleteComplaint: (report: ReportBoxReport) => void;
-  onPreviewImage: (src: string, alt: string) => void;
-  setSubject: (id: string, subject: string) => void;
-  setCategory: (id: string, category?: string) => void;
-  assignTo: (id: string, assignedTo?: string) => void;
-  toggleFlag: (id: string) => void;
-  setStatus: (id: string, status: ReportBoxReport["status"], meta?: any) => void;
-  addMessage: (id: string, msg: { kind: "text"; text: string; author?: string }) => void;
-}) {
+}: ComplaintDrawerBodyProps) {
   const s = useComplaintDrawerState({
     complaint,
     currentUserLabel,
@@ -58,17 +43,7 @@ export function ComplaintDrawerBody({
         flaggedDraft={s.flaggedDraft}
         categoryDraft={s.categoryDraft}
         drawerDirty={s.drawerDirty}
-        onRecord={() => {
-          s.setShowValidation(true);
-          const err = s.validateDrawer();
-          if (err) {
-            toast.error(err);
-            if (err.toLowerCase().includes("note")) s.noteInputRef.current?.focus();
-            return;
-          }
-          const id = addRecord(complaint.id);
-          if (id) onSwitchToRecords();
-        }}
+        onRecord={() => void handleRecordAction()}
         onSave={() => void s.saveDrawer()}
       />
 
@@ -88,29 +63,37 @@ export function ComplaintDrawerBody({
         onDelete={() => onRequestDeleteComplaint(complaint)}
       />
 
-      <div className="space-y-2">
-        <div className="text-muted-foreground text-xs">Conversation</div>
-        <ConversationThread complaint={complaint} pendingNotes={s.pendingNotes} onPreviewImage={onPreviewImage} />
-      </div>
+      <ComplaintConversationSection complaint={complaint} pendingNotes={s.pendingNotes} onPreviewImage={onPreviewImage} />
 
-      <DrawerNoteComposer
+      <ComplaintDrawerNoteSection
         complaint={complaint}
         noteDraft={s.noteDraft}
         onNoteChange={s.setNoteDraft}
-        pendingNotesCount={s.pendingNotes.length}
+        pendingNotes={s.pendingNotes}
         hasEmsNote={s.hasEmsNote}
         currentUserLabel={currentUserLabel}
         showValidation={s.showValidation}
         onShowValidation={s.setShowValidation}
         noteInputRef={s.noteInputRef}
-        onAddPendingNote={(n) =>
-          s.setPendingNotes((prev) => [
-            ...prev,
-            { id: `pn_${Date.now().toString(16)}`, at: n.at, text: n.text, author: n.author },
-          ])
-        }
+        onAddPendingNote={addPendingNote}
       />
     </div>
   );
-}
 
+  async function handleRecordAction() {
+    s.setShowValidation(true);
+    const err = s.validateDrawer();
+    if (err) return showDrawerError(err);
+    const id = addRecord(complaint.id);
+    if (id) onSwitchToRecords();
+  }
+
+  function addPendingNote(note: { at: string; text: string; author: string }) {
+    s.setPendingNotes((prev) => [...prev, { id: `pn_${Date.now().toString(16)}`, ...note }]);
+  }
+
+  function showDrawerError(error: string) {
+    toast.error(error);
+    if (error.toLowerCase().includes("note")) s.noteInputRef.current?.focus();
+  }
+}

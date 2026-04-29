@@ -1,0 +1,11 @@
+export const defaultCompanies = [["Fortis Group", "FG", null, null]];
+export const defaultRoles = [["Admin", "group", "Full access."], ["Sustainability", "group", "Monitoring and compliance access."], ["Supervisor", "company", "Company operations access."], ["Viewer", "company", "Read-only access."]];
+export const defaultDepartments = [["IT & ERP Department"]];
+export const defaultDesignations = [["Jr. Executive"]];
+export const defaultUtilityTypes = [["electricity", "Electricity"], ["water", "Water"], ["fuel", "Fuel"], ["steam", "Steam"], ["refrigerant", "Refrigerant"], ["other", "Other"]];
+export const defaultUom = [["kWh"], ["m3"], ["L"], ["Nm3"], ["kg"], ["pcs"]];
+export const defaultUomWiring = [["electricity", "kWh"], ["water", "m3"], ["fuel", "L"], ["steam", "Nm3"], ["refrigerant", "kg"], ["other", "pcs"]];
+export const defaultSources = [["Grid"], ["Generator"], ["Solar"], ["WASA"], ["Deep Tube Well"]];
+export const defaultSourceWiring = [["electricity", "Grid"], ["electricity", "Generator"], ["electricity", "Solar"], ["water", "WASA"], ["water", "Deep Tube Well"]];
+export const defaultEmployees = [[700901, "A. H. M Nayem Hossain", "Fortis Group", "IT & ERP Department", "Jr. Executive", 1, "nayem@fortisgroup.local", null]];
+export const defaultUsers = [[700901, "700901", "nayem@softnan.com", "active"]];

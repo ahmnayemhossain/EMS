@@ -1,12 +1,11 @@
-import { CheckCircle2, Flag, FlagOff } from "lucide-react";
-
-import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/app/components/ui/select";
 import { cn } from "@/app/components/ui/utils";
 import type { ReportBoxReport } from "@/types/ems";
 
 import { complaintCategories } from "@/pages/ComplaintBoxPage/constants";
+import { DrawerFieldLabel } from "@/pages/ComplaintBoxPage/drawer/DrawerFieldLabel";
+import { DrawerSelectField } from "@/pages/ComplaintBoxPage/drawer/DrawerSelectField";
+import { DrawerStatusActions } from "@/pages/ComplaintBoxPage/drawer/DrawerStatusActions";
 
 export function DrawerMetaFields({
   titleDraft,
@@ -40,9 +39,7 @@ export function DrawerMetaFields({
   return (
     <>
       <div className="space-y-2">
-        <div className="text-muted-foreground text-xs">
-          Report title <span className="text-destructive">*</span>
-        </div>
+        <DrawerFieldLabel label="Report title" required />
         <Input
           value={titleDraft}
           onChange={(e) => onTitleChange(e.target.value)}
@@ -52,70 +49,33 @@ export function DrawerMetaFields({
         />
       </div>
 
-      <div className="grid gap-2">
-        <div className="text-muted-foreground text-xs">
-          Category <span className="text-destructive">*</span>
-        </div>
-        <Select value={categoryDraft} onValueChange={(v) => onCategoryChange(v)}>
-          <SelectTrigger className={cn(showValidation && !categoryDraft && "border-destructive")}>
-            <SelectValue placeholder="Select category" />
-          </SelectTrigger>
-          <SelectContent>
-            {complaintCategories.map((c) => (
-              <SelectItem key={c.value} value={c.value}>
-                {c.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <DrawerSelectField
+        label="Category"
+        value={categoryDraft}
+        placeholder="Select category"
+        required
+        invalid={showValidation && !categoryDraft}
+        options={complaintCategories}
+        onChange={onCategoryChange}
+      />
 
-      <div className="grid gap-2">
-        <div className="text-muted-foreground text-xs">
-          Supervisor <span className="text-destructive">*</span>
-        </div>
-        <Select value={assigneeDraft} onValueChange={(v) => onAssigneeChange(v)}>
-          <SelectTrigger className={cn(showValidation && !assigneeDraft && "border-destructive")}>
-            <SelectValue placeholder="Assign supervisor" />
-          </SelectTrigger>
-          <SelectContent>
-            {reportAssignees.map((p) => (
-              <SelectItem key={p} value={p}>
-                {p}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <DrawerSelectField
+        label="Supervisor"
+        value={assigneeDraft}
+        placeholder="Assign supervisor"
+        required
+        invalid={showValidation && !assigneeDraft}
+        options={reportAssignees.map((person) => ({ value: person, label: person }))}
+        onChange={onAssigneeChange}
+      />
 
-      <div className="flex flex-wrap items-center gap-2">
-        <Button size="sm" variant={flaggedDraft ? "destructive" : "outline"} onClick={onFlaggedToggle}>
-          {flaggedDraft ? <FlagOff className="mr-2 size-4" /> : <Flag className="mr-2 size-4" />}
-          {flaggedDraft ? "Unflag" : "Flag"}
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => onStatusChange(statusDraft === "handled" ? "triaged" : "handled")}
-        >
-          <CheckCircle2 className="mr-2 size-4" />
-          {statusDraft === "handled" ? "Reopen" : "Mark handled"}
-        </Button>
-        <Select value={statusDraft} onValueChange={(v) => onStatusChange(v as ReportBoxReport["status"])}>
-          <SelectTrigger className="h-8 w-[160px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="new">new</SelectItem>
-            <SelectItem value="triaged">triaged</SelectItem>
-            <SelectItem value="handled">handled</SelectItem>
-          </SelectContent>
-        </Select>
-        <Button size="sm" variant="destructive" onClick={onDelete}>
-          Delete
-        </Button>
-      </div>
+      <DrawerStatusActions
+        statusDraft={statusDraft}
+        flaggedDraft={flaggedDraft}
+        onStatusChange={onStatusChange}
+        onFlaggedToggle={onFlaggedToggle}
+        onDelete={onDelete}
+      />
     </>
   );
 }
-

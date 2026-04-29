@@ -14,7 +14,7 @@ export function UtilitiesKpis({
   missingBillsCount: number;
 }) {
   return (
-    <PageKpiGrid columnsClassName="sm:grid-cols-2 xl:grid-cols-4">
+    <PageKpiGrid columnsClassName="sm:grid-cols-2 xl:grid-cols-3">
       <KPIStatCard title="Records" value={recordsCount} tone="neutral" />
       <KPIStatCard
         title="Total"

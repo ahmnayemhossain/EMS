@@ -4,6 +4,8 @@ import { persist } from "zustand/middleware";
 import { shallow } from "zustand/shallow";
 
 import { createSafeJsonStorage } from "@/app/state/_shared/zustand-storage";
+import { signInRequest, signOutRequest } from "@/app/state/auth.api";
+import { AuthSync } from "@/app/state/auth.sync";
 
 export type AuthUser = {
   id: string;
@@ -30,18 +32,6 @@ type AuthState = {
 
 const STORAGE_KEY = "ems:auth_v1";
 
-async function parseJsonResponse<T>(response: Response): Promise<T> {
-  const data = await response.json().catch(() => null);
-  if (!response.ok) {
-    const message =
-      data && typeof data === "object" && "error" in data
-        ? String(data.error)
-        : "Authentication request failed.";
-    throw new Error(message);
-  }
-  return data as T;
-}
-
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
@@ -52,13 +42,7 @@ export const useAuthStore = create<AuthState>()(
       signIn: async (input) => {
         set({ loading: true, error: null });
         try {
-          const data = await parseJsonResponse<{ token: string; user: AuthUser }>(
-            await fetch("/api/auth/sign-in", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(input),
-            }),
-          );
+          const data = await signInRequest(input);
           set({ token: data.token, user: data.user, loading: false, error: null });
         } catch (error) {
           set({
@@ -74,10 +58,7 @@ export const useAuthStore = create<AuthState>()(
         const token = get().token;
         set({ token: null, user: null, error: null });
         if (!token) return;
-        await fetch("/api/auth/sign-out", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-        }).catch(() => undefined);
+        await signOutRequest(token);
       },
     }),
     {
@@ -105,15 +86,4 @@ export function useAuth() {
 export function useAuthHeader() {
   return useAuthStore((state) => (state.token ? { Authorization: `Bearer ${state.token}` } : {}));
 }
-
-export function AuthSync() {
-  const user = useAuthStore((state) => state.user);
-
-  React.useEffect(() => {
-    if (!user) document.documentElement.dataset.auth = "signed-out";
-    else document.documentElement.dataset.auth = "signed-in";
-  }, [user]);
-
-  return null;
-}
-
+export { AuthSync };

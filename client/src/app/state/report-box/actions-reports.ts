@@ -2,7 +2,9 @@ import type { ReportBoxApi, NewMessageInput, NewReportInput } from "@/app/state/
 import type { ReportBoxReport } from "@/types/ems";
 
 import { INBOX_DELETE_URL } from "@/app/state/report-box/constants";
-import { createId, nowIso } from "@/app/state/report-box/ids";
+import { nowIso } from "@/app/state/report-box/ids";
+import { addReportToState, createMessageFromInput, createReportFromInput } from "@/app/state/report-box/report-factories";
+import { updateReportById } from "@/app/state/report-box/report-updaters";
 
 type SetReportBoxState = (
   recipe: (state: ReportBoxApi) => Partial<ReportBoxApi>,
@@ -12,113 +14,44 @@ type GetReportBoxState = () => ReportBoxApi;
 
 export function createAddReport(set: SetReportBoxState) {
   return (input: NewReportInput) => {
-    const createdAt = nowIso();
-    const id = createId("rpt");
-    const subject = input.subject.trim() || "New report";
-
-    const report: ReportBoxReport = {
-      id,
-      createdAt,
-      facilityId: input.facilityId,
-      channel: "public",
-      origin: "local",
-      status: "new",
-      flagged: false,
-      subject,
-      messages: [
-        {
-          id: createId("msg"),
-          at: createdAt,
-          kind: input.kind,
-          text: input.text?.trim() || undefined,
-          attachment: input.attachment,
-          durationSec: input.durationSec,
-        },
-      ],
-    };
-
-    set((state) => ({ reports: [report, ...state.reports] }));
-    return id;
+    const report = createReportFromInput(input);
+    addReportToState(set, report);
+    return report.id;
   };
 }
 
 export function createSetSubject(set: SetReportBoxState) {
-  return (id: string, subject: string) =>
-    set((state) => ({
-      reports: state.reports.map((r) => (r.id === id ? { ...r, subject } : r)),
-    }));
+  return (id: string, subject: string) => updateReportById(set, id, (report) => ({ ...report, subject }));
 }
 
 export function createAddMessage(set: SetReportBoxState) {
   return (id: string, input: NewMessageInput) =>
-    set((state) => ({
-      reports: state.reports.map((r) => {
-        if (r.id !== id) return r;
-        const createdAt = nowIso();
-        return {
-          ...r,
-          messages: [
-            ...r.messages,
-            {
-              id: createId("msg"),
-              at: createdAt,
-              kind: input.kind,
-              text: input.text?.trim() || undefined,
-              attachment: input.attachment,
-              durationSec: input.durationSec,
-              author: input.author,
-            },
-          ],
-        };
-      }),
-    }));
+    updateReportById(set, id, (report) => {
+      const createdAt = nowIso();
+      return { ...report, messages: [...report.messages, createMessageFromInput(createdAt, input)] };
+    });
 }
 
 export function createToggleFlag(set: SetReportBoxState) {
-  return (id: string) =>
-    set((state) => ({
-      reports: state.reports.map((r) =>
-        r.id === id ? { ...r, flagged: !r.flagged } : r,
-      ),
-    }));
+  return (id: string) => updateReportById(set, id, (report) => ({ ...report, flagged: !report.flagged }));
 }
 
 export function createSetStatus(set: SetReportBoxState) {
-  return (
-    id: string,
-    status: ReportBoxReport["status"],
-    meta?: { handledBy?: string },
-  ) =>
-    set((state) => ({
-      reports: state.reports.map((r) => {
-        if (r.id !== id) return r;
-        return {
-          ...r,
-          status,
-          handledAt: status === "handled" ? nowIso() : undefined,
-          handledBy:
-            status === "handled" ? meta?.handledBy || r.handledBy : undefined,
-        };
-      }),
+  return (id: string, status: ReportBoxReport["status"], meta?: { handledBy?: string }) =>
+    updateReportById(set, id, (report) => ({
+      ...report,
+      status,
+      handledAt: status === "handled" ? nowIso() : undefined,
+      handledBy: status === "handled" ? meta?.handledBy || report.handledBy : undefined,
     }));
 }
 
 export function createSetCategory(set: SetReportBoxState) {
-  return (id: string, category?: string) =>
-    set((state) => ({
-      reports: state.reports.map((r) =>
-        r.id === id ? { ...r, category: category || undefined } : r,
-      ),
-    }));
+  return (id: string, category?: string) => updateReportById(set, id, (report) => ({ ...report, category: category || undefined }));
 }
 
 export function createAssignTo(set: SetReportBoxState) {
-  return (id: string, assignee?: string) =>
-    set((state) => ({
-      reports: state.reports.map((r) =>
-        r.id === id ? { ...r, assignedTo: assignee || undefined } : r,
-      ),
-    }));
+  return (id: string, assignee?: string) => updateReportById(set, id, (report) => ({ ...report, assignedTo: assignee || undefined }));
 }
 
 export function createRemoveReport(set: SetReportBoxState) {
@@ -144,4 +77,3 @@ export function createDeleteReport(set: SetReportBoxState, get: GetReportBoxStat
     }
   };
 }
-

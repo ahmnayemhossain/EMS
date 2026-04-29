@@ -1,4 +1,5 @@
 import type { RoleScope } from "@/types/admin";
+import { createSystemHeaders, parseSystemResponse, SYSTEM_API } from "@/pages/settings/modules/api/system-api";
 
 export type SettingsEntity = {
   id: string;
@@ -26,42 +27,14 @@ export type PermissionOption = {
   action?: string;
 };
 
-const SYSTEM_API = "/api/system";
-
-function toServerUserId(userId: string) {
-  const match = /^u_([^_]+)_/.exec(userId);
-  return match ? match[1] : userId;
-}
-
-function headers(userId: string) {
-  return {
-    "Content-Type": "application/json",
-    "x-user-id": toServerUserId(userId),
-  };
-}
-
-async function parseJsonResponse<T>(response: Response, fallback: string): Promise<T> {
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    const message =
-      data && typeof data === "object" && "error" in data
-        ? String(data.error)
-        : fallback;
-    throw new Error(message);
-  }
-
-  return data as T;
-}
-
 export async function listRoles(userId: string) {
-  const response = await fetch(`${SYSTEM_API}/roles`, { cache: "no-store", headers: headers(userId) });
-  return parseJsonResponse<RoleEntity[]>(response, "Could not load roles.");
+  const response = await fetch(`${SYSTEM_API}/roles`, { cache: "no-store", headers: createSystemHeaders(userId) });
+  return parseSystemResponse<RoleEntity[]>(response, "Could not load roles.");
 }
 
 export async function listRoleLookups() {
   const response = await fetch(`${SYSTEM_API}/roles/lookups/options`, { cache: "no-store" });
-  return parseJsonResponse<{ permissions: PermissionOption[] }>(
+  return parseSystemResponse<{ permissions: PermissionOption[] }>(
     response,
     "Could not load role options.",
   );
@@ -70,64 +43,58 @@ export async function listRoleLookups() {
 export async function createRole(role: RoleEntity, userId: string) {
   const response = await fetch(`${SYSTEM_API}/roles`, {
     method: "POST",
-    headers: headers(userId),
+    headers: createSystemHeaders(userId),
     body: JSON.stringify(role),
   });
-
-  return parseJsonResponse<RoleEntity>(response, "Role create failed.");
+  return parseSystemResponse<RoleEntity>(response, "Role create failed.");
 }
 
 export async function updateRole(role: RoleEntity, userId: string) {
   const response = await fetch(`${SYSTEM_API}/roles/${role.id}`, {
     method: "PUT",
-    headers: headers(userId),
+    headers: createSystemHeaders(userId),
     body: JSON.stringify(role),
   });
-
-  return parseJsonResponse<RoleEntity>(response, "Role save failed.");
+  return parseSystemResponse<RoleEntity>(response, "Role save failed.");
 }
 
 export async function deleteRole(id: string, userId: string) {
   const response = await fetch(`${SYSTEM_API}/roles/${id}`, {
     method: "DELETE",
-    headers: headers(userId),
+    headers: createSystemHeaders(userId),
   });
-
-  return parseJsonResponse<{ ok: true }>(response, "Role delete failed.");
+  return parseSystemResponse<{ ok: true }>(response, "Role delete failed.");
 }
 
 export type SettingsEntityKind = "departments" | "designations" | "uom" | "sources" | "suppliers";
 
 export async function listSettingsEntities(kind: SettingsEntityKind, userId: string) {
-  const response = await fetch(`${SYSTEM_API}/${kind}`, { cache: "no-store", headers: headers(userId) });
-  return parseJsonResponse<SettingsEntity[]>(response, "Could not load records.");
+  const response = await fetch(`${SYSTEM_API}/${kind}`, { cache: "no-store", headers: createSystemHeaders(userId) });
+  return parseSystemResponse<SettingsEntity[]>(response, "Could not load records.");
 }
 
 export async function createSettingsEntity(kind: SettingsEntityKind, item: SettingsEntity, userId: string) {
   const response = await fetch(`${SYSTEM_API}/${kind}`, {
     method: "POST",
-    headers: headers(userId),
+    headers: createSystemHeaders(userId),
     body: JSON.stringify(item),
   });
-
-  return parseJsonResponse<SettingsEntity>(response, "Create failed.");
+  return parseSystemResponse<SettingsEntity>(response, "Create failed.");
 }
 
 export async function updateSettingsEntity(kind: SettingsEntityKind, item: SettingsEntity, userId: string) {
   const response = await fetch(`${SYSTEM_API}/${kind}/${item.id}`, {
     method: "PUT",
-    headers: headers(userId),
+    headers: createSystemHeaders(userId),
     body: JSON.stringify(item),
   });
-
-  return parseJsonResponse<SettingsEntity>(response, "Save failed.");
+  return parseSystemResponse<SettingsEntity>(response, "Save failed.");
 }
 
 export async function deleteSettingsEntity(kind: SettingsEntityKind, id: string, userId: string) {
   const response = await fetch(`${SYSTEM_API}/${kind}/${id}`, {
     method: "DELETE",
-    headers: headers(userId),
+    headers: createSystemHeaders(userId),
   });
-
-  return parseJsonResponse<{ ok: true }>(response, "Delete failed.");
+  return parseSystemResponse<{ ok: true }>(response, "Delete failed.");
 }
