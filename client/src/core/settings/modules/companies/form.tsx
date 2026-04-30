@@ -1,0 +1,9 @@
+import { Input } from "@/core/app/components/ui/input";
+import { SelectFilter } from "@/core/components/SelectFilter";
+import { Field } from "@/core/settings/modules/users/field";
+import type { CompanyEntity } from "@/core/settings/modules/companiesApi";
+import type { CompanyValidationErrors } from "@/core/settings/modules/companies/companies.types";
+
+export function CompanyForm(props: { value: CompanyEntity; onChange: (company: CompanyEntity) => void; errors?: CompanyValidationErrors }) {
+  return <div className="grid gap-3 sm:grid-cols-2"><Field label="Name" required error={props.errors?.name}><Input value={props.value.name} aria-invalid={Boolean(props.errors?.name) || undefined} onChange={(event) => props.onChange({ ...props.value, name: event.target.value })} placeholder="Company name" /></Field><Field label="Short name" required error={props.errors?.shortName}><Input value={props.value.shortName} aria-invalid={Boolean(props.errors?.shortName) || undefined} onChange={(event) => props.onChange({ ...props.value, shortName: event.target.value })} placeholder="Short name" /></Field><Field label="Local name"><Input value={props.value.localName ?? ""} onChange={(event) => props.onChange({ ...props.value, localName: event.target.value })} placeholder="Local name" /></Field><Field label="Address"><Input value={props.value.address ?? ""} onChange={(event) => props.onChange({ ...props.value, address: event.target.value })} placeholder="Address" /></Field><Field label="Status" required error={props.errors?.status}><SelectFilter value={String(props.value.status)} onChange={(status) => props.onChange({ ...props.value, status: status === "0" ? 0 : 1 })} placeholder="Status" invalid={Boolean(props.errors?.status)} className="w-full" items={[{ value: "1", label: "Active" }, { value: "0", label: "Inactive" }]} /></Field></div>;
+}

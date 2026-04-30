@@ -1,13 +1,19 @@
 # Dependencies
 node_modules/
+client/node_modules/
+server/node_modules/
 
 # Build output
 dist/
 dist-ssr/
+client/dist/
+server/dist/
+coverage/
 
 # Vite / tooling caches
 .vite/
 .npm-cache/
+*.tsbuildinfo
 
 # Logs
 npm-debug.log*
@@ -15,11 +21,18 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+*.log
 
 # Env files (keep local secrets out of git)
 .env
+.env.*
 .env.*.local
 .env.local
+
+# Runtime / local storage
+server/storage/
+server/storage/cdn/
+tmp/
 
 # OS / Editor files
 .DS_Store
@@ -33,4 +46,3 @@ Desktop.ini
 *.ntvs*
 *.njsproj
 *.sln
-

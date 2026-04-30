@@ -2,9 +2,9 @@ import "./env.js";
 import express from "express";
 import cors from "cors";
 
-import { apiRouter } from "./routes/api.js";
-import { ensureCoreSchema } from "./shared/schema.js";
-import { ensureDirectory, getCdnPublicBase, getCdnRoot } from "./shared/storage.js";
+import { apiRouter } from "./core/routes/api.js";
+import { ensureCoreSchema } from "./core/shared/schema.js";
+import { ensureDirectory, getCdnPublicBase, getCdnRoot } from "./core/shared/storage.js";
 
 const app = express();
 

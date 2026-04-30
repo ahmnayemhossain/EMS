@@ -1,0 +1,23 @@
+import type { PermissionKey } from "@/core/types/admin";
+
+const settingsModules = ["employees", "users", "roles", "departments", "designations", "companies", "uom", "uom-wiring", "sources", "source-wiring", "suppliers"];
+
+export const permissionCatalog: Array<{ key: PermissionKey; label: string }> = [
+  { key: "dashboard:read", label: "Dashboard - Read" }, { key: "dashboard:customize", label: "Customize dashboard layout" },
+  { key: "audit-calendar:read", label: "Audit calendar - Read" }, { key: "audit-calendar:write", label: "Audit calendar - Write" }, { key: "audit-calendar:update", label: "Audit calendar - Update" }, { key: "audit-calendar:delete", label: "Audit calendar - Delete" },
+  { key: "companies:read", label: "Company dashboard - Read" }, { key: "utilities:read", label: "Utilities - Read" }, { key: "utilities:write", label: "Utilities - Write" }, { key: "utilities:update", label: "Utilities - Update" }, { key: "utilities:delete", label: "Utilities - Delete" },
+  { key: "chemicals:read", label: "Chemicals - Read" }, { key: "chemicals:write", label: "Chemicals - Write" }, { key: "chemicals:update", label: "Chemicals - Update" }, { key: "chemicals:delete", label: "Chemicals - Delete" },
+  { key: "sds:read", label: "SDS / MSDS - Read" }, { key: "sds:write", label: "SDS / MSDS - Write" }, { key: "sds:update", label: "SDS / MSDS - Update" }, { key: "sds:delete", label: "SDS / MSDS - Delete" },
+  { key: "waste:read", label: "Waste - Read" }, { key: "waste:write", label: "Waste - Write" }, { key: "waste:update", label: "Waste - Update" }, { key: "waste:delete", label: "Waste - Delete" },
+  { key: "wastewater:read", label: "Wastewater / ETP - Read" }, { key: "wastewater:write", label: "Wastewater / ETP - Write" }, { key: "wastewater:update", label: "Wastewater / ETP - Update" }, { key: "wastewater:delete", label: "Wastewater / ETP - Delete" },
+  { key: "audits:read", label: "Audits - Read" }, { key: "audits:write", label: "Audits - Write" }, { key: "audits:update", label: "Audits - Update" }, { key: "audits:delete", label: "Audits - Delete" },
+  { key: "capa:read", label: "CAPA - Read" }, { key: "capa:write", label: "CAPA - Write" }, { key: "capa:update", label: "CAPA - Update" }, { key: "capa:delete", label: "CAPA - Delete" },
+  { key: "reports:read", label: "Reports - Read" }, { key: "reports:export", label: "Reports - Export" }, { key: "documents:read", label: "Documents - Read" }, { key: "documents:write", label: "Documents - Write" }, { key: "documents:update", label: "Documents - Update" }, { key: "documents:delete", label: "Documents - Delete" },
+  { key: "complaints:read", label: "Complaint box - Read" }, { key: "complaints:write", label: "Complaint box - Write" }, { key: "complaints:update", label: "Complaint box - Update" }, { key: "complaints:delete", label: "Complaint box - Delete" }, { key: "complaints:triage", label: "Triage complaints" }, { key: "complaints:handle", label: "Handle complaints" }, { key: "complaints:export", label: "Export complaint records" },
+  { key: "report-box:read", label: "Worker report box - Read" }, { key: "report-box:write", label: "Worker report box - Write" }, { key: "report-box:update", label: "Worker report box - Update" }, { key: "report-box:delete", label: "Worker report box - Delete" },
+  { key: "incidents:read", label: "Incidents - Read" }, { key: "incidents:write", label: "Incidents - Write" }, { key: "incidents:update", label: "Incidents - Update" }, { key: "incidents:delete", label: "Incidents - Delete" },
+  { key: "training:read", label: "Training - Read" }, { key: "training:write", label: "Training - Write" }, { key: "training:update", label: "Training - Update" }, { key: "training:delete", label: "Training - Delete" },
+  { key: "notifications:read", label: "Notifications - Read" }, { key: "notifications:write", label: "Notifications - Write" }, { key: "notifications:update", label: "Notifications - Update" }, { key: "notifications:delete", label: "Notifications - Delete" },
+  { key: "settings:read", label: "Settings - Read" }, { key: "settings:manage", label: "Manage settings" },
+  ...settingsModules.flatMap((module) => [{ key: `settings:${module}:read`, label: `Settings ${module} - Read` }, { key: `settings:${module}:write`, label: `Settings ${module} - Write` }, { key: `settings:${module}:update`, label: `Settings ${module} - Update` }, { key: `settings:${module}:delete`, label: `Settings ${module} - Delete` }]),
+];

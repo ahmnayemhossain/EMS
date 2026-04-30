@@ -1,0 +1,27 @@
+export function BrandMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 200 200"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect width="200" height="200" rx="65" fill="#15803D" />
+      <path
+        d="M97.1579 148.316C87.1768 148.346 77.5488 144.624 70.1836 137.888C62.8184 131.151 58.2539 121.893 57.3954 111.949C56.5369 102.005 59.4471 92.101 65.5489 84.2021C71.6507 76.3032 80.4982 70.9861 90.3369 69.3053C122.737 63.0526 131.263 60.0968 142.632 46C148.316 57.3684 154 69.76 154 91.4737C154 122.737 126.83 148.316 97.1579 148.316Z"
+        stroke="white"
+        strokeWidth="10"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M46 154C46 136.947 56.5158 123.533 74.8758 119.895C88.6316 117.166 102.842 108.526 108.526 102.842"
+        stroke="white"
+        strokeWidth="10"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}

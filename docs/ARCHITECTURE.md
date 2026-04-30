@@ -1,5 +1,65 @@
 # EMS Architecture
 
+## Core + Features Layout
+
+The app now follows a reusable platform pattern:
+
+- `client/src/core/`
+  - app bootstrap
+  - auth/session state
+  - shared UI primitives
+  - layouts and navigation
+  - settings
+  - reports
+  - theme and utility helpers
+- `client/src/features/`
+  - business modules only
+  - utilities, audits, chemicals, incidents, waste, training
+- `server/src/core/`
+  - auth
+  - shared database helpers
+  - reusable routes
+  - settings and permission infrastructure
+- `server/src/features/`
+  - feature routes
+  - feature business modules
+
+This lets us reuse the same shell, theme, auth, settings, and reports in future apps.
+For a new app, we keep `core` and only add or remove folders inside `features`.
+
+## Route Registry Pattern
+
+Client routing now uses registry-driven definitions:
+
+- `client/src/core/routes/app-route-registry.tsx`
+- `client/src/core/routes/public-route-registry.ts`
+- `client/src/core/settings/settings-route-registry.tsx`
+
+These registries drive:
+
+- lazy route loading
+- sidebar navigation groups
+- breadcrumb labels
+- settings launcher cards
+
+The goal is simple: adding a feature route should not require updating route, nav, and breadcrumb logic in separate places.
+
+## App Platform Config
+
+Client core now has an explicit app config entry:
+
+- `client/src/core/platform/app-config.ts`
+
+This is the place for reusable app-level setup:
+
+- app name
+- workspace label
+- shell width
+- sidebar behavior
+- design tone
+
+The intention is to let a future app swap branding and shell defaults without rewriting feature code.
+
 ## Runtime Shape
 
 The app now follows a practical 4-layer pattern:
@@ -88,13 +148,13 @@ Important columns:
 
 Utilities uses a readable split:
 
-- `server/src/routes/utilities.js`
+- `server/src/features/routes/utilities.js`
   - route wiring only
-- `server/src/modules/utilities/record.js`
+- `server/src/features/modules/utilities/record.js`
   - normalization, record mapping, input validation
-- `server/src/modules/utilities/access.js`
+- `server/src/features/modules/utilities/access.js`
   - company access, overlap checks, lookup validation
-- `server/src/modules/utilities/files.js`
+- `server/src/features/modules/utilities/files.js`
   - attachment metadata, storage path, CDN file handling
 
 This is the reference pattern for future DB-backed modules that need:
@@ -111,21 +171,21 @@ Client modules should be shaped like this:
 - page container
 - small view components
 - thin API file
-- shared API helpers under `client/src/app/lib`
+- shared API helpers under `client/src/core/app/lib`
 
 For utilities:
 
-- `client/src/pages/UtilitiesPage/UtilitiesPage.tsx`
+- `client/src/features/UtilitiesPage/UtilitiesPage.tsx`
   - orchestrates data loading and mutations
-- `client/src/pages/UtilitiesPage/CreateUtilityDialog.tsx`
+- `client/src/features/UtilitiesPage/CreateUtilityDialog.tsx`
   - create workflow
-- `client/src/pages/UtilitiesPage/EditUtilityDialog.tsx`
+- `client/src/features/UtilitiesPage/EditUtilityDialog.tsx`
   - edit workflow
-- `client/src/pages/UtilitiesPage/CreateUtilityForm.tsx`
+- `client/src/features/UtilitiesPage/CreateUtilityForm.tsx`
   - shared form layout
-- `client/src/pages/UtilitiesPage/api.ts`
+- `client/src/features/UtilitiesPage/api.ts`
   - endpoint calls only
-- `client/src/app/lib/api.ts`
+- `client/src/core/app/lib/api.ts`
   - shared auth headers, JSON parsing, file helpers
 
 ## Why This Pattern
