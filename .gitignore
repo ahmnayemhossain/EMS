@@ -23,9 +23,9 @@ pnpm-debug.log*
 lerna-debug.log*
 *.log
 
-# Env files (keep local secrets out of git)
-.env
-.env.*
+# Env files
+# Keep committed .env files if you want shared local defaults,
+# but keep machine-specific local overrides out of git.
 .env.*.local
 .env.local
 
