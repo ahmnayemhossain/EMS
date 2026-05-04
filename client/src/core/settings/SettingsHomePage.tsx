@@ -16,7 +16,7 @@ export function SettingsHomePage() {
   return (
     <div className="space-y-6">
       <Tabs value={tab} onValueChange={(value) => setTab(value as SettingsTab)} className="space-y-4">
-        <TabsList className="w-full sm:w-auto">
+        <TabsList className="bg-muted/30 grid h-auto w-full grid-cols-2 gap-1 rounded-xl border p-1 sm:w-auto sm:grid-cols-4">
           {settingsTabs.map((value) => <TabsTrigger key={value} value={value}>{titleCase(value)}</TabsTrigger>)}
         </TabsList>
         {settingsTabs.map((value) => (

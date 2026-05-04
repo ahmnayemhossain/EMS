@@ -39,6 +39,7 @@ export function TrainingPage() {
   return (
     <div className="space-y-6">
       <PageHeader
+        title="Training"
         actions={
           <Button variant="outline">
             <GraduationCap className="mr-2 size-4" />

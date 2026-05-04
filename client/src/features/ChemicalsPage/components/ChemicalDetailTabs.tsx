@@ -5,7 +5,7 @@ import type { Chemical } from "@/core/types/ems";
 export function ChemicalDetailTabs({ chemical }: { chemical: Chemical }) {
   return (
     <Tabs defaultValue="safety">
-      <TabsList className="grid w-full grid-cols-3">
+      <TabsList className="bg-muted/30 grid h-auto w-full grid-cols-3 gap-1 rounded-xl border p-1">
         <TabsTrigger value="safety">Safety</TabsTrigger>
         <TabsTrigger value="storage">Storage</TabsTrigger>
         <TabsTrigger value="ledger">Ledger</TabsTrigger>

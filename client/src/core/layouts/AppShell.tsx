@@ -25,9 +25,16 @@ export function AppShell() {
       >
         <SidebarHeader className="gap-2 px-2 pt-2">
           <div className="flex items-center gap-2 rounded-lg px-2 py-1.5 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-0">
-            <BrandMark className="size-8 shrink-0 rounded-lg" />
+            <BrandMark className="size-7 shrink-0 rounded-lg" />
             <div className="group-data-[collapsible=icon]:hidden">
-              <div className="text-sm font-semibold leading-none">{appConfig.name}</div>
+              <div className="inline-flex items-start gap-1.5">
+                <div className="text-sm font-semibold leading-none">{appConfig.name}</div>
+                {appConfig.showVersionBadge ? (
+                  <span className="bg-muted/40 text-muted-foreground relative -top-2 rounded-full border px-1.5 py-0.5 text-[10px] font-semibold leading-none shadow-xs">
+                    v{appConfig.version}
+                  </span>
+                ) : null}
+              </div>
             </div>
           </div>
           <Separator />
@@ -36,9 +43,12 @@ export function AppShell() {
         <SidebarRail />
       </Sidebar>
 
-      <SidebarInset className="min-h-svh bg-background [--sidebar-current-width:var(--sidebar-width)] peer-data-[state=collapsed]:[--sidebar-current-width:var(--sidebar-width-icon)]">
-        <AppTopbar />
-        <div className="flex-1">
+      <SidebarInset className="h-svh min-h-svh overflow-hidden bg-background pt-1 [--sidebar-current-width:var(--sidebar-width)] peer-data-[state=collapsed]:[--sidebar-current-width:var(--sidebar-width-icon)]">
+        <div
+          data-slot="app-canvas-scroll"
+          className="flex min-h-0 flex-1 flex-col overflow-auto"
+        >
+          <AppTopbar />
           <div
             className="mx-auto w-full px-4 py-5 md:px-6"
             style={{ maxWidth: `${appConfig.shell.maxContentWidth}px` }}
@@ -48,6 +58,7 @@ export function AppShell() {
             </div>
             <Outlet />
           </div>
+          <div aria-hidden className="h-2 shrink-0" />
         </div>
       </SidebarInset>
     </SidebarProvider>

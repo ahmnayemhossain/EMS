@@ -1,6 +1,8 @@
 export type AppConfig = {
   id: string;
   name: string;
+  version: string;
+  showVersionBadge?: boolean;
   description: string;
   shell: {
     defaultSidebarOpen: boolean;

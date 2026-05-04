@@ -33,7 +33,7 @@ export function ChemicalsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader actions={<ChemicalCreateDialog facilities={facilities} />} />
+      <PageHeader title="Chemicals" actions={<ChemicalCreateDialog facilities={facilities} />} />
 
       <ChemicalKpis
         total={total}

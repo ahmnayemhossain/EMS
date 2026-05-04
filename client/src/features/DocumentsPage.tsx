@@ -8,5 +8,20 @@ import { useDocumentsPage } from "./documents/use-documents-page";
 
 export function DocumentsPage() {
   const page = useDocumentsPage();
-  return <div className="space-y-6"><PageHeader actions={<DocumentsActions />} /><DocumentsFilters search={page.search} setSearch={page.setSearch} facilityId={page.facilityId} setFacilityId={page.setFacilityId} clear={() => { page.setSearch(""); page.setFacilityId(undefined); }} /><DataTable rows={page.rows} columns={getDocumentColumns()} rowKey={(item) => item.id} /></div>;
+  return (
+    <div className="space-y-6">
+      <PageHeader title="Documents" actions={<DocumentsActions />} />
+      <DocumentsFilters
+        search={page.search}
+        setSearch={page.setSearch}
+        facilityId={page.facilityId}
+        setFacilityId={page.setFacilityId}
+        clear={() => {
+          page.setSearch("");
+          page.setFacilityId(undefined);
+        }}
+      />
+      <DataTable rows={page.rows} columns={getDocumentColumns()} rowKey={(item) => item.id} />
+    </div>
+  );
 }

@@ -43,7 +43,7 @@ export function WastewaterPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader actions={<WastewaterCreateDialog />} />
+      <PageHeader title="Wastewater" actions={<WastewaterCreateDialog />} />
 
       <WastewaterKpis
         inflow="—"

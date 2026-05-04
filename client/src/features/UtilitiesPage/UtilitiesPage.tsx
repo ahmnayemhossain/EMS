@@ -43,7 +43,19 @@ export function UtilitiesPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader actions={<CreateUtilityDialog companies={selectedCompany ? [selectedCompany] : companies} defaultCompanyId={selectedCompanyId} activeType={active} uomOptions={uomOptions} sourceOptions={sourceOptions} onCreateUsage={actions.createUsage} />} />
+      <PageHeader
+        title="Utilities"
+        actions={
+          <CreateUtilityDialog
+            companies={selectedCompany ? [selectedCompany] : companies}
+            defaultCompanyId={selectedCompanyId}
+            activeType={active}
+            uomOptions={uomOptions}
+            sourceOptions={sourceOptions}
+            onCreateUsage={actions.createUsage}
+          />
+        }
+      />
       <Tabs value={active} onValueChange={(value) => setActive(value as UtilityType)}>
         <UtilitiesTabStrip types={utilityTypes} />
         <TabsContent value={active} className="mt-4 space-y-4">
