@@ -30,7 +30,7 @@ export function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Reports" actions={<Button onClick={handleExportCsv} disabled={!report.filteredRows.length}><Download className="mr-2 size-4" />Export CSV</Button>} />
+      <PageHeader actions={<Button onClick={handleExportCsv} disabled={!report.filteredRows.length}><Download className="mr-2 size-4" />Export CSV</Button>} />
       <ReportFilters
         search={search}
         typeFilter={typeFilter}

@@ -37,7 +37,6 @@ export function IncidentsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Incidents"
         actions={
           <Button variant="outline" onClick={() => setCreateOpen(true)}>
             <TriangleAlert className="mr-2 size-4" />

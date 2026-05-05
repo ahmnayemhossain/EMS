@@ -43,22 +43,22 @@ export function AppShell() {
         <SidebarRail />
       </Sidebar>
 
-      <SidebarInset className="h-svh min-h-svh overflow-hidden bg-background pt-1 [--sidebar-current-width:var(--sidebar-width)] peer-data-[state=collapsed]:[--sidebar-current-width:var(--sidebar-width-icon)]">
+      <SidebarInset className="h-svh min-h-svh overflow-hidden bg-background pt-1 pb-1 [--sidebar-current-width:var(--sidebar-width)] peer-data-[state=collapsed]:[--sidebar-current-width:var(--sidebar-width-icon)]">
         <div
           data-slot="app-canvas-scroll"
-          className="flex min-h-0 flex-1 flex-col overflow-auto"
+          className="flex min-h-0 flex-1 flex-col overflow-auto pb-3"
         >
           <AppTopbar />
           <div
-            className="mx-auto w-full px-4 py-5 md:px-6"
+            className="mx-auto w-full px-4 pt-3 pb-4 md:px-6"
             style={{ maxWidth: `${appConfig.shell.maxContentWidth}px` }}
           >
-            <div className="mb-4 flex items-center justify-between gap-3">
+            <div className="mb-1 flex min-w-0 items-center">
               <Breadcrumbs />
             </div>
             <Outlet />
+            <div aria-hidden className="h-6" />
           </div>
-          <div aria-hidden className="h-2 shrink-0" />
         </div>
       </SidebarInset>
     </SidebarProvider>

@@ -13,7 +13,6 @@ export function WastePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Waste"
         actions={
           <WasteCreateDialog
             facilities={page.facilities}

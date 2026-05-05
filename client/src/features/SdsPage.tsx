@@ -11,7 +11,6 @@ export function SdsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="SDS"
         actions={
           <SdsCreateDialog
             open={page.createOpen}

@@ -10,7 +10,7 @@ export function DocumentsPage() {
   const page = useDocumentsPage();
   return (
     <div className="space-y-6">
-      <PageHeader title="Documents" actions={<DocumentsActions />} />
+      <PageHeader actions={<DocumentsActions />} />
       <DocumentsFilters
         search={page.search}
         setSearch={page.setSearch}

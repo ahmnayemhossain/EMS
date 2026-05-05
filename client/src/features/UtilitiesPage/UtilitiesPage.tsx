@@ -44,7 +44,6 @@ export function UtilitiesPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Utilities"
         actions={
           <CreateUtilityDialog
             companies={selectedCompany ? [selectedCompany] : companies}

@@ -18,7 +18,6 @@ export function DashboardPage() {
   return (
     <div className="aws-dashboard-grid space-y-6 py-2">
       <PageHeader
-        title="Dashboard"
         actions={
           <DashboardActions
             customize={customize}

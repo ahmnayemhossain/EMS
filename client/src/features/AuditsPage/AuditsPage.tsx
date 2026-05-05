@@ -20,7 +20,6 @@ export function AuditsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Audits"
         actions={
           <AuditCreateDialog
             open={createOpen}

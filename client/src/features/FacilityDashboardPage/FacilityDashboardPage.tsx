@@ -11,7 +11,7 @@ export function FacilityDashboardPage() {
   if (!page.facility) return <FacilityNotFoundCard />;
   return (
     <div className="space-y-6">
-      <PageHeader title={page.facility.name} actions={<FacilityHeaderActions facility={page.facility} />} />
+      <PageHeader actions={<FacilityHeaderActions facility={page.facility} />} />
       <FacilityKpis
         water={page.water}
         electricity={page.electricity}
