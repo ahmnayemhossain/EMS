@@ -1,6 +1,6 @@
 import type { PermissionKey } from "@/core/types/admin";
 
-const settingsModules = ["employees", "users", "roles", "departments", "designations", "companies", "uom", "uom-wiring", "sources", "source-wiring", "suppliers"];
+const settingsModules = ["employees", "users", "roles", "departments", "designations", "companies", "uom", "uom-wiring", "sources", "source-wiring", "meters", "suppliers"];
 
 export const permissionCatalog: Array<{ key: PermissionKey; label: string }> = [
   { key: "dashboard:read", label: "Dashboard - Read" }, { key: "dashboard:customize", label: "Customize dashboard layout" },

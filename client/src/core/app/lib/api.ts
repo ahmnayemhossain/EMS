@@ -30,13 +30,17 @@ export async function parseJsonResponse<T>(response: Response, fallbackMessage: 
 }
 
 export async function fileToBase64(file: File) {
-  const buffer = await file.arrayBuffer();
-  let binary = "";
-  const bytes = new Uint8Array(buffer);
+  const base64 = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Failed to read file."));
+    reader.onload = () => {
+      const result = typeof reader.result === "string" ? reader.result : "";
+      const comma = result.indexOf(",");
+      if (comma === -1) resolve(result);
+      else resolve(result.slice(comma + 1));
+    };
+    reader.readAsDataURL(file);
+  });
 
-  for (let index = 0; index < bytes.length; index += 1) {
-    binary += String.fromCharCode(bytes[index]);
-  }
-
-  return btoa(binary);
+  return base64;
 }

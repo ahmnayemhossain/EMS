@@ -1,9 +1,9 @@
 import { query } from "../postgres.js";
 import { defaultPermissions } from "./default-permissions.js";
 import { legacyPermissionAliases } from "./legacy-permission-aliases.js";
-import { defaultCompanies, defaultDepartments, defaultDesignations, defaultEmployees, defaultRoles, defaultSourceWiring, defaultSources, defaultUom, defaultUomWiring, defaultUsers, defaultUtilityTypes } from "./seed-data.js";
+import { defaultCompanies, defaultDepartments, defaultDesignations, defaultEmployees, defaultMeters, defaultRoles, defaultSourceWiring, defaultSources, defaultUom, defaultUomWiring, defaultUsers, defaultUtilityTypes } from "./seed-data.js";
 import { assignAdminPermissions, assignUserRole, insertByName, insertWiring, upsertDefaultUsers } from "./seed-helpers.js";
-import { getIdByName } from "./lookups.js";
+import { getIdByKey, getIdByName } from "./lookups.js";
 
 export async function seedDefaults() {
   for (const [name, shortName, localName, address] of defaultCompanies) await query(`INSERT INTO companies (name, short_name, local_name, address) VALUES ($1, $2, $3, $4) ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name, short_name = COALESCE(NULLIF(companies.short_name, ''), EXCLUDED.short_name), local_name = COALESCE(companies.local_name, EXCLUDED.local_name), address = COALESCE(companies.address, EXCLUDED.address)`, [name, shortName, localName, address]);
@@ -14,6 +14,7 @@ export async function seedDefaults() {
   await insertWiring("uom_wiring", "utility_type_id", "uom", "uom_id", defaultUomWiring);
   await insertByName("sources", defaultSources);
   await insertWiring("source_wiring", "utility_type_id", "sources", "source_id", defaultSourceWiring);
+  await seedMeters();
   await seedPermissions();
   await seedRoles();
   await seedEmployees();
@@ -40,5 +41,19 @@ async function seedEmployees() {
     const departmentId = await getIdByName("departments", departmentName);
     const designationId = await getIdByName("designations", designationName);
     await query(`INSERT INTO employees (employee_id, name, company_id, department_id, designation_id, is_active, email, phone, joined_on) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_DATE) ON CONFLICT (employee_id) DO UPDATE SET name = EXCLUDED.name, company_id = COALESCE(employees.company_id, EXCLUDED.company_id), department_id = COALESCE(employees.department_id, EXCLUDED.department_id), designation_id = COALESCE(employees.designation_id, EXCLUDED.designation_id), is_active = EXCLUDED.is_active, email = EXCLUDED.email, phone = EXCLUDED.phone`, [employeeId, name, companyId, departmentId, designationId, isActive, email, phone]);
+  }
+}
+
+async function seedMeters() {
+  for (const [companyName, utilityTypeKey, meterName, uomName, sourceName, code, location] of defaultMeters) {
+    const companyId = await getIdByName("companies", companyName);
+    const utilityTypeId = await getIdByKey("utility_types", utilityTypeKey);
+    const uomId = await getIdByName("uom", uomName);
+    const sourceId = sourceName ? await getIdByName("sources", sourceName) : null;
+
+    await query(
+      `INSERT INTO meters (name, code, location, company_id, utility_type_id, source_id, uom_id, is_active) VALUES ($1,$2,$3,$4,$5,$6,$7,1) ON CONFLICT (company_id, utility_type_id, name) DO NOTHING`,
+      [meterName, code || null, location || null, companyId, utilityTypeId, sourceId, uomId],
+    );
   }
 }

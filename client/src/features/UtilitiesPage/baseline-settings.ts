@@ -16,6 +16,7 @@ export type UtilityBaselineSetting = {
 export type UtilityUsagePayload = {
   companyId: string;
   utilityType: UtilityType;
+  meterId?: string;
   meterName: string;
   sourceId?: string;
   sourceName?: string;

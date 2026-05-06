@@ -2,11 +2,12 @@ import { CreateUtilityForm } from "@/features/UtilitiesPage/CreateUtilityForm";
 import type { UtilityDialogFormState } from "@/features/UtilitiesPage/dialog/form-state";
 import type { UtilityUsageStatus } from "@/features/UtilitiesPage/baseline-settings";
 import type { CompanyOption } from "@/core/app/state/company";
-import type { UtilitySourceOption, UtilityType, UtilityUomOption } from "@/core/types/ems";
+import type { UtilityMeterOption, UtilitySourceOption, UtilityType, UtilityUomOption } from "@/core/types/ems";
 
 export function UtilityFormFields(props: {
   state: UtilityDialogFormState;
   companies: CompanyOption[];
+  meterOptions: UtilityMeterOption[];
   uomOptions: UtilityUomOption[];
   sourceOptions: UtilitySourceOption[];
   consumption?: number;
@@ -19,6 +20,8 @@ export function UtilityFormFields(props: {
       {...props.state}
       companies={props.companies}
       onTypeChange={(value: UtilityType) => props.updateState("type", value)}
+      meterOptions={props.meterOptions}
+      onMeterIdChange={(value) => props.updateState("meterId", value)}
       onUnitChange={(value) => props.updateState("unit", value)}
       uomOptions={props.uomOptions}
       onSourceChange={(value) => props.updateState("sourceId", value)}

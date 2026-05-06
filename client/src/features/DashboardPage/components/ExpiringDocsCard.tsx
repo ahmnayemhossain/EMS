@@ -1,7 +1,7 @@
 import * as React from "react";
 import { TriangleAlert } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/core/app/components/ui/card";
+import { Card, CardContent } from "@/core/app/components/ui/card";
 import { cn } from "@/core/app/components/ui/utils";
 import { StatusBadge } from "@/core/components/StatusBadge";
 import type { Document } from "@/core/types/ems";
@@ -16,11 +16,9 @@ export function ExpiringDocsCard({
 }) {
   return (
     <Card className={cn("shadow-xs min-w-0", className)}>
-      <CardHeader>
-        <CardTitle>Expiring permits & documents</CardTitle>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="space-y-3">
+      <CardContent className="pt-6">
+        <div className="text-sm font-semibold">Expiring permits & documents</div>
+        <div className="mt-4 space-y-3">
           {documents.map((d) => (
             <div key={d.id} className="flex items-start justify-between gap-3">
               <div className="min-w-0">

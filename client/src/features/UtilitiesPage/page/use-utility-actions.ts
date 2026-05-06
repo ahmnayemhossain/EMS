@@ -10,7 +10,7 @@ function toVarianceFlag(status: UtilityUsagePayload["status"]) {
 }
 
 function toRecordInput(payload: UtilityUsagePayload): UtilityRecordInput {
-  return { facilityId: payload.companyId, type: payload.utilityType, meterName: payload.meterName, sourceId: payload.sourceId, periodStart: payload.periodStart, periodEnd: payload.periodEnd, previousReading: payload.previousReading, currentReading: payload.currentReading, uom: payload.unit, value: payload.consumption, baselineValue: payload.baselineValue, minThreshold: payload.minThreshold, maxThreshold: payload.maxThreshold, variance: payload.variance, variancePercent: payload.variancePercent, varianceFlag: toVarianceFlag(payload.status), status: payload.status, remarks: payload.remarks };
+  return { facilityId: payload.companyId, type: payload.utilityType, meterId: payload.meterId ? Number(payload.meterId) : undefined, meterName: payload.meterName, sourceId: payload.sourceId, periodStart: payload.periodStart, periodEnd: payload.periodEnd, previousReading: payload.previousReading, currentReading: payload.currentReading, uom: payload.unit, value: payload.consumption, baselineValue: payload.baselineValue, minThreshold: payload.minThreshold, maxThreshold: payload.maxThreshold, variance: payload.variance, variancePercent: payload.variancePercent, varianceFlag: toVarianceFlag(payload.status), status: payload.status, remarks: payload.remarks };
 }
 
 async function attachPdf(record: UtilityRecord, attachment: File, userId: string) {

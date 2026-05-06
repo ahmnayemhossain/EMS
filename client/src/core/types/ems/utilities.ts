@@ -20,10 +20,24 @@ export type UtilitySourceOption = {
   utilityType: UtilityType;
 };
 
+export type UtilityMeterOption = {
+  id: string;
+  name: string;
+  code?: string;
+  location?: string;
+  utilityType: UtilityType;
+  sourceId?: ID;
+  sourceName?: string;
+  uom: string;
+};
+
 export type UtilityRecord = {
   id: number;
   facilityId: ID;
   type: UtilityType;
+  meterId?: number;
+  meterCode?: string;
+  meterLocation?: string;
   periodStart: string; // ISO date
   periodEnd: string; // ISO date
   meterName: string;

@@ -5,6 +5,7 @@ import { createUtilityRecord } from "./utilities/handlers/create-record.js";
 import { deleteUtilityRecord } from "./utilities/handlers/delete-record.js";
 import { getUtilityRecord } from "./utilities/handlers/get-record.js";
 import { listUtilityRecords } from "./utilities/handlers/list-records.js";
+import { listUtilityMeters } from "./utilities/handlers/list-meters.js";
 import { listUtilitySourceOptions } from "./utilities/handlers/list-source-options.js";
 import { listUtilityUomOptions } from "./utilities/handlers/list-uom-options.js";
 import { updateUtilityRecord } from "./utilities/handlers/update-record.js";
@@ -14,6 +15,7 @@ export const utilitiesRouter = Router();
 
 utilitiesRouter.get("/uom-options", requirePermission("utilities:read"), listUtilityUomOptions);
 utilitiesRouter.get("/source-options", requirePermission("utilities:read"), listUtilitySourceOptions);
+utilitiesRouter.get("/meters", requirePermission("utilities:read"), listUtilityMeters);
 utilitiesRouter.get("/", requirePermission("utilities:read"), listUtilityRecords);
 utilitiesRouter.get("/:id", requirePermission("utilities:read"), getUtilityRecord);
 utilitiesRouter.post("/", requirePermission("utilities:write"), createUtilityRecord);

@@ -1,5 +1,5 @@
 import { authJsonHeaders, parseJsonResponse } from "@/core/app/lib/api";
-import type { UtilityRecord, UtilitySourceOption, UtilityUomOption } from "@/core/types/ems";
+import type { UtilityMeterOption, UtilityRecord, UtilitySourceOption, UtilityUomOption, UtilityType } from "@/core/types/ems";
 
 const UTILITIES_API = "/api/utilities";
 export type UtilityRecordInput = Omit<UtilityRecord, "id"> & { id?: number };
@@ -66,4 +66,16 @@ export async function uploadUtilityAttachment(
   });
 
   return parseJsonResponse<UtilityRecord>(response, "Utilities request failed.");
+}
+
+export async function listUtilityMeters(
+  userId: string,
+  input: { companyId: string; type: UtilityType },
+) {
+  const params = new URLSearchParams({ companyId: input.companyId, type: input.type });
+  const response = await fetch(`${UTILITIES_API}/meters?${params.toString()}`, {
+    cache: "no-store",
+    headers: authJsonHeaders(userId),
+  });
+  return parseJsonResponse<UtilityMeterOption[]>(response, "Utilities request failed.");
 }

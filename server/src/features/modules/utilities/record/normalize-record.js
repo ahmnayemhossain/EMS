@@ -17,6 +17,7 @@ export function normalizeRecordInput(input) {
   const periodStart = requiredString(input, "periodStart", "periodStart");
   const periodEnd = requiredString(input, "periodEnd", "periodEnd");
   const value = requiredNumber(input, "value", "value");
+  const meterId = optionalNumber(input, "meterId");
   const varianceFlag = input.varianceFlag ? String(input.varianceFlag) : null;
   const status = input.status ? String(input.status) : null;
 
@@ -27,5 +28,5 @@ export function normalizeRecordInput(input) {
   if (varianceFlag && !VALID_FLAGS.has(varianceFlag)) throw new Error("Invalid varianceFlag.");
   if (status && !VALID_STATUSES.has(status)) throw new Error("Invalid status.");
 
-  return { id: optionalNumber(input, "id"), facilityId: requiredString(input, "facilityId", "facilityId"), type, sourceId: input.sourceId ? String(input.sourceId).trim() : null, periodStart, periodEnd, meterName: requiredString(input, "meterName", "meterName"), previousReading: optionalNumber(input, "previousReading"), currentReading: optionalNumber(input, "currentReading"), uom: requiredString(input, "uom", "uom"), value, baselineValue: optionalNumber(input, "baselineValue"), minThreshold: optionalNumber(input, "minThreshold"), maxThreshold: optionalNumber(input, "maxThreshold"), variance: optionalNumber(input, "variance"), variancePercent: optionalNumber(input, "variancePercent"), varianceFlag, status, remarks: input.remarks ? String(input.remarks).trim() : null };
+  return { id: optionalNumber(input, "id"), facilityId: requiredString(input, "facilityId", "facilityId"), type, meterId, sourceId: input.sourceId ? String(input.sourceId).trim() : null, periodStart, periodEnd, meterName: requiredString(input, "meterName", "meterName"), previousReading: optionalNumber(input, "previousReading"), currentReading: optionalNumber(input, "currentReading"), uom: requiredString(input, "uom", "uom"), value, baselineValue: optionalNumber(input, "baselineValue"), minThreshold: optionalNumber(input, "minThreshold"), maxThreshold: optionalNumber(input, "maxThreshold"), variance: optionalNumber(input, "variance"), variancePercent: optionalNumber(input, "variancePercent"), varianceFlag, status, remarks: input.remarks ? String(input.remarks).trim() : null };
 }

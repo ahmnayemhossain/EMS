@@ -46,6 +46,7 @@ export function UtilitiesPage() {
       <PageHeader
         actions={
           <CreateUtilityDialog
+            userId={userId}
             companies={selectedCompany ? [selectedCompany] : companies}
             defaultCompanyId={selectedCompanyId}
             activeType={active}
@@ -65,7 +66,7 @@ export function UtilitiesPage() {
         </TabsContent>
       </Tabs>
       <UtilityDetailDrawer selected={selected} companies={companies} getCompanyName={getCompanyName} onSelect={setSelected} onEdit={() => setEditOpen(true)} onDelete={() => setDeleteOpen(true)} />
-      <EditUtilityDialog open={editOpen} onOpenChange={setEditOpen} companies={companies} uomOptions={uomOptions} sourceOptions={sourceOptions} record={selected} onSave={actions.updateUsage} />
+      <EditUtilityDialog open={editOpen} onOpenChange={setEditOpen} userId={userId} companies={companies} uomOptions={uomOptions} sourceOptions={sourceOptions} record={selected} onSave={actions.updateUsage} />
       <ActionModal open={deleteOpen} onOpenChange={setDeleteOpen} tone="destructive" title="Delete this utility record?" description="This action removes the usage record from the server. This cannot be undone." confirmLabel="Delete" onConfirm={actions.deleteSelected} />
     </div>
   );

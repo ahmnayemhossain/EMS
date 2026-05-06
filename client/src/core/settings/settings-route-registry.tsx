@@ -17,6 +17,7 @@ export const settingsRouteDefs: SettingsRouteDef[] = [
   page("companies", "operations", "Companies", "Manage company name, short name, local name, address, and status.", Building2, "SettingsCompaniesPage", () => import("@/core/settings/SettingsCompaniesPage")),
   page("uom", "operations", "Units (UOM)", "Unified units across utilities and operations.", Ruler, "SettingsUomPage", () => import("@/core/settings/SettingsUomPage")),
   page("sources", "operations", "Sources", "Manage utility sources and source wiring.", Gauge, "SettingsSourcesPage", () => import("@/core/settings/SettingsSourcesPage")),
+  page("meters", "operations", "Meters", "Meters and wiring for utilities (company, type, source, UOM).", Gauge, "SettingsMetersPage", () => import("@/core/settings/SettingsMetersPage")),
   page("suppliers", "operations", "Suppliers", "Suppliers for chemicals, waste vendors, and labs.", Gauge, "SettingsSuppliersPage", () => import("@/core/settings/SettingsSuppliersPage")),
   drawer("thresholds", "compliance", "Thresholds", "Wastewater and utilities thresholds for alerts.", SlidersHorizontal),
   drawer("approvals", "compliance", "Approvals", "Restricted list, SDS rules, and approval settings.", ShieldCheck),

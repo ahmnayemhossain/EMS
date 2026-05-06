@@ -4,7 +4,7 @@ export type SettingsTab = "system" | "operations" | "compliance" | "communicatio
 
 export type SettingsCardKey =
   | "employees" | "users" | "roles" | "departments" | "designations"
-  | "uom" | "sources" | "suppliers" | "companies"
+  | "uom" | "sources" | "meters" | "suppliers" | "companies"
   | "email" | "complaint_box" | "thresholds" | "approvals";
 
 export type SettingsCardDef = {

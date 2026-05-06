@@ -11,8 +11,20 @@ export function useUtilityDialogLogic(state: UtilityDialogFormState, uomOptions:
   const previousReading = state.previousReading.trim() === "" ? undefined : Number(state.previousReading);
   const currentReading = state.currentReading.trim() === "" ? undefined : Number(state.currentReading);
   const manualConsumption = state.consumptionInput.trim() === "" ? undefined : Number(state.consumptionInput);
-  const attachmentError = state.attachment && state.attachment.type !== "application/pdf" ? "Only PDF files are allowed."
-    : state.attachment && state.attachment.size > utilityAttachmentConfig.maxBytes ? "PDF file is too large. Maximum size is 10 MB." : "";
+  const isPdfAttachment = React.useMemo(() => {
+    if (!state.attachment) return true;
+    const name = state.attachment.name.toLowerCase();
+    const mime = (state.attachment.type || "").toLowerCase();
+    if (name.endsWith(".pdf")) return true;
+    return mime === "application/pdf" || mime === "application/x-pdf";
+  }, [state.attachment]);
+
+  const attachmentError =
+    state.attachment && !isPdfAttachment
+      ? "Only PDF files are allowed."
+      : state.attachment && state.attachment.size > utilityAttachmentConfig.maxBytes
+        ? "PDF file is too large. Maximum size is 10 MB."
+        : "";
   const readingConsumption = typeof previousReading === "number" && !Number.isNaN(previousReading) && typeof currentReading === "number" && !Number.isNaN(currentReading)
     ? currentReading - previousReading : undefined;
   const consumption = config.allowMeterReading ? readingConsumption : manualConsumption;

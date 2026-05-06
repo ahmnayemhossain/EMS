@@ -9,5 +9,6 @@ export const settingsPermissions = [
   "settings:uom-wiring:read", "settings:uom-wiring:write", "settings:uom-wiring:update", "settings:uom-wiring:delete",
   "settings:sources:read", "settings:sources:write", "settings:sources:update", "settings:sources:delete",
   "settings:source-wiring:read", "settings:source-wiring:write", "settings:source-wiring:update", "settings:source-wiring:delete",
+  "settings:meters:read", "settings:meters:write", "settings:meters:update", "settings:meters:delete",
   "settings:suppliers:read", "settings:suppliers:write", "settings:suppliers:update", "settings:suppliers:delete",
 ];

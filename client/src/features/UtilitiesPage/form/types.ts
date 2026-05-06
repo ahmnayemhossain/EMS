@@ -1,12 +1,15 @@
 import type { CompanyOption } from "@/core/app/state/company";
 import type { UtilityUsageStatus } from "@/features/UtilitiesPage/baseline-settings";
-import type { UtilitySourceOption, UtilityType, UtilityUomOption } from "@/core/types/ems";
+import type { UtilityMeterOption, UtilitySourceOption, UtilityType, UtilityUomOption } from "@/core/types/ems";
 
 export type UtilityFormProps = {
   companies: CompanyOption[];
   companyId: string;
   type: UtilityType;
   onTypeChange: (value: UtilityType) => void;
+  meterId: string;
+  onMeterIdChange: (value: string) => void;
+  meterOptions: UtilityMeterOption[];
   unit: string;
   onUnitChange: (value: string) => void;
   uomOptions: UtilityUomOption[];

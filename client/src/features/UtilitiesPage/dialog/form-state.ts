@@ -3,6 +3,7 @@ import type { UtilityType } from "@/core/types/ems";
 export type UtilityDialogFormState = {
   companyId: string;
   type: UtilityType;
+  meterId: string;
   meterName: string;
   periodStart: string;
   periodEnd: string;
@@ -19,6 +20,7 @@ export function createEmptyUtilityFormState(companyId: string, type: UtilityType
   return {
     companyId,
     type,
+    meterId: "custom",
     meterName: "",
     periodStart: "",
     periodEnd: "",

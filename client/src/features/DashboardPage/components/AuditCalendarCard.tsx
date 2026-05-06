@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { Calendar } from "@/core/app/components/ui/calendar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/core/app/components/ui/card";
+import { Card, CardContent } from "@/core/app/components/ui/card";
 import { cn } from "@/core/app/components/ui/utils";
 
 export function AuditCalendarCard({
@@ -13,14 +13,13 @@ export function AuditCalendarCard({
 }) {
   return (
     <Card className={cn("shadow-xs min-w-0", className)}>
-      <CardHeader className="pb-2">
-        <CardTitle>Audit calendar</CardTitle>
-        <div className="text-muted-foreground text-sm">Placeholder widget</div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <Calendar mode="single" selected={selectedDate} />
+      <CardContent className="pt-6">
+        <div className="text-sm font-semibold">Audit calendar</div>
+        <div className="text-muted-foreground mt-1 text-sm">Placeholder widget</div>
+        <div className="mt-4">
+          <Calendar mode="single" selected={selectedDate} />
+        </div>
       </CardContent>
     </Card>
   );
 }
-

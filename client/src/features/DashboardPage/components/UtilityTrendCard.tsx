@@ -10,7 +10,7 @@ import {
   YAxis,
 } from "recharts";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/core/app/components/ui/card";
+import { Card, CardContent } from "@/core/app/components/ui/card";
 import { ChartContainer } from "@/core/app/components/ui/chart";
 import { cn } from "@/core/app/components/ui/utils";
 import { StatusBadge } from "@/core/components/StatusBadge";
@@ -27,10 +27,10 @@ export function UtilityTrendCard({
 }) {
   return (
     <Card className={cn("shadow-xs min-w-0", className)}>
-      <CardHeader className="pb-2">
+      <CardContent className="pt-6">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <CardTitle>Group utility trend</CardTitle>
+            <div className="text-sm font-semibold">Group utility trend</div>
             <div className="text-muted-foreground mt-1 text-sm">
               Electricity consumption (kWh)
             </div>
@@ -40,10 +40,8 @@ export function UtilityTrendCard({
             Rolling 6 months
           </StatusBadge>
         </div>
-      </CardHeader>
-      <CardContent className="pt-0">
         <ChartContainer
-          className="h-[260px] w-full"
+          className="mt-4 h-[260px] w-full"
           config={{ kwh: { label: "kWh", color: "var(--chart-2)" } }}
         >
           {points.length ? (
