@@ -24,6 +24,7 @@ export type UtilityUsagePayload = {
   periodEnd: string;
   previousReading?: number;
   currentReading?: number;
+  dieselLiters?: number;
   consumption: number;
   unit: UtilityUnit;
   baselineValue?: number;

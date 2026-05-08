@@ -8,10 +8,17 @@ export function createSystemHeaders(userId: string) {
 }
 
 export async function parseSystemResponse<T>(response: Response, fallback: string) {
+  const contentType = response.headers.get("content-type") || "";
   const data = await response.json().catch(() => null);
   if (!response.ok) {
     const message = data && typeof data === "object" && "error" in data ? String(data.error) : fallback;
     throw new Error(message);
+  }
+  if (data == null) {
+    const hint = contentType.includes("text/html")
+      ? "Server returned HTML instead of JSON. Check server/API route and proxy."
+      : "Server returned an empty/non-JSON response.";
+    throw new Error(hint);
   }
   return data as T;
 }

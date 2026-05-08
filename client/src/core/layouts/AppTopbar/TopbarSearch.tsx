@@ -17,7 +17,7 @@ export function TopbarSearch() {
         <button
           type="button"
           onClick={() => search.setOpen(true)}
-          className="bg-card/70 border-border/80 text-muted-foreground flex h-10 w-full items-center justify-between rounded-md border px-3 pl-9 text-sm shadow-none transition-colors hover:bg-card"
+          className="bg-card/70 border-border/80 text-muted-foreground flex h-8 w-full items-center justify-between rounded-md border px-3 pl-9 text-sm shadow-none transition-colors hover:bg-card"
         >
           <span>Search companies, audits, chemicals...</span>
           <span className="text-[11px] font-medium">Ctrl K</span>

@@ -7,18 +7,25 @@ function toNumber(value) {
 }
 
 export function rowToRecord(row) {
+  const missingRanges = Array.isArray(row.missing_ranges) ? row.missing_ranges : [];
+  const approvalStatus = row.approval_status || "pending";
   return {
     id: Number(row.id),
     facilityId: String(row.facility_id),
     type: row.type,
     meterId: row.meter_id ? Number(row.meter_id) : undefined,
+    meterKey: row.meter_key || undefined,
     meterCode: row.meter_code || undefined,
     meterLocation: row.meter_location || undefined,
     sourceId: row.source_id ? String(row.source_id) : undefined,
     sourceName: row.source_name || undefined,
     periodStart: toDateString(row.period_start),
     periodEnd: toDateString(row.period_end),
+    periodMonth: toDateString(row.period_month),
     meterName: row.meter_name,
+    dieselLiters: toNumber(row.diesel_liters),
+    calcMethod: row.calc_method || undefined,
+    calcFactor: toNumber(row.calc_factor),
     previousReading: toNumber(row.previous_reading),
     currentReading: toNumber(row.current_reading),
     uom: row.uom,
@@ -32,6 +39,21 @@ export function rowToRecord(row) {
     status: row.status || undefined,
     remarks: row.remarks || undefined,
     billFiles: Array.isArray(row.bill_files) ? row.bill_files : [],
+    monthlyApprovalId: row.monthly_approval_id ? Number(row.monthly_approval_id) : undefined,
+    approvalStatus,
+    approvedBy: row.approved_by_name || row.approved_by_username || undefined,
+    approvedAt: row.approved_at ? new Date(row.approved_at).toISOString() : undefined,
+    coverageStart: row.coverage_start ? toDateString(row.coverage_start) : undefined,
+    coverageEnd: row.coverage_end ? toDateString(row.coverage_end) : undefined,
+    coverageDays: toNumber(row.covered_days),
+    monthDays: toNumber(row.month_days),
+    missingRanges,
+    missingDaysCount: toNumber(row.missing_days_count) ?? 0,
+    monthRecordCount: toNumber(row.month_record_count),
+    monthTotalValue: toNumber(row.month_total_value),
+    monthTotalDieselLiters: toNumber(row.month_total_diesel_liters),
+    monthComplete:
+      approvalStatus === "approved" || ((toNumber(row.missing_days_count) ?? 0) === 0 && (toNumber(row.month_record_count) ?? 0) > 0),
     createdByUserId: row.created_by_user_id ? String(row.created_by_user_id) : undefined,
     updatedByUserId: row.updated_by_user_id ? String(row.updated_by_user_id) : undefined,
   };

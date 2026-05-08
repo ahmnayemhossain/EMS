@@ -18,7 +18,7 @@ export function RemarksAttachmentSection({ props }: { props: UtilityFormProps })
             <Input type="file" className="sm:max-w-[280px]" accept={utilityAttachmentConfig.accept} onChange={(event) => props.onAttachmentChange(event.target.files?.[0] ?? null)} />
           </div>
           <div className="text-muted-foreground text-xs">PDF only, up to 10 MB.</div>
-          <FieldError>{props.attachmentError}</FieldError>
+          <FieldError>{props.showValidation ? props.attachmentError : ""}</FieldError>
         </div>
       </div>
     </FormSection>

@@ -52,6 +52,8 @@ export function SdsPage() {
         open={page.editOpen}
         onOpenChange={page.setEditOpen}
         selected={page.selected}
+        editMeta={page.editMeta}
+        setEditMeta={page.setEditMeta}
         editTab={page.editTab}
         setEditTab={page.setEditTab}
         editDraftBySectionId={page.editDraftBySectionId}

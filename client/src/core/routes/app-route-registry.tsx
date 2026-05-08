@@ -23,6 +23,5 @@ export const appRouteDefs: AppRouteDef[] = [
   { path: "complaint-box", segment: "complaint-box", label: "Complaint box", group: "People", permission: "complaints:read", icon: MessageSquareWarning, exportName: "ComplaintBoxPage", load: () => import("@/features/ComplaintBoxPage") },
   { path: "incidents", segment: "incidents", label: "Incidents", group: "People", permission: "incidents:read", icon: TriangleAlert, exportName: "IncidentsPage", load: () => import("@/features/IncidentsPage") },
   { path: "training", segment: "training", label: "Training", group: "People", permission: "training:read", icon: UsersRound, exportName: "TrainingPage", load: () => import("@/features/TrainingPage") },
-  { path: "notifications", segment: "notifications", label: "Notifications", group: "People", permission: "notifications:read", icon: TriangleAlert, exportName: "NotificationsPage", load: () => import("@/features/NotificationsPage") },
   { path: "settings", segment: "settings", label: "Settings", group: "Admin", permission: "settings:read", icon: Settings },
 ];

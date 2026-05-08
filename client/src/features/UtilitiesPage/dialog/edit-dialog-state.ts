@@ -11,6 +11,7 @@ export function createStateFromRecord(record: UtilityRecord) {
     previousReading: String(record.previousReading ?? ""),
     currentReading: String(record.currentReading ?? ""),
     consumptionInput: String(record.value ?? ""),
+    dieselLitersInput: String(record.dieselLiters ?? ""),
     unit: record.uom,
     sourceId: record.sourceId ?? "",
     remarks: record.remarks ?? "",

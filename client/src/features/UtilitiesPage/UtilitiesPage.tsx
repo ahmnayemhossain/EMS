@@ -33,11 +33,12 @@ export function UtilitiesPage() {
   const [selected, setSelected] = React.useState<UtilityRecord | null>(null);
   const [editOpen, setEditOpen] = React.useState(false);
   const [deleteOpen, setDeleteOpen] = React.useState(false);
-  const { utilityRows, setUtilityRows, uomOptions, sourceOptions, loading } = useUtilitiesLoader(userId);
+  const [submitOpen, setSubmitOpen] = React.useState(false);
+  const { utilityRows, setUtilityRows, uomOptions, sourceOptions, loading, reloadUtilities } = useUtilitiesLoader(userId, { facilityId });
   const { rows, total, highVarianceCount, missingBillsCount } = useUtilitiesRows({ active, facilityId, search, extraRows: utilityRows, companies });
   const trendData = React.useMemo(() => Array.from(rows.reduce((map, row) => map.set(row.periodStart.slice(0, 7), (map.get(row.periodStart.slice(0, 7)) ?? 0) + row.value), new Map<string, number>()), ([label, value]) => ({ label, value })).sort((a, b) => a.label.localeCompare(b.label)), [rows]);
   const columns = React.useMemo(() => getUtilityColumns(getCompanyName), [getCompanyName]);
-  const actions = createUtilityActions({ userId, selected, setSelected, setDeleteOpen, setUtilityRows });
+  const actions = createUtilityActions({ userId, selected, setSelected, setDeleteOpen, setUtilityRows, reloadUtilities });
 
   React.useEffect(() => setFacilityId(selectedCompanyId || undefined), [selectedCompanyId]);
 
@@ -52,6 +53,7 @@ export function UtilitiesPage() {
             activeType={active}
             uomOptions={uomOptions}
             sourceOptions={sourceOptions}
+            existingRecords={utilityRows}
             onCreateUsage={actions.createUsage}
           />
         }
@@ -65,9 +67,10 @@ export function UtilitiesPage() {
           <UtilityRecordsSection isMobile={isMobile} rows={rows} loading={loading} columns={columns} getCompanyName={getCompanyName} onSelect={setSelected} />
         </TabsContent>
       </Tabs>
-      <UtilityDetailDrawer selected={selected} companies={companies} getCompanyName={getCompanyName} onSelect={setSelected} onEdit={() => setEditOpen(true)} onDelete={() => setDeleteOpen(true)} />
-      <EditUtilityDialog open={editOpen} onOpenChange={setEditOpen} userId={userId} companies={companies} uomOptions={uomOptions} sourceOptions={sourceOptions} record={selected} onSave={actions.updateUsage} />
+      <UtilityDetailDrawer selected={selected} companies={companies} getCompanyName={getCompanyName} onSelect={setSelected} onEdit={() => setEditOpen(true)} onDelete={() => setDeleteOpen(true)} onApproveMonth={actions.approveSelectedMonth} onSubmitMonth={() => setSubmitOpen(true)} />
+      <EditUtilityDialog open={editOpen} onOpenChange={setEditOpen} userId={userId} companies={companies} uomOptions={uomOptions} sourceOptions={sourceOptions} record={selected} existingRecords={utilityRows} onSave={actions.updateUsage} />
       <ActionModal open={deleteOpen} onOpenChange={setDeleteOpen} tone="destructive" title="Delete this utility record?" description="This action removes the usage record from the server. This cannot be undone." confirmLabel="Delete" onConfirm={actions.deleteSelected} />
+      <ActionModal open={submitOpen} onOpenChange={setSubmitOpen} tone="default" title="Submit full month for approval?" description="After submission, the configured approver email recipients will get an approval request. You can change data later, but it will reset the month back to pending." confirmLabel="Submit" onConfirm={async () => { const ok = await actions.submitSelectedMonth(); if (ok !== false) setSubmitOpen(false); }} />
     </div>
   );
 }

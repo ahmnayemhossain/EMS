@@ -43,8 +43,8 @@ export function ActionModal({
         onConfirm={async () => {
           try {
             setBusy(true);
-            await onConfirm();
-            onOpenChange(false);
+            const result = await onConfirm();
+            if (result !== false) onOpenChange(false);
           } finally {
             setBusy(false);
           }

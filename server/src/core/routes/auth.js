@@ -7,6 +7,7 @@ import {
   verifyPassword,
   verifySessionToken,
 } from "../shared/auth.js";
+import { sendLoginLogEmail } from "../shared/login-log-email.js";
 import { ensureCoreSchema } from "../shared/schema.js";
 import { query } from "../shared/postgres.js";
 
@@ -74,6 +75,11 @@ authRouter.post("/sign-in", async (req, res, next) => {
       token: createSessionToken(row),
       user: toAuthUser(row),
     });
+
+    void sendLoginLogEmail({ req, user: toAuthUser(row) }).catch((error) => {
+      // eslint-disable-next-line no-console
+      console.error("[login-log-email] failed", error);
+    });
   } catch (error) {
     next(error);
   }
@@ -84,4 +90,3 @@ authRouter.post("/sign-out", (req, res) => {
   const session = verifySessionToken(token);
   res.json({ ok: true, signedOut: Boolean(session) });
 });
-

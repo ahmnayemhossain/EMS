@@ -3,15 +3,11 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/core/app/components/ui/button";
 import { Input } from "@/core/app/components/ui/input";
 import { Label } from "@/core/app/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/core/app/components/ui/select";
-
-import type { CompanyOption } from "./types";
 
 type SignInFormProps = {
-  login: string; password: string; companyId: string; error: string | null;
-  loading: boolean; companiesLoading: boolean; companies: CompanyOption[];
+  login: string; password: string; error: string | null;
+  loading: boolean;
   canSubmit: boolean; setLogin: (value: string) => void; setPassword: (value: string) => void;
-  setCompanyId: (value: string) => void; loadCompanies: () => Promise<void>;
   handleSubmit: (event: React.FormEvent<HTMLFormElement>) => Promise<void>;
 };
 
@@ -48,36 +44,6 @@ export function SignInForm(props: SignInFormProps) {
               placeholder="Input password"
               required
             />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Company</Label>
-            <Select
-              value={props.companyId || undefined}
-              onValueChange={props.setCompanyId}
-              onOpenChange={(open) => {
-                if (open) void props.loadCompanies();
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue
-                  placeholder={props.companiesLoading ? "Loading..." : "Select company"}
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {props.companies.length ? (
-                  props.companies.map((company) => (
-                    <SelectItem key={company.id} value={company.id}>
-                      {company.name}
-                    </SelectItem>
-                  ))
-                ) : (
-                  <SelectItem value="__empty" disabled>
-                    {props.companiesLoading ? "Loading..." : "No company found"}
-                  </SelectItem>
-                )}
-              </SelectContent>
-            </Select>
           </div>
         </div>
 

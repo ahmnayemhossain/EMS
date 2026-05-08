@@ -89,6 +89,125 @@ ALTER TABLE meters ADD COLUMN IF NOT EXISTS uom_id BIGINT REFERENCES uom(id) ON 
 ALTER TABLE meters ADD COLUMN IF NOT EXISTS code TEXT;
 ALTER TABLE meters ADD COLUMN IF NOT EXISTS location TEXT;
 ALTER TABLE utility_records ADD COLUMN IF NOT EXISTS meter_id BIGINT REFERENCES meters(id) ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE utility_records ADD COLUMN IF NOT EXISTS meter_key TEXT;
+ALTER TABLE utility_records ADD COLUMN IF NOT EXISTS diesel_liters NUMERIC;
+ALTER TABLE utility_records ADD COLUMN IF NOT EXISTS calc_method TEXT;
+ALTER TABLE utility_records ADD COLUMN IF NOT EXISTS calc_factor NUMERIC;
+ALTER TABLE utility_records ADD COLUMN IF NOT EXISTS period_month DATE;
+UPDATE utility_records
+SET meter_key = CASE
+  WHEN meter_id IS NOT NULL THEN 'meter:' || meter_id::text
+  ELSE 'name:' || lower(trim(meter_name))
+END
+WHERE meter_key IS NULL OR meter_key = '';
+UPDATE utility_records
+SET period_month = date_trunc('month', period_start)::date
+WHERE period_month IS NULL;
+
+CREATE TABLE IF NOT EXISTS utility_monthly_approvals (
+  id BIGSERIAL PRIMARY KEY,
+  facility_id BIGINT NOT NULL REFERENCES companies(id) ON UPDATE CASCADE ON DELETE CASCADE,
+  type TEXT NOT NULL,
+  meter_id BIGINT REFERENCES meters(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  meter_key TEXT NOT NULL,
+  meter_name TEXT NOT NULL,
+  source_id BIGINT REFERENCES sources(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  period_month DATE NOT NULL,
+  coverage_start DATE,
+  coverage_end DATE,
+  covered_days INTEGER NOT NULL DEFAULT 0,
+  month_days INTEGER NOT NULL DEFAULT 0,
+  missing_ranges JSONB NOT NULL DEFAULT '[]'::jsonb,
+  missing_days_count INTEGER NOT NULL DEFAULT 0,
+  record_count INTEGER NOT NULL DEFAULT 0,
+  total_value NUMERIC NOT NULL DEFAULT 0,
+  total_diesel_liters NUMERIC,
+  uom TEXT,
+  approval_status TEXT NOT NULL DEFAULT 'pending',
+  approved_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  approved_at TIMESTAMPTZ,
+  created_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  updated_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (facility_id, type, meter_key, period_month)
+);
+ALTER TABLE utility_monthly_approvals ADD COLUMN IF NOT EXISTS meter_id BIGINT REFERENCES meters(id) ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE utility_monthly_approvals ADD COLUMN IF NOT EXISTS meter_key TEXT;
+ALTER TABLE utility_monthly_approvals ADD COLUMN IF NOT EXISTS meter_name TEXT;
+ALTER TABLE utility_monthly_approvals ADD COLUMN IF NOT EXISTS source_id BIGINT REFERENCES sources(id) ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE utility_monthly_approvals ADD COLUMN IF NOT EXISTS period_month DATE;
+ALTER TABLE utility_monthly_approvals ADD COLUMN IF NOT EXISTS coverage_start DATE;
+ALTER TABLE utility_monthly_approvals ADD COLUMN IF NOT EXISTS coverage_end DATE;
+ALTER TABLE utility_monthly_approvals ADD COLUMN IF NOT EXISTS covered_days INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE utility_monthly_approvals ADD COLUMN IF NOT EXISTS month_days INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE utility_monthly_approvals ADD COLUMN IF NOT EXISTS missing_ranges JSONB NOT NULL DEFAULT '[]'::jsonb;
+ALTER TABLE utility_monthly_approvals ADD COLUMN IF NOT EXISTS missing_days_count INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE utility_monthly_approvals ADD COLUMN IF NOT EXISTS record_count INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE utility_monthly_approvals ADD COLUMN IF NOT EXISTS total_value NUMERIC NOT NULL DEFAULT 0;
+ALTER TABLE utility_monthly_approvals ADD COLUMN IF NOT EXISTS total_diesel_liters NUMERIC;
+ALTER TABLE utility_monthly_approvals ADD COLUMN IF NOT EXISTS uom TEXT;
+ALTER TABLE utility_monthly_approvals ADD COLUMN IF NOT EXISTS approval_status TEXT NOT NULL DEFAULT 'pending';
+ALTER TABLE utility_monthly_approvals ADD COLUMN IF NOT EXISTS approved_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE utility_monthly_approvals ADD COLUMN IF NOT EXISTS approved_at TIMESTAMPTZ;
+ALTER TABLE utility_monthly_approvals ADD COLUMN IF NOT EXISTS created_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE utility_monthly_approvals ADD COLUMN IF NOT EXISTS updated_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE utility_monthly_approvals ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+ALTER TABLE utility_monthly_approvals ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+CREATE INDEX IF NOT EXISTS idx_utility_records_month_key ON utility_records(facility_id, type, meter_key, period_month);
+CREATE INDEX IF NOT EXISTS idx_utility_monthly_approvals_company_month ON utility_monthly_approvals(facility_id, period_month);
+CREATE INDEX IF NOT EXISTS idx_utility_monthly_approvals_status ON utility_monthly_approvals(approval_status);
+
+CREATE TABLE IF NOT EXISTS utility_conversion_rules (
+  id BIGSERIAL PRIMARY KEY,
+  company_id BIGINT REFERENCES companies(id) ON UPDATE CASCADE ON DELETE CASCADE,
+  key TEXT NOT NULL,
+  value NUMERIC NOT NULL,
+  is_active SMALLINT NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
+  created_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  updated_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (company_id, key)
+);
+CREATE INDEX IF NOT EXISTS idx_utility_conversion_rules_key ON utility_conversion_rules(key);
+
+CREATE TABLE IF NOT EXISTS email_notification_settings (
+  id BIGSERIAL PRIMARY KEY,
+  key TEXT UNIQUE NOT NULL,
+  is_active SMALLINT NOT NULL DEFAULT 0 CHECK (is_active IN (0, 1)),
+  smtp_host TEXT,
+  smtp_port INTEGER,
+  smtp_secure SMALLINT NOT NULL DEFAULT 1 CHECK (smtp_secure IN (0, 1)),
+  smtp_username TEXT,
+  smtp_password TEXT,
+  from_name TEXT,
+  from_email TEXT,
+  recipient_emails JSONB NOT NULL DEFAULT '[]'::jsonb,
+  subject_template TEXT NOT NULL DEFAULT 'Login alert: {{userName}}',
+  html_template TEXT NOT NULL DEFAULT '<!doctype html><html><body><h2>Login alert</h2><p><strong>{{userName}}</strong> signed in to {{appName}}.</p><p>Username: {{username}}</p><p>Employee ID: {{employeeId}}</p><p>Email: {{userEmail}}</p><p>Time: {{loginAt}}</p><p>IP: {{ipAddress}}</p></body></html>',
+  created_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  updated_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+ALTER TABLE email_notification_settings ADD COLUMN IF NOT EXISTS is_active SMALLINT NOT NULL DEFAULT 0 CHECK (is_active IN (0, 1));
+ALTER TABLE email_notification_settings ADD COLUMN IF NOT EXISTS smtp_host TEXT;
+ALTER TABLE email_notification_settings ADD COLUMN IF NOT EXISTS smtp_port INTEGER;
+ALTER TABLE email_notification_settings ADD COLUMN IF NOT EXISTS smtp_secure SMALLINT NOT NULL DEFAULT 1 CHECK (smtp_secure IN (0, 1));
+ALTER TABLE email_notification_settings ADD COLUMN IF NOT EXISTS smtp_username TEXT;
+ALTER TABLE email_notification_settings ADD COLUMN IF NOT EXISTS smtp_password TEXT;
+ALTER TABLE email_notification_settings ADD COLUMN IF NOT EXISTS from_name TEXT;
+ALTER TABLE email_notification_settings ADD COLUMN IF NOT EXISTS from_email TEXT;
+ALTER TABLE email_notification_settings ADD COLUMN IF NOT EXISTS recipient_emails JSONB NOT NULL DEFAULT '[]'::jsonb;
+ALTER TABLE email_notification_settings ADD COLUMN IF NOT EXISTS subject_template TEXT NOT NULL DEFAULT 'Login alert: {{userName}}';
+ALTER TABLE email_notification_settings ADD COLUMN IF NOT EXISTS html_template TEXT NOT NULL DEFAULT '<!doctype html><html><body><h2>Login alert</h2><p><strong>{{userName}}</strong> signed in to {{appName}}.</p><p>Username: {{username}}</p><p>Employee ID: {{employeeId}}</p><p>Email: {{userEmail}}</p><p>Time: {{loginAt}}</p><p>IP: {{ipAddress}}</p></body></html>';
+ALTER TABLE email_notification_settings ADD COLUMN IF NOT EXISTS created_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE email_notification_settings ADD COLUMN IF NOT EXISTS updated_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE email_notification_settings ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+ALTER TABLE email_notification_settings ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+CREATE INDEX IF NOT EXISTS idx_email_notification_settings_key ON email_notification_settings(key);
+
 ALTER TABLE suppliers DROP COLUMN IF EXISTS code;
 ALTER TABLE suppliers ADD COLUMN IF NOT EXISTS created_by_user_id BIGINT;
 ALTER TABLE suppliers ADD COLUMN IF NOT EXISTS updated_by_user_id BIGINT;

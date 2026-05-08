@@ -1,11 +1,26 @@
 import { authJsonHeaders, parseJsonResponse } from "@/core/app/lib/api";
-import type { UtilityMeterOption, UtilityRecord, UtilitySourceOption, UtilityUomOption, UtilityType } from "@/core/types/ems";
+import type {
+  UtilityMasterMeter,
+  UtilityMeterOption,
+  UtilityRecord,
+  UtilitySourceOption,
+  UtilityUomOption,
+  UtilityType,
+} from "@/core/types/ems";
 
 const UTILITIES_API = "/api/utilities";
 export type UtilityRecordInput = Omit<UtilityRecord, "id"> & { id?: number };
 
-export async function listUtilityRecords(userId: string) {
-  const response = await fetch(UTILITIES_API, { cache: "no-store", headers: authJsonHeaders(userId) });
+export async function listUtilityRecords(
+  userId: string,
+  input?: { facilityId?: string; type?: UtilityType; search?: string },
+) {
+  const params = new URLSearchParams();
+  if (input?.facilityId) params.set("facilityId", input.facilityId);
+  if (input?.type) params.set("type", input.type);
+  if (input?.search) params.set("search", input.search);
+  const url = params.toString() ? `${UTILITIES_API}?${params.toString()}` : UTILITIES_API;
+  const response = await fetch(url, { cache: "no-store", headers: authJsonHeaders(userId) });
   return parseJsonResponse<UtilityRecord[]>(response, "Utilities request failed.");
 }
 
@@ -45,6 +60,24 @@ export async function updateUtilityRecord(id: number, record: UtilityRecordInput
   return parseJsonResponse<UtilityRecord>(response, "Utilities request failed.");
 }
 
+export async function approveUtilityMonth(id: number, userId: string) {
+  const response = await fetch(`${UTILITIES_API}/${id}/approve-month`, {
+    method: "POST",
+    headers: authJsonHeaders(userId),
+  });
+
+  return parseJsonResponse<UtilityRecord>(response, "Utilities request failed.");
+}
+
+export async function submitUtilityMonth(id: number, userId: string) {
+  const response = await fetch(`${UTILITIES_API}/${id}/submit-month`, {
+    method: "POST",
+    headers: authJsonHeaders(userId),
+  });
+
+  return parseJsonResponse<UtilityRecord>(response, "Utilities request failed.");
+}
+
 export async function deleteUtilityRecord(id: number, userId: string) {
   const response = await fetch(`${UTILITIES_API}/${id}`, {
     method: "DELETE",
@@ -78,4 +111,25 @@ export async function listUtilityMeters(
     headers: authJsonHeaders(userId),
   });
   return parseJsonResponse<UtilityMeterOption[]>(response, "Utilities request failed.");
+}
+
+export async function listUtilityMasterMeters(userId: string, input: { companyId: string }) {
+  const params = new URLSearchParams({ companyId: input.companyId });
+  const response = await fetch(`${UTILITIES_API}/master-data?${params.toString()}`, {
+    cache: "no-store",
+    headers: authJsonHeaders(userId),
+  });
+  return parseJsonResponse<UtilityMasterMeter[]>(response, "Utilities request failed.");
+}
+
+export async function getUtilityConversionRules(userId: string, input: { companyId: string }) {
+  const params = new URLSearchParams({ companyId: input.companyId });
+  const response = await fetch(`${UTILITIES_API}/conversion-rules?${params.toString()}`, {
+    cache: "no-store",
+    headers: authJsonHeaders(userId),
+  });
+  return parseJsonResponse<{ generatorDieselKwhPerLiter: number | null }>(
+    response,
+    "Utilities request failed.",
+  );
 }

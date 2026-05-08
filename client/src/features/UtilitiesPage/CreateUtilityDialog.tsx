@@ -2,15 +2,16 @@ import * as React from "react";
 
 import { CreateActionDialog } from "@/core/components/CreateActionDialog";
 import type { UtilityUsagePayload } from "@/features/UtilitiesPage/baseline-settings";
-import { listUtilityMeters } from "@/features/UtilitiesPage/api";
+import { getUtilityConversionRules, listUtilityMeters } from "@/features/UtilitiesPage/api";
 import { buildUtilityPayload } from "@/features/UtilitiesPage/dialog/build-utility-payload";
+import { getCoveragePreview } from "@/features/UtilitiesPage/dialog/coverage-preview";
 import { CreateDialogContent } from "@/features/UtilitiesPage/dialog/create-dialog-content";
 import { createEmptyUtilityFormState } from "@/features/UtilitiesPage/dialog/form-state";
 import { getCreateDialogErrors } from "@/features/UtilitiesPage/dialog/utility-dialog-errors";
 import { useUtilityDialogLogic } from "@/features/UtilitiesPage/dialog/use-utility-dialog-logic";
 import { useSyncedUtilityForm } from "@/features/UtilitiesPage/dialog/use-synced-utility-form";
 import type { CompanyOption } from "@/core/app/state/company";
-import type { UtilityMeterOption, UtilitySourceOption, UtilityType, UtilityUomOption } from "@/core/types/ems";
+import type { UtilityMeterOption, UtilityRecord, UtilitySourceOption, UtilityType, UtilityUomOption } from "@/core/types/ems";
 
 export function CreateUtilityDialog(props: {
   userId: string;
@@ -19,16 +20,23 @@ export function CreateUtilityDialog(props: {
   activeType: UtilityType;
   uomOptions: UtilityUomOption[];
   sourceOptions: UtilitySourceOption[];
+  existingRecords: UtilityRecord[];
   onCreateUsage?: (payload: UtilityUsagePayload) => void | boolean | Promise<void | boolean>;
 }) {
   const [state, setState] = React.useState(() => createEmptyUtilityFormState(props.defaultCompanyId, props.activeType));
   const [meterOptions, setMeterOptions] = React.useState<UtilityMeterOption[]>([]);
-  const logic = useUtilityDialogLogic(state, props.uomOptions, props.sourceOptions);
+  const [generatorDieselKwhPerLiter, setGeneratorDieselKwhPerLiter] = React.useState<number | null>(null);
+  const [showValidation, setShowValidation] = React.useState(false);
+  const logic = useUtilityDialogLogic(state, props.uomOptions, props.sourceOptions, { generatorDieselKwhPerLiter });
   useSyncedUtilityForm(state, setState, {
     defaultCompanyId: props.defaultCompanyId,
     activeType: props.activeType,
     logic,
   });
+
+  React.useEffect(() => {
+    setShowValidation(false);
+  }, [props.defaultCompanyId, props.activeType]);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -58,16 +66,45 @@ export function CreateUtilityDialog(props: {
     }));
   }, [meterOptions, state.meterId, setState]);
 
-  const errors = getCreateDialogErrors({
-    state,
-    attachmentError: logic.attachmentError,
-    consumption: logic.consumption,
-    config: logic.config,
-    filteredSourceOptions: logic.filteredSourceOptions,
-    previousReading: logic.previousReading,
-    currentReading: logic.currentReading,
-    manualConsumption: logic.manualConsumption,
-  });
+  React.useEffect(() => {
+    const selectedSourceName = props.sourceOptions.find((s) => s.id === state.sourceId)?.name ?? "";
+    const generatorMode = state.type === "electricity" && selectedSourceName.toLowerCase() === "generator";
+    if (!generatorMode) return;
+    setState((current) => (current.unit === "kWh" ? current : { ...current, unit: "kWh" }));
+  }, [props.sourceOptions, setState, state.sourceId, state.type]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    async function loadRules() {
+      try {
+        if (!state.companyId) return;
+        const rules = await getUtilityConversionRules(props.userId, { companyId: state.companyId });
+        if (!cancelled) setGeneratorDieselKwhPerLiter(typeof rules.generatorDieselKwhPerLiter === "number" ? rules.generatorDieselKwhPerLiter : null);
+      } catch {
+        if (!cancelled) setGeneratorDieselKwhPerLiter(null);
+      }
+    }
+    void loadRules();
+    return () => {
+      cancelled = true;
+    };
+  }, [props.userId, state.companyId]);
+
+  const coveragePreview = getCoveragePreview({ state, existingRecords: props.existingRecords });
+  const errors = [
+    ...getCreateDialogErrors({
+      state,
+      attachmentError: logic.attachmentError,
+      consumption: logic.consumption,
+      generatorMode: logic.generatorMode,
+      config: logic.config,
+      filteredSourceOptions: logic.filteredSourceOptions,
+      previousReading: logic.previousReading,
+      currentReading: logic.currentReading,
+      manualConsumption: logic.manualConsumption,
+    }),
+    coveragePreview.error,
+  ].filter(Boolean);
 
   const payload = buildUtilityPayload({
     state,
@@ -88,8 +125,11 @@ export function CreateUtilityDialog(props: {
       title="Add Utility Usage"
       submitLabel="Create Usage Record"
       contentClassName="sm:max-w-3xl"
-      submitDisabled={errors.length > 0 || !payload}
-      onCreate={() => (payload ? props.onCreateUsage?.(payload) : false)}
+      onCreate={() => {
+        setShowValidation(true);
+        if (errors.length > 0 || !payload) return false;
+        return props.onCreateUsage?.(payload);
+      }}
     >
       <CreateDialogContent
         state={state}
@@ -100,7 +140,10 @@ export function CreateUtilityDialog(props: {
         consumption={logic.consumption}
         status={payload?.status}
         attachmentError={logic.attachmentError}
+        coverageWarning={coveragePreview.warning}
+        showValidation={showValidation}
         updateState={updateState}
+        generatorDieselKwhPerLiter={generatorDieselKwhPerLiter}
       />
     </CreateActionDialog>
   );

@@ -22,6 +22,23 @@ export type Chemical = {
   minStockKg?: number;
   expiryDate?: string; // ISO date
   sdsId?: ID;
+  sds?: {
+    id: ID;
+    chemicalName: string;
+    supplier: string;
+    language: string;
+    revisionDate?: string; // ISO date
+    files?: Array<{
+      id?: number;
+      name: string;
+      storedName?: string;
+      mimeType?: string;
+      fileSize?: number;
+      storagePath?: string;
+      url?: string;
+      uploadedAt: string;
+    }>;
+  };
   ppe: string[];
   storageInstructions: string[];
   compatibilityWarnings: string[];
@@ -36,6 +53,16 @@ export type SDSRecord = {
   language: string;
   revisionDate: string; // ISO date
   fileName: string;
+  notes?: string;
   sections: Array<{ id: string; title: string; summary: string }>;
+  files?: Array<{
+    id?: number;
+    name: string;
+    storedName?: string;
+    mimeType?: string;
+    fileSize?: number;
+    storagePath?: string;
+    url?: string;
+    uploadedAt: string;
+  }>;
 };
-

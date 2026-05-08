@@ -14,6 +14,7 @@ export function SelectFilter({
   onChange,
   placeholder,
   items,
+  disabled,
   invalid,
   className,
 }: {
@@ -21,12 +22,17 @@ export function SelectFilter({
   onChange: (value: string) => void;
   placeholder: string;
   items: Array<{ value: string; label: string }>;
+  disabled?: boolean;
   invalid?: boolean;
   className?: string;
 }) {
   return (
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger aria-invalid={invalid || undefined} className={cn("w-full sm:w-[220px]", className)}>
+    <Select value={value} onValueChange={onChange} disabled={disabled}>
+      <SelectTrigger
+        disabled={disabled}
+        aria-invalid={invalid || undefined}
+        className={cn("w-full sm:w-[220px]", className)}
+      >
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>

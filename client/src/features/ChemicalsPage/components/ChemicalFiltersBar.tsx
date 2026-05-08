@@ -5,12 +5,12 @@ import { DateRangePickerPlaceholder } from "@/core/components/DateRangePickerPla
 import { FilterBar } from "@/core/components/FilterBar";
 import { SearchInput } from "@/core/components/SearchInput";
 import { SelectFilter } from "@/core/components/SelectFilter";
-import type { Facility } from "@/core/types/ems";
+import type { CompanyOption } from "@/core/app/state/company";
 
 import { chemicalApprovalOptions, hazardLabels } from "../constants";
 
 export function ChemicalFiltersBar({
-  facilities,
+  companies,
   search,
   onSearchChange,
   companyId,
@@ -25,7 +25,7 @@ export function ChemicalFiltersBar({
   onExpiryToChange,
   onClear,
 }: {
-  facilities: Facility[];
+  companies: CompanyOption[];
   search: string;
   onSearchChange: (v: string) => void;
   companyId?: string;
@@ -50,13 +50,13 @@ export function ChemicalFiltersBar({
       left={
         <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
           <div className="w-full lg:w-[320px]">
-            <SearchInput value={search} onChange={onSearchChange} placeholder="Search chemical / supplier…" />
+            <SearchInput value={search} onChange={onSearchChange} placeholder="Search chemical / supplier..." />
           </div>
           <SelectFilter
             value={companyId}
             onChange={onCompanyIdChange}
             placeholder="Company"
-            items={facilities.map((f) => ({ value: f.id, label: f.name }))}
+            items={companies.map((c) => ({ value: c.id, label: c.name }))}
           />
           <SelectFilter
             value={hazard}
@@ -81,4 +81,3 @@ export function ChemicalFiltersBar({
     />
   );
 }
-

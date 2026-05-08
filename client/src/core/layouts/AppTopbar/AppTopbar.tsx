@@ -11,7 +11,7 @@ export function AppTopbar() {
   return (
     <header className="bg-background/92 supports-[backdrop-filter]:bg-background/80 sticky top-0 z-40 border-b border-border/70 backdrop-blur">
       <div
-        className="mx-auto flex h-11 items-center gap-2 px-3 sm:gap-3 sm:px-4 md:px-6"
+        className="mx-auto flex min-h-12 items-center gap-2 px-3 py-2 sm:gap-3 sm:px-4 md:px-6"
         style={{ maxWidth: `${appConfig.shell.maxContentWidth}px` }}
       >
         <SidebarTrigger className="mr-1" />

@@ -1,4 +1,4 @@
-import { Bell } from "lucide-react";
+import { Mail } from "lucide-react";
 import { useNavigate } from "react-router";
 
 import { Button } from "@/core/app/components/ui/button";
@@ -11,12 +11,12 @@ export function NotificationsButton() {
   return (
     <Button
       variant="ghost"
-      size="icon"
-      aria-label="Notifications"
-      onClick={() => navigate("/notifications")}
-      className="relative"
+      size="sm"
+      aria-label="Inbox"
+      onClick={() => navigate("/inbox")}
+      className="relative size-8 rounded-lg p-0"
     >
-      <Bell className="size-4" />
+      <Mail className="size-4" />
       {unreadCount > 0 ? (
         <span className="bg-destructive text-destructive-foreground absolute -top-0.5 -right-0.5 grid min-w-[16px] place-items-center rounded-full px-1 text-[10px] font-semibold leading-none ring-2 ring-background">
           {unreadCount > 9 ? "9+" : unreadCount}
@@ -25,4 +25,3 @@ export function NotificationsButton() {
     </Button>
   );
 }
-

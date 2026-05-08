@@ -28,10 +28,12 @@ export function CompanySwitcher() {
         <Button
           variant="outline"
           size="sm"
-          className="max-w-[160px] justify-between gap-2 px-2 md:max-w-none md:px-3"
+          className="h-8 max-w-[160px] justify-between gap-2 px-2 md:max-w-none md:px-3"
         >
           <Building2 className="size-4 shrink-0 sm:hidden" />
-          <span className="hidden truncate sm:inline">{selectedCompanyName}</span>
+          <span className="hidden min-w-0 items-center gap-2 truncate sm:inline-flex">
+            <span className="truncate">{selectedCompanyName}</span>
+          </span>
           <ChevronDown className="hidden size-4 shrink-0 sm:inline" />
           <span className="sr-only sm:hidden">Switch company</span>
         </Button>

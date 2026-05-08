@@ -19,8 +19,8 @@ export function SidebarTrigger({
       data-sidebar="trigger"
       data-slot="sidebar-trigger"
       variant="ghost"
-      size="icon"
-      className={cn("size-7", className)}
+      size="sm"
+      className={cn("size-8 p-0", className)}
       onClick={(event) => {
         onClick?.(event);
         toggleSidebar();
@@ -42,4 +42,3 @@ export function SidebarTrigger({
     </Button>
   );
 }
-

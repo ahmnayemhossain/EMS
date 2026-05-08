@@ -20,7 +20,7 @@ export function ThemeSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Theme">
+        <Button variant="ghost" size="sm" className="size-8 p-0" aria-label="Theme">
           {resolvedTheme === "dark" ? (
             <Moon className="size-4" />
           ) : (
@@ -56,4 +56,3 @@ export function ThemeSwitcher() {
     </DropdownMenu>
   );
 }
-

@@ -3,6 +3,7 @@ import type { UtilityUsageStatus } from "@/features/UtilitiesPage/baseline-setti
 import type { UtilityMeterOption, UtilitySourceOption, UtilityType, UtilityUomOption } from "@/core/types/ems";
 
 export type UtilityFormProps = {
+  showValidation?: boolean;
   companies: CompanyOption[];
   companyId: string;
   type: UtilityType;
@@ -28,8 +29,12 @@ export type UtilityFormProps = {
   onCurrentReadingChange: (value: string) => void;
   consumptionInput: string;
   onConsumptionInputChange: (value: string) => void;
+  dieselLitersInput: string;
+  onDieselLitersInputChange: (value: string) => void;
+  generatorDieselKwhPerLiter?: number | null;
   consumption?: number;
   status?: UtilityUsageStatus;
+  coverageWarning?: string;
   remarks: string;
   onRemarksChange: (value: string) => void;
   attachment: File | null;
@@ -44,6 +49,7 @@ export type UtilityFormErrors = {
   source: string;
   periodStart: string;
   periodEnd: string;
+  coverage: string;
   meterName: string;
   previousReading: string;
   currentReading: string;

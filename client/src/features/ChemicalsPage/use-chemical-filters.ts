@@ -1,18 +1,9 @@
-import * as React from "react";
-
-import { chemicals, getFacilityName } from "@/core/data/mock";
 import type { Chemical, HazardClass } from "@/core/types/ems";
 
 import { daysUntil } from "./utils";
 
-export function useChemicalFilters({
-  search,
-  companyId,
-  hazard,
-  approval,
-  expiryFrom,
-  expiryTo,
-}: {
+export function filterChemicals(input: {
+  rows: Chemical[] | null | undefined;
   search: string;
   companyId?: string;
   hazard?: string;
@@ -20,14 +11,16 @@ export function useChemicalFilters({
   expiryFrom: string;
   expiryTo: string;
 }) {
-  const expiryFromTs = expiryFrom ? new Date(expiryFrom).getTime() : undefined;
-  const expiryToTs = expiryTo ? new Date(expiryTo).getTime() : undefined;
-  const rows = chemicals
-    .filter((chemical) => (companyId ? chemical.facilityId === companyId : true))
-    .filter((chemical) => (hazard ? chemical.hazardClasses.includes(hazard as HazardClass) : true))
-    .filter((chemical) => (approval ? chemical.approvalStatus === (approval as Chemical["approvalStatus"]) : true))
+  const expiryFromTs = input.expiryFrom ? new Date(input.expiryFrom).getTime() : undefined;
+  const expiryToTs = input.expiryTo ? new Date(input.expiryTo).getTime() : undefined;
+  const query = input.search.trim().toLowerCase();
+
+  const rows = (input.rows ?? [])
+    .filter((chemical) => (input.companyId ? chemical.facilityId === input.companyId : true))
+    .filter((chemical) => (input.hazard ? chemical.hazardClasses.includes(input.hazard as HazardClass) : true))
+    .filter((chemical) => (input.approval ? chemical.approvalStatus === (input.approval as Chemical["approvalStatus"]) : true))
     .filter((chemical) => withinExpiryRange(chemical, expiryFromTs, expiryToTs))
-    .filter((chemical) => matchesChemicalSearch(chemical, search));
+    .filter((chemical) => matchesChemicalSearch(chemical, query));
 
   return {
     rows,
@@ -49,10 +42,13 @@ function withinExpiryRange(chemical: Chemical, expiryFromTs?: number, expiryToTs
   return true;
 }
 
-function matchesChemicalSearch(chemical: Chemical, search: string) {
-  const query = search.trim().toLowerCase();
+function matchesChemicalSearch(chemical: Chemical, query: string) {
   if (!query) return true;
-  return chemical.name.toLowerCase().includes(query) || chemical.supplier.toLowerCase().includes(query) || chemical.storageArea.toLowerCase().includes(query) || getFacilityName(chemical.facilityId).toLowerCase().includes(query);
+  return (
+    chemical.name.toLowerCase().includes(query) ||
+    chemical.supplier.toLowerCase().includes(query) ||
+    chemical.storageArea.toLowerCase().includes(query)
+  );
 }
 
 function isNearExpiry(chemical: Chemical) {

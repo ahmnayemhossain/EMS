@@ -10,6 +10,7 @@ export type UtilityDialogFormState = {
   previousReading: string;
   currentReading: string;
   consumptionInput: string;
+  dieselLitersInput: string;
   unit: string;
   sourceId: string;
   remarks: string;
@@ -27,6 +28,7 @@ export function createEmptyUtilityFormState(companyId: string, type: UtilityType
     previousReading: "",
     currentReading: "",
     consumptionInput: "",
+    dieselLitersInput: "",
     unit: "",
     sourceId: "",
     remarks: "",
