@@ -204,7 +204,7 @@ export async function approveUtilityMonthByRecordId(input) {
   if (!record) throw createHttpError(404, "Utility record not found.");
 
   const approvalRes = await query(
-    `SELECT id, missing_days_count, record_count
+    `SELECT id, missing_days_count, record_count, approval_status
        FROM utility_monthly_approvals
       WHERE facility_id = $1 AND type = $2 AND meter_key = $3 AND period_month = $4`,
     [record.facility_id, record.type, record.meter_key, record.period_month],

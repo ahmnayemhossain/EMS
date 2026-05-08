@@ -26,7 +26,7 @@ utilitiesRouter.get("/", requirePermission("utilities:read"), listUtilityRecords
 utilitiesRouter.get("/:id", requirePermission("utilities:read"), getUtilityRecord);
 utilitiesRouter.post("/", requirePermission("utilities:write"), createUtilityRecord);
 utilitiesRouter.put("/:id", requirePermission("utilities:update"), updateUtilityRecord);
-utilitiesRouter.post("/:id/submit-month", requirePermission("utilities:update"), submitUtilityMonth);
-utilitiesRouter.post("/:id/approve-month", requirePermission("utilities:update"), approveUtilityMonth);
+utilitiesRouter.post("/:id/submit-month", requirePermission("utilities:submit"), submitUtilityMonth);
+utilitiesRouter.post("/:id/approve-month", requirePermission("utilities:approve"), approveUtilityMonth);
 utilitiesRouter.post("/:id/attachment", requirePermission("utilities:update"), uploadUtilityAttachment);
 utilitiesRouter.delete("/:id", requirePermission("utilities:delete"), deleteUtilityRecord);

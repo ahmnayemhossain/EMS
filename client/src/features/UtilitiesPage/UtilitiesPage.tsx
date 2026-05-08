@@ -3,6 +3,7 @@ import * as React from "react";
 import { Tabs, TabsContent } from "@/core/app/components/ui/tabs";
 import { useIsMobile } from "@/core/app/components/ui/use-mobile";
 import { useSelectedCompany } from "@/core/app/state/company";
+import { useCan } from "@/core/app/state/permissions";
 import { useUser } from "@/core/app/state/user";
 import { ActionModal } from "@/core/components/ActionModal";
 import { PageHeader } from "@/core/components/PageHeader";
@@ -25,6 +26,8 @@ export function UtilitiesPage() {
   const isMobile = useIsMobile();
   const { selectedCompanyId, companies } = useSelectedCompany();
   const { userId } = useUser();
+  const canSubmit = useCan("utilities:submit");
+  const canApprove = useCan("utilities:approve");
   const selectedCompany = React.useMemo(() => companies.find((company) => company.id === selectedCompanyId), [companies, selectedCompanyId]);
   const getCompanyName = React.useCallback((id: string) => companies.find((company) => company.id === id)?.name || "Company", [companies]);
   const [active, setActive] = React.useState<UtilityType>("electricity");
@@ -35,8 +38,9 @@ export function UtilitiesPage() {
   const [deleteOpen, setDeleteOpen] = React.useState(false);
   const [submitOpen, setSubmitOpen] = React.useState(false);
   const { utilityRows, setUtilityRows, uomOptions, sourceOptions, loading, reloadUtilities } = useUtilitiesLoader(userId, { facilityId });
-  const { rows, total, highVarianceCount, missingBillsCount } = useUtilitiesRows({ active, facilityId, search, extraRows: utilityRows, companies });
+  const { rows, total, highVarianceCount, missingBillsCount, readyToSubmitCount, readyForApprovalCount, monthSummaries, missingMonthLabels } = useUtilitiesRows({ active, facilityId, search, extraRows: utilityRows, companies });
   const trendData = React.useMemo(() => Array.from(rows.reduce((map, row) => map.set(row.periodStart.slice(0, 7), (map.get(row.periodStart.slice(0, 7)) ?? 0) + row.value), new Map<string, number>()), ([label, value]) => ({ label, value })).sort((a, b) => a.label.localeCompare(b.label)), [rows]);
+  const monthWarnings = React.useMemo(() => monthSummaries.filter((item) => item.missingDaysCount > 0).map((item) => ({ month: formatMonth(item.month), detail: item.missingRanges.map((range) => range.start === range.end ? range.start : `${range.start} to ${range.end}`).join(", ") })), [monthSummaries]);
   const columns = React.useMemo(() => getUtilityColumns(getCompanyName), [getCompanyName]);
   const actions = createUtilityActions({ userId, selected, setSelected, setDeleteOpen, setUtilityRows, reloadUtilities });
 
@@ -62,15 +66,21 @@ export function UtilitiesPage() {
         <UtilitiesTabStrip types={utilityTypes} />
         <TabsContent value={active} className="mt-4 space-y-4">
           <UtilitiesFiltersBar search={search} onSearchChange={setSearch} companyName={selectedCompany?.name || "No company selected"} onClear={() => { setSearch(""); setFacilityId(selectedCompanyId || undefined); }} />
-          <UtilitiesKpis recordsCount={rows.length} total={total} highVarianceCount={highVarianceCount} missingBillsCount={missingBillsCount} />
-          <UtilityAnalyticsSection isMobile={isMobile} rows={rows} trendData={trendData} getCompanyName={getCompanyName} />
+          <UtilitiesKpis recordsCount={rows.length} total={total} highVarianceCount={highVarianceCount} missingBillsCount={missingBillsCount} readyToSubmitCount={readyToSubmitCount} readyForApprovalCount={readyForApprovalCount} />
+          <UtilityAnalyticsSection isMobile={isMobile} trendData={trendData} missingMonthLabels={missingMonthLabels} monthWarnings={monthWarnings} />
           <UtilityRecordsSection isMobile={isMobile} rows={rows} loading={loading} columns={columns} getCompanyName={getCompanyName} onSelect={setSelected} />
         </TabsContent>
       </Tabs>
-      <UtilityDetailDrawer selected={selected} companies={companies} getCompanyName={getCompanyName} onSelect={setSelected} onEdit={() => setEditOpen(true)} onDelete={() => setDeleteOpen(true)} onApproveMonth={actions.approveSelectedMonth} onSubmitMonth={() => setSubmitOpen(true)} />
+      <UtilityDetailDrawer selected={selected} companies={companies} getCompanyName={getCompanyName} canSubmit={canSubmit} canApprove={canApprove} onSelect={setSelected} onEdit={() => setEditOpen(true)} onDelete={() => setDeleteOpen(true)} onApproveMonth={actions.approveSelectedMonth} onSubmitMonth={() => setSubmitOpen(true)} />
       <EditUtilityDialog open={editOpen} onOpenChange={setEditOpen} userId={userId} companies={companies} uomOptions={uomOptions} sourceOptions={sourceOptions} record={selected} existingRecords={utilityRows} onSave={actions.updateUsage} />
       <ActionModal open={deleteOpen} onOpenChange={setDeleteOpen} tone="destructive" title="Delete this utility record?" description="This action removes the usage record from the server. This cannot be undone." confirmLabel="Delete" onConfirm={actions.deleteSelected} />
       <ActionModal open={submitOpen} onOpenChange={setSubmitOpen} tone="default" title="Submit full month for approval?" description="After submission, the configured approver email recipients will get an approval request. You can change data later, but it will reset the month back to pending." confirmLabel="Submit" onConfirm={async () => { const ok = await actions.submitSelectedMonth(); if (ok !== false) setSubmitOpen(false); }} />
     </div>
   );
+}
+
+function formatMonth(month: string) {
+  const [year, monthValue] = month.split("-");
+  const shortMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${shortMonths[Math.max(0, Number(monthValue) - 1)] || "Mon"} ${String(year).slice(-2)}`;
 }

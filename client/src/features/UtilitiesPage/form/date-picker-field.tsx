@@ -23,10 +23,12 @@ export function DatePickerField({
   label,
   value,
   onChange,
+  invalid,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  invalid?: boolean;
 }) {
   const [open, setOpen] = React.useState(false);
   const selected = value ? toPickerDate(value) : undefined;
@@ -36,7 +38,7 @@ export function DatePickerField({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button type="button" variant="outline" className={cn("w-full justify-between", !value && "text-muted-foreground")}>
+        <Button type="button" variant="outline" aria-invalid={invalid || undefined} className={cn("w-full justify-between", !value && "text-muted-foreground", invalid && "border-destructive ring-destructive/20 ring-[3px]")}>
           <span className="flex min-w-0 items-center gap-2">
             <CalendarDays className="size-4 shrink-0" />
             <span className="truncate">{display}</span>

@@ -10,6 +10,8 @@ export function UtilityDetailDrawer(props: {
   selected: UtilityRecord | null;
   companies: Array<{ id: string; name: string }>;
   getCompanyName: (id: string) => string;
+  canSubmit: boolean;
+  canApprove: boolean;
   onSelect: (record: UtilityRecord | null) => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -17,14 +19,16 @@ export function UtilityDetailDrawer(props: {
   onSubmitMonth: () => void | Promise<void>;
 }) {
   const description = props.selected
-    ? `${props.companies.find((company) => company.id === props.selected?.facilityId)?.name || "Company"} • ${formatDate(props.selected.periodStart)} to ${formatDate(props.selected.periodEnd)}`
+    ? `${props.companies.find((company) => company.id === props.selected?.facilityId)?.name || "Company"} \u2022 ${formatDate(props.selected.periodStart)} to ${formatDate(props.selected.periodEnd)}`
     : undefined;
   const approveDisabled =
     !props.selected ||
+    !props.canApprove ||
     props.selected.approvalStatus !== "submitted" ||
     Number(props.selected.missingDaysCount || 0) > 0;
   const submitDisabled =
     !props.selected ||
+    !props.canSubmit ||
     !props.selected.monthComplete ||
     props.selected.approvalStatus !== "pending";
 
@@ -34,7 +38,7 @@ export function UtilityDetailDrawer(props: {
       onOpenChange={(open) => {
         if (!open) props.onSelect(null);
       }}
-      title={props.selected ? `${formatUtilityType(props.selected.type)} — ${props.selected.meterName}` : "Utility record"}
+      title={props.selected ? `${formatUtilityType(props.selected.type)} \u2014 ${props.selected.meterName}` : "Utility record"}
       description={description}
     >
       {props.selected ? (

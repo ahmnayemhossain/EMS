@@ -1,24 +1,23 @@
 import { UtilitiesComparisonCard } from "@/features/UtilitiesPage/UtilitiesComparisonCard";
 import { UtilitiesTrendCard } from "@/features/UtilitiesPage/UtilitiesTrendCard";
-import type { UtilityRecord } from "@/core/types/ems";
 
 export function UtilityAnalyticsSection({
   isMobile,
-  rows,
   trendData,
-  getCompanyName,
+  missingMonthLabels,
+  monthWarnings,
 }: {
   isMobile: boolean;
-  rows: UtilityRecord[];
   trendData: Array<{ label: string; value: number }>;
-  getCompanyName: (id: string) => string;
+  missingMonthLabels: string[];
+  monthWarnings: Array<{ month: string; detail: string }>;
 }) {
   if (isMobile) {
     return (
       <div className="-mx-4 overflow-x-auto px-4">
         <div className="flex w-max gap-4 pb-1">
           <UtilitiesTrendCard data={trendData} className="w-[92vw] max-w-[720px] shrink-0" />
-          <UtilitiesComparisonCard rows={rows} getCompanyName={getCompanyName} className="w-[92vw] max-w-[520px] shrink-0" />
+          <UtilitiesComparisonCard missingMonthLabels={missingMonthLabels} monthWarnings={monthWarnings} className="w-[92vw] max-w-[520px] shrink-0" />
         </div>
       </div>
     );
@@ -29,7 +28,7 @@ export function UtilityAnalyticsSection({
       <div className="xl:col-span-2">
         <UtilitiesTrendCard data={trendData} />
       </div>
-      <UtilitiesComparisonCard rows={rows} getCompanyName={getCompanyName} />
+      <UtilitiesComparisonCard missingMonthLabels={missingMonthLabels} monthWarnings={monthWarnings} />
     </div>
   );
 }

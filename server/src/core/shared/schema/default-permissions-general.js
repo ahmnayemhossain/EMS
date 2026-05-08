@@ -1,7 +1,7 @@
 export const generalPermissions = [
   "dashboard:read", "dashboard:customize", "audit-calendar:read", "audit-calendar:write", "audit-calendar:update",
   "audit-calendar:delete", "companies:read", "utilities:read", "utilities:write", "utilities:update",
-  "utilities:delete", "chemicals:read", "chemicals:write", "chemicals:update", "chemicals:delete",
+  "utilities:submit", "utilities:approve", "utilities:delete", "chemicals:read", "chemicals:write", "chemicals:update", "chemicals:delete",
   "sds:read", "sds:write", "sds:update", "sds:delete", "waste:read",
   "waste:write", "waste:update", "waste:delete", "wastewater:read", "wastewater:write",
   "wastewater:update", "wastewater:delete", "audits:read", "audits:write", "audits:update",

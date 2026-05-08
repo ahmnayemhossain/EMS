@@ -25,12 +25,12 @@ export function getUtilityColumns(getCompanyName: (id: string) => string): Array
       cell: (row) => (
         <div className="text-sm">
           <div>
-            {formatDate(row.periodStart)} → {formatDate(row.periodEnd)}
+            {formatDate(row.periodStart)} {"\u2192"} {formatDate(row.periodEnd)}
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
             <span className="text-muted-foreground">
               {formatUtilityType(row.type)}
-              {row.sourceName ? ` • ${row.sourceName}` : ""}
+              {row.sourceName ? ` \u2022 ${row.sourceName}` : ""}
             </span>
             {row.periodMonth ? (
               <Badge className={getMonthBadgeClass(row.periodMonth)}>

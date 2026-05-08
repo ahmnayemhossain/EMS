@@ -26,8 +26,9 @@ export function MeterReadingSection({ props, errors }: { props: UtilityFormProps
             onChange={(event) => props.onPreviousReadingChange(event.target.value)}
             placeholder="0"
             disabled={!readingEnabled}
+            aria-invalid={props.showValidation && errors.previousReading ? true : undefined}
           />
-          <FieldError>{props.showValidation ? errors.previousReading : ""}</FieldError>
+          <FieldError />
         </div>
         <div className="grid gap-1.5">
           <FieldLabel required={readingEnabled}>Current Reading</FieldLabel>
@@ -38,8 +39,9 @@ export function MeterReadingSection({ props, errors }: { props: UtilityFormProps
             onChange={(event) => props.onCurrentReadingChange(event.target.value)}
             placeholder="0"
             disabled={!readingEnabled}
+            aria-invalid={props.showValidation && errors.currentReading ? true : undefined}
           />
-          <FieldError>{props.showValidation ? errors.currentReading : ""}</FieldError>
+          <FieldError />
         </div>
 
         {generatorMode ? (
@@ -55,14 +57,15 @@ export function MeterReadingSection({ props, errors }: { props: UtilityFormProps
               onChange={(event) => props.onDieselLitersInputChange(event.target.value)}
               placeholder="0"
               disabled={generatorDieselLocked}
+              aria-invalid={props.showValidation && errors.consumption ? true : undefined}
             />
             <div className="text-muted-foreground text-xs">
-              Generator source e meter reading ba diesel consumption — jekono ekta dite parbe. Ekta dile arekta lock hobe.
+              Generator source e meter reading ba diesel consumption {"\u2014"} jekono ekta dite parbe. Ekta dile arekta lock hobe.
             </div>
             <div className="text-muted-foreground text-xs">
-              kWh = liters × {typeof props.generatorDieselKwhPerLiter === "number" ? props.generatorDieselKwhPerLiter : "--"} (set in Settings → Operations → Utilities rules)
+              kWh = liters {"\u00d7"} {typeof props.generatorDieselKwhPerLiter === "number" ? props.generatorDieselKwhPerLiter : "--"} (set in Settings {"\u2192"} Operations {"\u2192"} Utilities rules)
             </div>
-            <FieldError>{props.showValidation ? errors.consumption : ""}</FieldError>
+            <FieldError />
           </div>
         ) : (
           <div className="grid gap-1.5 sm:col-span-2">
@@ -74,8 +77,9 @@ export function MeterReadingSection({ props, errors }: { props: UtilityFormProps
               onChange={(event) => props.onConsumptionInputChange(event.target.value)}
               placeholder="0"
               disabled={readingEnabled}
+              aria-invalid={props.showValidation && errors.consumption ? true : undefined}
             />
-            <FieldError>{props.showValidation ? errors.consumption : ""}</FieldError>
+            <FieldError />
           </div>
         )}
       </div>
