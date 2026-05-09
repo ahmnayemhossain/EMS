@@ -39,7 +39,7 @@ export async function submitUtilityMonth(req, res, next) {
         submittedBy: detail.submitted_by || "",
       });
     } catch (error) {
-      console.error("[utility-approval-email] failed", error);
+      console.error("[utility-approval-email]", error instanceof Error ? error.message : error);
     }
 
     const refreshed = await query(`${selectUtilitySql} WHERE ur.id = $1`, [req.params.id]);

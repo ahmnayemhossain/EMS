@@ -16,15 +16,46 @@ function addDays(value: string, days: number) {
 }
 
 function getMeterKey(state: UtilityDialogFormState) {
-  if (state.meterId && state.meterId !== "custom") return `meter:${state.meterId}`;
-  const name = state.meterName.trim().toLowerCase();
-  return name ? `name:${name}` : "";
+  if (state.meterId) return `meter:${state.meterId}`;
+  return "";
+}
+
+function matchesMeter(row: UtilityRecord, state: UtilityDialogFormState) {
+  if (state.meterId && row.meterId) return String(row.meterId) === state.meterId;
+  const left = String(row.meterName || "").trim().toLowerCase();
+  const right = String(state.meterName || "").trim().toLowerCase();
+  return Boolean(left && right && left === right);
 }
 
 function getMonthBounds(periodStart: string) {
   const start = toDate(`${periodStart.slice(0, 7)}-01`);
   const end = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 0));
   return { monthStart: toDateString(start), monthEnd: toDateString(end) };
+}
+
+function buildMissingRanges(rows: Array<{ start: string; end: string }>, monthStart: string, monthEnd: string) {
+  const missingRanges: Array<{ start: string; end: string }> = [];
+  let cursor = monthStart;
+
+  for (const row of rows) {
+    if (row.start > cursor) {
+      missingRanges.push({ start: cursor, end: addDays(row.start, -1) });
+    }
+    const nextCursor = addDays(row.end, 1);
+    if (nextCursor > cursor) cursor = nextCursor;
+  }
+
+  if (cursor <= monthEnd) {
+    missingRanges.push({ start: cursor, end: monthEnd });
+  }
+
+  return missingRanges;
+}
+
+function formatRanges(ranges: Array<{ start: string; end: string }>) {
+  return ranges
+    .map((row) => (row.start === row.end ? row.start : `${row.start} to ${row.end}`))
+    .join(", ");
 }
 
 export function getCoveragePreview(input: {
@@ -47,42 +78,31 @@ export function getCoveragePreview(input: {
         row.id !== input.excludeRecordId &&
         row.facilityId === input.state.companyId &&
         row.type === input.state.type &&
-        row.meterKey === meterKey &&
+        (row.meterKey === meterKey || matchesMeter(row, input.state)) &&
         row.periodMonth === `${periodStart.slice(0, 7)}-01`,
     )
-    .map((row) => ({ start: row.periodStart, end: row.periodEnd }));
+    .map((row) => ({ start: row.periodStart, end: row.periodEnd }))
+    .sort((a, b) => a.start.localeCompare(b.start));
+
+  const { monthStart, monthEnd } = getMonthBounds(periodStart);
 
   const overlap = relevant.find((row) => row.start <= periodEnd && row.end >= periodStart);
   if (overlap) {
+    const allowedRanges = buildMissingRanges(relevant, monthStart, monthEnd);
+    const suggestion = allowedRanges.length
+      ? ` You can add only within: ${formatRanges(allowedRanges)}.`
+      : " This month is already fully covered.";
     return {
-      error: `Date overlap with existing entry (${overlap.start} to ${overlap.end}).`,
+      error: `Date overlap with existing entry (${overlap.start} to ${overlap.end}).${suggestion}`,
       warning: "",
     };
   }
 
-  const rows = [...relevant, { start: periodStart, end: periodEnd }].sort((a, b) =>
-    a.start.localeCompare(b.start),
-  );
-  const { monthStart, monthEnd } = getMonthBounds(periodStart);
-  const missingRanges: Array<{ start: string; end: string }> = [];
-  let cursor = monthStart;
-
-  for (const row of rows) {
-    if (row.start > cursor) {
-      missingRanges.push({ start: cursor, end: addDays(row.start, -1) });
-    }
-    const nextCursor = addDays(row.end, 1);
-    if (nextCursor > cursor) cursor = nextCursor;
-  }
-
-  if (cursor <= monthEnd) {
-    missingRanges.push({ start: cursor, end: monthEnd });
-  }
+  const rows = [...relevant, { start: periodStart, end: periodEnd }].sort((a, b) => a.start.localeCompare(b.start));
+  const missingRanges = buildMissingRanges(rows, monthStart, monthEnd);
 
   if (!missingRanges.length) return { error: "", warning: "" };
-  const label = missingRanges
-    .map((row) => (row.start === row.end ? row.start : `${row.start} to ${row.end}`))
-    .join(", ");
+  const label = formatRanges(missingRanges);
   return {
     error: "",
     warning: `Month coverage has missing day(s): ${label}. Approval will stay pending until the full month is covered.`,

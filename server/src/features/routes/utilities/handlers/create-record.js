@@ -23,7 +23,7 @@ async function getGeneratorDieselFactor(companyDbId) {
 async function isGeneratorSource(sourceId) {
   if (!sourceId) return false;
   const res = await query(`SELECT name FROM sources WHERE id = $1 LIMIT 1`, [sourceId]);
-  return String(res.rows[0]?.name || "").toLowerCase() === "generator";
+  return String(res.rows[0]?.name || "").trim().toLowerCase().includes("generator");
 }
 
 export async function createUtilityRecord(req, res, next) {
@@ -41,8 +41,8 @@ export async function createUtilityRecord(req, res, next) {
       type: record.type,
     });
 
-    const uom = meter ? meter.uom : record.uom;
-    const sourceId = meter ? meter.sourceId : record.sourceId;
+    const uom = meter.uom;
+    const sourceId = meter.sourceId;
 
     let value = record.value;
     let dieselLiters = record.dieselLiters ?? null;
@@ -62,12 +62,12 @@ export async function createUtilityRecord(req, res, next) {
     if (!(await isAllowedUom(record.type, uom))) throw createHttpError(400, "Invalid utility UOM.");
     if (!(await isAllowedSource(record.type, sourceId))) throw createHttpError(400, "Invalid utility source.");
     await assertNoDateRangeOverlap(record, companyDbId);
-    const meterKey = buildUtilityMeterKey({ meterId: meter ? meter.id : null, meterName: record.meterName });
+    const meterKey = buildUtilityMeterKey({ meterId: meter.id, meterName: meter.name });
     const periodMonth = `${record.periodStart.slice(0, 7)}-01`;
 
     const result = await query(
       `INSERT INTO utility_records (facility_id, type, meter_id, meter_key, source_id, period_start, period_end, period_month, meter_name, diesel_liters, calc_method, calc_factor, previous_reading, current_reading, uom, value, baseline_value, min_threshold, max_threshold, variance, variance_percent, variance_flag, status, remarks, created_by_user_id, updated_by_user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $25) RETURNING *`,
-      [companyDbId, record.type, meter ? meter.id : null, meterKey, sourceId, record.periodStart, record.periodEnd, periodMonth, record.meterName, dieselLiters, calcMethod, calcFactor, record.previousReading, record.currentReading, uom, value, record.baselineValue, record.minThreshold, record.maxThreshold, record.variance, record.variancePercent, record.varianceFlag, record.status, record.remarks, userDbId],
+      [companyDbId, record.type, meter.id, meterKey, sourceId, record.periodStart, record.periodEnd, periodMonth, meter.name, dieselLiters, calcMethod, calcFactor, record.previousReading, record.currentReading, uom, value, record.baselineValue, record.minThreshold, record.maxThreshold, record.variance, record.variancePercent, record.varianceFlag, record.status, record.remarks, userDbId],
     );
     await syncUtilityMonthlyApproval({
       facilityId: companyDbId,

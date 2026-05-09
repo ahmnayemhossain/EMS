@@ -1,5 +1,6 @@
 import * as React from "react";
 
+import { ActionModal } from "@/core/components/ActionModal";
 import { CreateActionDialog } from "@/core/components/CreateActionDialog";
 import type { UtilityUsagePayload } from "@/features/UtilitiesPage/baseline-settings";
 import { getUtilityConversionRules, listUtilityMeters } from "@/features/UtilitiesPage/api";
@@ -27,6 +28,7 @@ export function CreateUtilityDialog(props: {
   const [meterOptions, setMeterOptions] = React.useState<UtilityMeterOption[]>([]);
   const [generatorDieselKwhPerLiter, setGeneratorDieselKwhPerLiter] = React.useState<number | null>(null);
   const [showValidation, setShowValidation] = React.useState(false);
+  const [validationOpen, setValidationOpen] = React.useState(false);
   const logic = useUtilityDialogLogic(state, props.uomOptions, props.sourceOptions, { generatorDieselKwhPerLiter });
   useSyncedUtilityForm(state, setState, {
     defaultCompanyId: props.defaultCompanyId,
@@ -55,7 +57,7 @@ export function CreateUtilityDialog(props: {
   }, [props.userId, state.companyId, state.type]);
 
   React.useEffect(() => {
-    if (state.meterId === "custom") return;
+    if (!state.meterId) return;
     const meter = meterOptions.find((m) => m.id === state.meterId);
     if (!meter) return;
     setState((current) => ({
@@ -105,6 +107,7 @@ export function CreateUtilityDialog(props: {
     }),
     coveragePreview.error,
   ].filter(Boolean);
+  const validationMessage = showValidation ? coveragePreview.error || errors[0] || "" : "";
 
   const payload = buildUtilityPayload({
     state,
@@ -121,30 +124,45 @@ export function CreateUtilityDialog(props: {
   }
 
   return (
-    <CreateActionDialog
-      title="Add Utility Usage"
-      submitLabel="Create Usage Record"
-      contentClassName="sm:max-w-3xl"
-      onCreate={() => {
-        setShowValidation(true);
-        if (errors.length > 0 || !payload) return false;
-        return props.onCreateUsage?.(payload);
-      }}
-    >
-      <CreateDialogContent
-        state={state}
-        companies={props.companies}
-        meterOptions={meterOptions}
-        uomOptions={logic.filteredUomOptions}
-        sourceOptions={logic.filteredSourceOptions}
-        consumption={logic.consumption}
-        status={payload?.status}
-        attachmentError={logic.attachmentError}
-        coverageWarning={coveragePreview.warning}
-        showValidation={showValidation}
-        updateState={updateState}
-        generatorDieselKwhPerLiter={generatorDieselKwhPerLiter}
+    <>
+      <CreateActionDialog
+        title="Add Utility Usage"
+        submitLabel="Create Usage Record"
+        contentClassName="sm:max-w-3xl"
+        onCreate={() => {
+          setShowValidation(true);
+          if (errors.length > 0 || !payload) {
+            setValidationOpen(true);
+            return false;
+          }
+          return props.onCreateUsage?.(payload);
+        }}
+      >
+        <CreateDialogContent
+          state={state}
+          companies={props.companies}
+          meterOptions={meterOptions}
+          uomOptions={logic.filteredUomOptions}
+          sourceOptions={logic.filteredSourceOptions}
+          consumption={logic.consumption}
+          status={payload?.status}
+          attachmentError={logic.attachmentError}
+          coverageWarning={coveragePreview.warning}
+          showValidation={showValidation}
+          updateState={updateState}
+          generatorDieselKwhPerLiter={generatorDieselKwhPerLiter}
+        />
+      </CreateActionDialog>
+      <ActionModal
+        open={validationOpen}
+        onOpenChange={setValidationOpen}
+        tone="warning"
+        title="Unable to create utility record"
+        description={validationMessage || "Please fix the highlighted fields and try again."}
+        confirmLabel="Got it"
+        cancelLabel="Close"
+        onConfirm={async () => {}}
       />
-    </CreateActionDialog>
+    </>
   );
 }

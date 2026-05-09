@@ -1,9 +1,18 @@
+import dns from "node:dns/promises";
 import net from "node:net";
 import tls from "node:tls";
 
+async function resolveSmtpHost(host) {
+  try {
+    await dns.lookup(host);
+  } catch (error) {
+    throw wrapSmtpError(error, host);
+  }
+}
+
 function createConnection(config) {
   return new Promise((resolve, reject) => {
-    const onError = (error) => reject(error);
+    const onError = (error) => reject(wrapSmtpError(error, config.host));
     const socket = config.secure
       ? tls.connect(
           {
@@ -32,7 +41,7 @@ function waitForResponse(socket) {
 
     function onError(error) {
       cleanup();
-      reject(error);
+      reject(wrapSmtpError(error));
     }
 
     function onClose() {
@@ -108,6 +117,7 @@ function buildMessage(input) {
 }
 
 export async function sendSmtpEmail(config, input) {
+  await resolveSmtpHost(config.host);
   const socket = await createConnection(config);
 
   try {
@@ -134,4 +144,23 @@ export async function sendSmtpEmail(config, input) {
   } finally {
     socket.end();
   }
+}
+
+function wrapSmtpError(error, host) {
+  if (error?.code === "ENOTFOUND") {
+    return new Error(
+      `SMTP host "${host || error.hostname || "unknown"}" could not be resolved. Check Email setup SMTP host or wait for DNS propagation.`,
+    );
+  }
+  if (error?.code === "ECONNREFUSED") {
+    return new Error(
+      `SMTP connection was refused by "${host || "server"}". Check SMTP port and secure setting.`,
+    );
+  }
+  if (error?.code === "ETIMEDOUT") {
+    return new Error(
+      `SMTP connection to "${host || "server"}" timed out. Check firewall, port, or server availability.`,
+    );
+  }
+  return error instanceof Error ? error : new Error(String(error || "SMTP error"));
 }

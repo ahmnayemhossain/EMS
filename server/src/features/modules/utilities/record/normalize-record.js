@@ -18,7 +18,7 @@ export function normalizeRecordInput(input) {
   const periodEnd = requiredString(input, "periodEnd", "periodEnd");
   const dieselLiters = optionalNumber(input, "dieselLiters");
   const value = input.value === null || typeof input.value === "undefined" ? undefined : requiredNumber(input, "value", "value");
-  const meterId = optionalNumber(input, "meterId");
+  const meterId = requiredNumber(input, "meterId", "meterId");
   const varianceFlag = input.varianceFlag ? String(input.varianceFlag) : null;
   const status = input.status ? String(input.status) : null;
 

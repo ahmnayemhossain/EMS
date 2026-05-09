@@ -1,13 +1,27 @@
 import { query } from "../../../../core/shared/postgres.js";
-import { buildUtilityMeterKey, createHttpError, toDateString } from "../record.js";
+import { createHttpError, toDateString } from "../record.js";
 
 async function findOverlappingRecord(record, companyId, excludeId) {
-  const params = [companyId, record.type, buildUtilityMeterKey(record), record.periodStart, record.periodEnd];
-  const excludeClause = excludeId ? `AND id <> $6` : "";
+  const normalizedMeterName = String(record.meterName || "").trim().toLowerCase();
+  const params = [companyId, record.type, record.meterId || null, normalizedMeterName, record.periodStart, record.periodEnd];
+  const excludeClause = excludeId ? `AND id <> $7` : "";
   if (excludeId) params.push(excludeId);
 
   const result = await query(
-    `SELECT id, period_start, period_end, meter_name FROM utility_records WHERE facility_id = $1 AND type = $2 AND meter_key = $3 AND period_start <= $5::date AND period_end >= $4::date ${excludeClause} ORDER BY period_start DESC LIMIT 1`,
+    `SELECT id, period_start, period_end, meter_name
+       FROM utility_records
+      WHERE facility_id = $1
+        AND type = $2
+        AND (
+          ($3::int IS NOT NULL AND meter_id = $3)
+          OR
+          (($3::int IS NULL OR meter_id IS NULL) AND LOWER(TRIM(COALESCE(meter_name, ''))) = $4)
+        )
+        AND period_start <= $6::date
+        AND period_end >= $5::date
+        ${excludeClause}
+      ORDER BY period_start DESC
+      LIMIT 1`,
     params,
   );
 

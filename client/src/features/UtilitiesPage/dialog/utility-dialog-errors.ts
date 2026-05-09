@@ -31,7 +31,7 @@ export function getCreateDialogErrors(input: {
     input.state.periodStart.slice(0, 7) !== input.state.periodEnd.slice(0, 7)
       ? "One utility entry cannot span more than one month."
       : "",
-    !input.state.meterName.trim() ? `${input.config.meterLabel} is required.` : "",
+    !input.state.meterId ? "Meter selection is required." : !input.state.meterName.trim() ? `${input.config.meterLabel} is required.` : "",
     input.attachmentError,
     readingEnabled &&
     (typeof input.previousReading !== "number" || Number.isNaN(input.previousReading) || input.previousReading < 0)

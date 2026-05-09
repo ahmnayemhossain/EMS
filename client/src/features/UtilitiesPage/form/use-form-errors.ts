@@ -28,7 +28,14 @@ export function useUtilityFormErrors(props: UtilityFormProps): UtilityFormErrors
           ? "One utility entry cannot span more than one month."
           : "",
     coverage: "",
-    meterName: !props.meterName.trim() ? "Meter name is required." : "",
+    meterName:
+      !props.meterOptions.length
+        ? "No configured meter found for this utility type. Add meter from settings first."
+        : !props.meterId
+          ? "Meter selection is required."
+          : !props.meterName.trim()
+            ? "Meter name is required."
+            : "",
     previousReading:
       !readingEnabled
         ? ""

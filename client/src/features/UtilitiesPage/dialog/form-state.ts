@@ -21,7 +21,7 @@ export function createEmptyUtilityFormState(companyId: string, type: UtilityType
   return {
     companyId,
     type,
-    meterId: "custom",
+    meterId: "",
     meterName: "",
     periodStart: "",
     periodEnd: "",

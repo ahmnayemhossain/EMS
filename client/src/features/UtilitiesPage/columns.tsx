@@ -56,14 +56,15 @@ export function getUtilityColumns(getCompanyName: (id: string) => string): Array
       id: "status",
       header: "Status",
       cell: (row) => {
-        const { tone, label } = getWorkflowStatus(row);
+        const { tone, label, detail } = getWorkflowStatus(row);
         return (
-          <div className="flex justify-end">
+          <div className="flex flex-col items-end gap-1">
             <StatusBadge tone={tone}>{label}</StatusBadge>
+            {detail ? <div className="text-muted-foreground max-w-[180px] text-right text-[11px] leading-4">{detail}</div> : null}
           </div>
         );
       },
-      className: "text-right min-w-[140px]",
+      className: "text-right min-w-[200px]",
     },
     {
       id: "variance",
@@ -100,18 +101,33 @@ export function getUtilityColumns(getCompanyName: (id: string) => string): Array
 
 function getWorkflowStatus(row: UtilityRecord) {
   if (row.approvalStatus === "approved") {
-    return { tone: "compliant" as const, label: "Approved" };
+    return { tone: "compliant" as const, label: "Approved", detail: "" };
   }
   if (row.approvalStatus === "submitted") {
-    return { tone: "info" as const, label: "Pending approval" };
+    return { tone: "info" as const, label: "Pending approval", detail: "" };
   }
   if (Number(row.missingDaysCount || 0) > 0) {
-    return { tone: "warning" as const, label: "Missing" };
+    return {
+      tone: "warning" as const,
+      label: "Missing",
+      detail: formatMissingRanges(row.missingRanges),
+    };
   }
   if (row.monthComplete) {
-    return { tone: "info" as const, label: "Ready to submit" };
+    return { tone: "info" as const, label: "Ready to submit", detail: "" };
   }
-  return { tone: "neutral" as const, label: "In progress" };
+  return { tone: "neutral" as const, label: "In progress", detail: "" };
+}
+
+function formatMissingRanges(ranges?: Array<{ start: string; end: string }>) {
+  if (!ranges?.length) return "";
+  return ranges
+    .map((range) => {
+      const start = range.start.slice(8, 10);
+      const end = range.end.slice(8, 10);
+      return start === end ? start : `${start}-${end}`;
+    })
+    .join(", ");
 }
 
 function formatMonthTag(periodMonth: string) {

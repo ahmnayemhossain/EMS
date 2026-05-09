@@ -31,7 +31,7 @@ export function SelectFilter({
       <SelectTrigger
         disabled={disabled}
         aria-invalid={invalid || undefined}
-        className={cn("w-full sm:w-[220px]", className)}
+        className={cn("w-full min-w-0", className)}
       >
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>

@@ -18,7 +18,7 @@ export function buildUtilityPayload(input: {
   const payload: UtilityUsagePayload = {
     companyId: input.state.companyId,
     utilityType: input.state.type,
-    meterId: input.state.meterId !== "custom" ? input.state.meterId : undefined,
+    meterId: input.state.meterId || undefined,
     meterName: input.state.meterName.trim(),
     sourceId: input.config.allowSource ? input.state.sourceId || undefined : undefined,
     sourceName,

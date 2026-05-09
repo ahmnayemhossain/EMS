@@ -4,7 +4,7 @@ export function createStateFromRecord(record: UtilityRecord) {
   return {
     companyId: record.facilityId,
     type: record.type,
-    meterId: record.meterId ? String(record.meterId) : "custom",
+    meterId: record.meterId ? String(record.meterId) : "",
     meterName: record.meterName,
     periodStart: record.periodStart,
     periodEnd: record.periodEnd,

@@ -2,8 +2,8 @@ import * as React from "react";
 
 export function FormSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="grid gap-3 rounded-lg border p-3">
-      <div className="text-sm font-semibold">{title}</div>
+    <section className="grid gap-4 rounded-xl border bg-card/60 p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+      <div className="text-foreground text-sm font-semibold tracking-tight">{title}</div>
       {children}
     </section>
   );
@@ -11,8 +11,8 @@ export function FormSection({ title, children }: { title: string; children: Reac
 
 export function ReadOnlyField({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="rounded-lg border bg-muted/30 p-3">
-      <div className="text-muted-foreground text-xs">{label}</div>
+    <div className="rounded-xl border bg-muted/20 px-3 py-3">
+      <div className="text-muted-foreground text-[11px] uppercase tracking-[0.08em]">{label}</div>
       <div className="mt-1 text-sm font-semibold tabular-nums">{value}</div>
     </div>
   );

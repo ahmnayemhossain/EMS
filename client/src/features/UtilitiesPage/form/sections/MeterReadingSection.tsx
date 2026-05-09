@@ -16,8 +16,8 @@ export function MeterReadingSection({ props, errors }: { props: UtilityFormProps
 
   return (
     <FormSection title="Meter Reading">
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="grid gap-1.5">
+      <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid min-w-0 gap-1.5">
           <FieldLabel required={readingEnabled}>Previous Reading</FieldLabel>
           <Input
             type="number"
@@ -30,7 +30,7 @@ export function MeterReadingSection({ props, errors }: { props: UtilityFormProps
           />
           <FieldError />
         </div>
-        <div className="grid gap-1.5">
+        <div className="grid min-w-0 gap-1.5">
           <FieldLabel required={readingEnabled}>Current Reading</FieldLabel>
           <Input
             type="number"
@@ -45,7 +45,7 @@ export function MeterReadingSection({ props, errors }: { props: UtilityFormProps
         </div>
 
         {generatorMode ? (
-          <div className="grid gap-1.5 sm:col-span-2">
+          <div className="grid min-w-0 gap-1.5 md:col-span-2">
             <FieldLabel required={!props.previousReading.trim() && !props.currentReading.trim()}>
               Diesel consumption (L)
             </FieldLabel>
@@ -68,7 +68,7 @@ export function MeterReadingSection({ props, errors }: { props: UtilityFormProps
             <FieldError />
           </div>
         ) : (
-          <div className="grid gap-1.5 sm:col-span-2">
+          <div className="grid min-w-0 gap-1.5 md:col-span-2">
             <FieldLabel required={!readingEnabled}>{config.manualValueLabel}</FieldLabel>
             <Input
               type="number"

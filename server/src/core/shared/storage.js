@@ -1,9 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const STORAGE_ROOT = process.env.STORAGE_ROOT
-  ? path.resolve(process.env.STORAGE_ROOT)
-  : path.resolve(process.cwd(), "storage");
+const UPLOADS_ROOT = resolveUploadsRoot();
+const STORAGE_ROOT = UPLOADS_ROOT;
 
 const CDN_ROOT = path.join(STORAGE_ROOT, "cdn");
 const CDN_PUBLIC_BASE = process.env.CDN_PUBLIC_BASE || "/cdn";
@@ -12,6 +11,10 @@ export const MAX_PDF_BYTES = 10 * 1024 * 1024;
 
 export function getStorageRoot() {
   return STORAGE_ROOT;
+}
+
+export function getUploadsRoot() {
+  return UPLOADS_ROOT;
 }
 
 export function getCdnRoot() {
@@ -48,4 +51,14 @@ export async function removeFileIfExists(filePath) {
   } catch (error) {
     if (error?.code !== "ENOENT") throw error;
   }
+}
+
+function resolveUploadsRoot() {
+  const uploadsDir = String(process.env.UPLOADS_DIR || "").trim();
+  if (uploadsDir) return path.resolve(uploadsDir);
+
+  const legacyStorageRoot = String(process.env.STORAGE_ROOT || "").trim();
+  if (legacyStorageRoot) return path.resolve(legacyStorageRoot);
+
+  return path.resolve(process.cwd(), "..", "storage");
 }

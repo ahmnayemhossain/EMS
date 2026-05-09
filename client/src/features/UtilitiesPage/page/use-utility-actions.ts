@@ -32,7 +32,7 @@ export function createUtilityActions(input: { userId: string; selected: UtilityR
       try {
         let created = await createUtilityRecord(toRecordInput(payload), input.userId);
         if (payload.attachment) { try { created = await attachPdf(created, payload.attachment, input.userId); } catch (error) { input.setUtilityRows((current) => [created, ...current]); toast.error(error instanceof Error ? `Usage saved, but PDF upload failed: ${error.message}` : "Usage saved, but PDF upload failed."); return true; } }
-        input.setUtilityRows((current) => [created, ...current]); await input.reloadUtilities?.(); toast.success("Utility usage saved"); const coverageWarning = getCoverageWarning(created); if (coverageWarning) toast.error(coverageWarning); return true;
+        input.setUtilityRows((current) => [created, ...current]); await input.reloadUtilities?.(); const coverageWarning = getCoverageWarning(created); if (coverageWarning) toast.successDetail("Utility usage saved", coverageWarning); else toast.success("Utility usage saved"); return true;
       } catch (error) { toast.error(error instanceof Error ? error.message : "Failed to save utility usage."); return false; }
     },
     async updateUsage(payload: UtilityUsagePayload) {
@@ -40,7 +40,7 @@ export function createUtilityActions(input: { userId: string; selected: UtilityR
       try {
         let updated = await updateUtilityRecord(input.selected.id, toRecordInput(payload), input.userId);
         if (payload.attachment) { try { updated = await attachPdf(updated, payload.attachment, input.userId); } catch (error) { input.setUtilityRows((current) => current.map((row) => (row.id === updated.id ? updated : row))); input.setSelected(updated); toast.error(error instanceof Error ? `Usage updated, but PDF upload failed: ${error.message}` : "Usage updated, but PDF upload failed."); return true; } }
-        input.setUtilityRows((current) => current.map((row) => (row.id === updated.id ? updated : row))); input.setSelected(updated); await input.reloadUtilities?.(); toast.success("Utility usage updated"); const coverageWarning = getCoverageWarning(updated); if (coverageWarning) toast.error(coverageWarning); return true;
+        input.setUtilityRows((current) => current.map((row) => (row.id === updated.id ? updated : row))); input.setSelected(updated); await input.reloadUtilities?.(); const coverageWarning = getCoverageWarning(updated); if (coverageWarning) toast.successDetail("Utility usage updated", coverageWarning); else toast.success("Utility usage updated"); return true;
       } catch (error) { toast.error(error instanceof Error ? error.message : "Failed to update utility usage."); return false; }
     },
     async approveSelectedMonth() {

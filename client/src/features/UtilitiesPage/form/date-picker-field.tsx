@@ -43,7 +43,6 @@ export function DatePickerField({
             <CalendarDays className="size-4 shrink-0" />
             <span className="truncate">{display}</span>
           </span>
-          <span className="text-muted-foreground ml-2 shrink-0 text-xs">{value || "--"}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-auto p-2">

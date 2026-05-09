@@ -2,6 +2,7 @@ import * as React from "react";
 
 import { Button } from "@/core/app/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/core/app/components/ui/dialog";
+import { ActionModal } from "@/core/components/ActionModal";
 import type { UtilityUsagePayload } from "@/features/UtilitiesPage/baseline-settings";
 import { getUtilityConversionRules, listUtilityMeters } from "@/features/UtilitiesPage/api";
 import { buildUtilityPayload } from "@/features/UtilitiesPage/dialog/build-utility-payload";
@@ -30,6 +31,7 @@ export function EditUtilityDialog(props: {
   const [meterOptions, setMeterOptions] = React.useState<UtilityMeterOption[]>([]);
   const [generatorDieselKwhPerLiter, setGeneratorDieselKwhPerLiter] = React.useState<number | null>(null);
   const [showValidation, setShowValidation] = React.useState(false);
+  const [validationOpen, setValidationOpen] = React.useState(false);
 
   React.useEffect(() => {
     if (!props.record || !props.open) return;
@@ -58,7 +60,7 @@ export function EditUtilityDialog(props: {
   }, [props.open, props.record, props.userId, state.companyId, state.type]);
 
   React.useEffect(() => {
-    if (state.meterId === "custom") return;
+    if (!state.meterId) return;
     const meter = meterOptions.find((m) => m.id === state.meterId);
     if (!meter) return;
     setState((current) => ({
@@ -108,6 +110,7 @@ export function EditUtilityDialog(props: {
     }),
     coveragePreview.error,
   ].filter(Boolean);
+  const validationMessage = showValidation ? coveragePreview.error || errors[0] || "" : "";
 
   const payload = buildUtilityPayload({
     state,
@@ -124,47 +127,62 @@ export function EditUtilityDialog(props: {
   }
 
   return (
-    <Dialog open={props.open} onOpenChange={props.onOpenChange}>
-      <DialogContent className="sm:max-w-3xl">
-        <DialogHeader>
-          <DialogTitle>Edit Utility Usage</DialogTitle>
-        </DialogHeader>
-        <form
-          className="grid gap-4"
-          onSubmit={async (event) => {
-            event.preventDefault();
-            setShowValidation(true);
-            if (errors.length > 0 || !payload) return;
-            const result = await props.onSave(payload);
-            if (result !== false) props.onOpenChange(false);
-          }}
-        >
-          {props.record ? (
-            <CreateDialogContent
-              state={state}
-              companies={props.companies}
-              meterOptions={meterOptions}
-              uomOptions={logic.filteredUomOptions}
-              sourceOptions={logic.filteredSourceOptions}
-              consumption={logic.consumption}
-              status={payload?.status}
-              attachmentError={logic.attachmentError}
-              coverageWarning={coveragePreview.warning}
-              showValidation={showValidation}
-              updateState={updateState}
-              generatorDieselKwhPerLiter={generatorDieselKwhPerLiter}
-            />
-          ) : null}
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => props.onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit">
-              Save Changes
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <>
+      <Dialog open={props.open} onOpenChange={props.onOpenChange}>
+        <DialogContent className="sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Edit Utility Usage</DialogTitle>
+          </DialogHeader>
+          <form
+            className="grid gap-4"
+            onSubmit={async (event) => {
+              event.preventDefault();
+              setShowValidation(true);
+              if (errors.length > 0 || !payload) {
+                setValidationOpen(true);
+                return;
+              }
+              const result = await props.onSave(payload);
+              if (result !== false) props.onOpenChange(false);
+            }}
+          >
+            {props.record ? (
+              <CreateDialogContent
+                state={state}
+                companies={props.companies}
+                meterOptions={meterOptions}
+                uomOptions={logic.filteredUomOptions}
+                sourceOptions={logic.filteredSourceOptions}
+                consumption={logic.consumption}
+                status={payload?.status}
+                attachmentError={logic.attachmentError}
+                coverageWarning={coveragePreview.warning}
+                showValidation={showValidation}
+                updateState={updateState}
+                generatorDieselKwhPerLiter={generatorDieselKwhPerLiter}
+              />
+            ) : null}
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => props.onOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+      <ActionModal
+        open={validationOpen}
+        onOpenChange={setValidationOpen}
+        tone="warning"
+        title="Unable to update utility record"
+        description={validationMessage || "Please fix the highlighted fields and try again."}
+        confirmLabel="Got it"
+        cancelLabel="Close"
+        onConfirm={async () => {}}
+      />
+    </>
   );
 }

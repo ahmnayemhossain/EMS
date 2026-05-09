@@ -23,7 +23,7 @@ async function getGeneratorDieselFactor(companyDbId) {
 async function isGeneratorSource(sourceId) {
   if (!sourceId) return false;
   const res = await query(`SELECT name FROM sources WHERE id = $1 LIMIT 1`, [sourceId]);
-  return String(res.rows[0]?.name || "").toLowerCase() === "generator";
+  return String(res.rows[0]?.name || "").trim().toLowerCase().includes("generator");
 }
 
 export async function updateUtilityRecord(req, res, next) {
@@ -44,8 +44,8 @@ export async function updateUtilityRecord(req, res, next) {
       type: record.type,
     });
 
-    const uom = meter ? meter.uom : record.uom;
-    const sourceId = meter ? meter.sourceId : record.sourceId;
+    const uom = meter.uom;
+    const sourceId = meter.sourceId;
 
     let value = record.value;
     let dieselLiters = record.dieselLiters ?? null;
@@ -65,12 +65,12 @@ export async function updateUtilityRecord(req, res, next) {
     if (!(await isAllowedUom(record.type, uom))) throw createHttpError(400, "Invalid utility UOM.");
     if (!(await isAllowedSource(record.type, sourceId))) throw createHttpError(400, "Invalid utility source.");
     await assertNoDateRangeOverlap(record, companyDbId, record.id);
-    const meterKey = buildUtilityMeterKey({ meterId: meter ? meter.id : null, meterName: record.meterName });
+    const meterKey = buildUtilityMeterKey({ meterId: meter.id, meterName: meter.name });
     const periodMonth = `${record.periodStart.slice(0, 7)}-01`;
 
     const result = await query(
       `UPDATE utility_records SET facility_id = $2, type = $3, meter_id = $4, meter_key = $5, source_id = $6, period_start = $7, period_end = $8, period_month = $9, meter_name = $10, diesel_liters = $11, calc_method = $12, calc_factor = $13, previous_reading = $14, current_reading = $15, uom = $16, value = $17, baseline_value = $18, min_threshold = $19, max_threshold = $20, variance = $21, variance_percent = $22, variance_flag = $23, status = $24, remarks = $25, updated_by_user_id = $26, updated_at = NOW() WHERE id = $1 RETURNING *`,
-      [record.id, companyDbId, record.type, meter ? meter.id : null, meterKey, sourceId, record.periodStart, record.periodEnd, periodMonth, record.meterName, dieselLiters, calcMethod, calcFactor, record.previousReading, record.currentReading, uom, value, record.baselineValue, record.minThreshold, record.maxThreshold, record.variance, record.variancePercent, record.varianceFlag, record.status, record.remarks, userDbId],
+      [record.id, companyDbId, record.type, meter.id, meterKey, sourceId, record.periodStart, record.periodEnd, periodMonth, meter.name, dieselLiters, calcMethod, calcFactor, record.previousReading, record.currentReading, uom, value, record.baselineValue, record.minThreshold, record.maxThreshold, record.variance, record.variancePercent, record.varianceFlag, record.status, record.remarks, userDbId],
     );
     if (!result.rowCount) return res.status(404).json({ error: "not_found" });
     await syncUtilityMonthlyApproval({

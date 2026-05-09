@@ -78,7 +78,7 @@ authRouter.post("/sign-in", async (req, res, next) => {
 
     void sendLoginLogEmail({ req, user: toAuthUser(row) }).catch((error) => {
       // eslint-disable-next-line no-console
-      console.error("[login-log-email] failed", error);
+      console.error("[login-log-email]", error instanceof Error ? error.message : error);
     });
   } catch (error) {
     next(error);
