@@ -1,4 +1,4 @@
-import type { SDSRecord } from "@/core/types/ems";
+import type { SDSRecord } from "@/core/types/models/ems";
 
 import { baseSdsRecords } from "./sds-base";
 import { generatedSdsRecords } from "./sds-generated";

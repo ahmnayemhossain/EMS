@@ -1,5 +1,5 @@
 import type { ReportBoxApi, NewMessageInput, NewReportInput } from "@/core/app/state/report-box/types";
-import type { ReportBoxReport } from "@/core/types/ems";
+import type { ReportBoxReport } from "@/core/types/models/ems";
 
 import { createId, nowIso } from "@/core/app/state/report-box/ids";
 

@@ -1,4 +1,4 @@
-import { facilities } from "@/core/data/mock";
+import { facilities } from "@/core/data/catalog/mock";
 
 export function pickCompanyId(i: number) {
   return facilities[i % facilities.length]?.id ?? facilities[0]?.id ?? "fac_hfl";

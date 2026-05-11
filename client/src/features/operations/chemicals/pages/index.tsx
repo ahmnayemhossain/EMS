@@ -1,0 +1,1 @@
+export { ChemicalsPage } from './ChemicalsPage';

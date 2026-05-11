@@ -1,0 +1,1 @@
+export { WastePage } from './WastePage';

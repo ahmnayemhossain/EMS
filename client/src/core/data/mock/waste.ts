@@ -1,4 +1,4 @@
-import type { WasteRecord } from "@/core/types/ems";
+import type { WasteRecord } from "@/core/types/models/ems";
 
 import { facilities } from "./core";
 

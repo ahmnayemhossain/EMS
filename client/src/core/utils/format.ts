@@ -1,4 +1,4 @@
-import type { FacilityType, UtilityType } from "@/core/types/ems";
+import type { FacilityType, UtilityType } from "@/core/types/models/ems";
 
 export function formatFacilityType(type: FacilityType) {
   switch (type) {

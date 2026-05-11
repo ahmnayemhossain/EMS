@@ -1,4 +1,4 @@
-import type { ID } from "@/core/types/ems/core";
+import type { ID } from "@/core/types/models/ems/core";
 
 export type Document = {
   id: ID;

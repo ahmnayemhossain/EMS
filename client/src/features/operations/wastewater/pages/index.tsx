@@ -1,0 +1,1 @@
+export { WastewaterPage } from './WastewaterPage';

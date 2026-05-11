@@ -1,4 +1,4 @@
-import type { Employee } from "@/core/types/admin";
+import type { Employee } from "@/core/types/models/admin";
 
 import { isoDate, pickCompanyId } from "./helpers";
 import { departmentName, designationName } from "./org";

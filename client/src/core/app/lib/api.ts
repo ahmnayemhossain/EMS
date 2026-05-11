@@ -1,4 +1,4 @@
-import { useAuthStore } from "@/core/app/state/auth";
+import { useAuthStore } from "@/core/app/state/slices/auth";
 
 export function toServerUserId(userId: string) {
   const match = /^u_([^_]+)_/.exec(userId);

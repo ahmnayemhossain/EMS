@@ -408,10 +408,14 @@ export default defineConfig({
     reportBoxInboxPlugin(),
   ],
   resolve: {
-    alias: {
-      // Alias @ to the src directory
-      "@": path.resolve(__dirname, "./src"),
-    },
+    alias: [
+      { find: /^@\/features\/admin\/settings\/settings-route-registry$/, replacement: path.resolve(__dirname, "./src/features/admin/settings/config/settings-route-registry.tsx") },
+      { find: /^@\/features\/admin\/settings\/(Settings[^/]+Page)$/, replacement: path.resolve(__dirname, "./src/features/admin/settings/pages/$1.tsx") },
+      { find: /^@\/features\/admin\/settings\/modules\/([A-Z][^/]+)$/, replacement: path.resolve(__dirname, "./src/features/admin/settings/modules/root/$1.tsx") },
+      { find: /^@\/features\/admin\/settings\/modules\/([a-z][^/]+Api(?:\.shared)?)$/, replacement: path.resolve(__dirname, "./src/features/admin/settings/modules/services/$1.ts") },
+      { find: /^@\/features\/admin\/settings\/modules\/PlaceholderModule$/, replacement: path.resolve(__dirname, "./src/features/admin/settings/modules/root/PlaceholderModule.tsx") },
+      { find: "@", replacement: path.resolve(__dirname, "./src") },
+    ],
   },
   build: {
     rollupOptions: {

@@ -1,5 +1,5 @@
 import type { ReportBoxApi } from "@/core/app/state/report-box/types";
-import type { ReportBoxRecord } from "@/core/types/ems";
+import type { ReportBoxRecord } from "@/core/types/models/ems";
 
 import { createId, nowIso } from "@/core/app/state/report-box/ids";
 
@@ -37,4 +37,3 @@ export function createRemoveRecord(set: SetReportBoxState) {
       records: state.records.filter((r) => r.id !== recordId),
     }));
 }
-

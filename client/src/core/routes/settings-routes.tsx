@@ -1,7 +1,7 @@
-import { SettingsHomePage } from "@/core/settings/SettingsHomePage";
-import { SettingsLayout } from "@/core/settings/SettingsLayout";
+import { SettingsHomePage } from "@/features/admin/settings/pages/SettingsHomePage";
+import { SettingsLayout } from "@/features/admin/settings/pages/SettingsLayout";
 import { lazyPage } from "@/core/routes/lazy-page";
-import { settingsRouteDefs } from "@/core/settings/settings-route-registry";
+import { settingsRouteDefs } from "@/features/admin/settings/config/settings-route-registry";
 
 export const settingsRoute = {
   path: "settings",

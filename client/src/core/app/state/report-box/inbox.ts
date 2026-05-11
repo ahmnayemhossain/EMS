@@ -1,4 +1,4 @@
-import type { ReportBoxMessageKind, ReportBoxReport } from "@/core/types/ems";
+import type { ReportBoxMessageKind, ReportBoxReport } from "@/core/types/models/ems";
 
 import { INBOX_INDEX_URL } from "@/core/app/state/report-box/constants";
 
@@ -81,4 +81,3 @@ export async function hydrateInboxReport(
     assignedTo: item.assignedTo,
   };
 }
-

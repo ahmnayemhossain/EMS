@@ -1,4 +1,4 @@
-import type { PermissionKey } from "@/core/types/admin";
+import type { PermissionKey } from "@/core/types/models/admin";
 
 const settingsModules = ["employees", "users", "roles", "departments", "designations", "companies", "uom", "uom-wiring", "sources", "source-wiring", "meters", "suppliers", "reports", "utilities-rules", "email"];
 

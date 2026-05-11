@@ -1,4 +1,4 @@
-import type { Chemical } from "@/core/types/ems";
+import type { Chemical } from "@/core/types/models/ems";
 
 export const baseChemicals: Chemical[] = [
   { id: "chem_001", facilityId: "fac_dyeing_d", name: "Hydrogen Peroxide (50%)", supplier: "Delta Chemicals Ltd.", storageArea: "Oxidizer store", hazardClasses: ["oxidizer", "corrosive", "environmental_hazard"], approvalStatus: "approved", stockKg: 1240, expiryDate: "2026-07-15", sdsId: "sds_001", ppe: ["Face shield", "Nitrile gloves", "Apron", "Closed shoes"], storageInstructions: ["Keep away from heat", "Use vented caps", "Avoid organic contamination"], compatibilityWarnings: ["Do not store with reducers", "Keep away from metals and dyes"], linkedWasteStream: "ETP sludge", batches: [{ batchNo: "H2O2-26-0321", receivedAt: "2026-03-21", qtyKg: 620 }, { batchNo: "H2O2-26-0308", receivedAt: "2026-03-08", qtyKg: 680 }] },

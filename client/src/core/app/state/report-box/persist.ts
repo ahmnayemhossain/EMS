@@ -1,4 +1,4 @@
-import type { ReportBoxRecord, ReportBoxReport } from "@/core/types/ems";
+import type { ReportBoxRecord, ReportBoxReport } from "@/core/types/models/ems";
 
 import { RECORDS_KEY, REPORTS_KEY } from "@/core/app/state/report-box/constants";
 
@@ -49,4 +49,3 @@ export function persistReports(reports: ReportBoxReport[]) {
 export function persistRecords(records: ReportBoxRecord[]) {
   safeLocalStorageSet(RECORDS_KEY, JSON.stringify(records));
 }
-

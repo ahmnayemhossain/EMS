@@ -1,4 +1,4 @@
-import type { DashboardBuilderState, DashboardGridRect, DashboardWidget, DashboardWidgetLocation } from "../dashboard-builder.types";
+import type { DashboardBuilderState, DashboardGridRect, DashboardWidget, DashboardWidgetLocation } from "../slices/dashboard-builder.types";
 
 export type PersistedDashboardBuilderState = Partial<DashboardBuilderState>;
 

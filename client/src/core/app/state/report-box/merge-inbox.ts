@@ -1,4 +1,4 @@
-import type { ReportBoxReport } from "@/core/types/ems";
+import type { ReportBoxReport } from "@/core/types/models/ems";
 
 export function mergeInboxReports(
   prev: ReportBoxReport[],

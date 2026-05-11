@@ -1,4 +1,4 @@
-import type { DashboardGridRect } from "../dashboard-builder.types";
+import type { DashboardGridRect } from "../slices/dashboard-builder.types";
 
 export function removeFromArray(arr: string[], value: string) {
   const index = arr.indexOf(value);

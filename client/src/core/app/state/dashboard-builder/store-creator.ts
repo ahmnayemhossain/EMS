@@ -1,5 +1,5 @@
-import { DEFAULT_DASHBOARD_BUILDER_STATE, arrayMove, clampRect, clampRows, clampSpan } from "../dashboard-builder.defaults";
-import type { DashboardContainer, DashboardWidget } from "../dashboard-builder.types";
+import { DEFAULT_DASHBOARD_BUILDER_STATE, arrayMove, clampRect, clampRows, clampSpan } from "../slices/dashboard-builder.defaults";
+import type { DashboardContainer, DashboardWidget } from "../slices/dashboard-builder.types";
 
 import { defaultLayout, insertIntoArray, removeFromArray } from "./helpers";
 import type { DashboardBuilderStore } from "./store-types";

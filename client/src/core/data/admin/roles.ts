@@ -1,4 +1,4 @@
-import type { Role } from "@/core/types/admin";
+import type { Role } from "@/core/types/models/admin";
 
 import { permissionCatalog } from "./permissions";
 

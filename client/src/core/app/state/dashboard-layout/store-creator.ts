@@ -1,4 +1,4 @@
-import { DEFAULT_BOTTOM_WIDGET_ORDER, DEFAULT_BOTTOM_WIDGET_SPANS, DEFAULT_KPI_ORDER, DEFAULT_KPI_SPANS, DEFAULT_SECTION_ORDER, DEFAULT_TOP_WIDGET_ORDER, DEFAULT_TOP_WIDGET_SPANS, arrayMove, clampDashboardSpan } from "../dashboard-layout.defaults";
+import { DEFAULT_BOTTOM_WIDGET_ORDER, DEFAULT_BOTTOM_WIDGET_SPANS, DEFAULT_KPI_ORDER, DEFAULT_KPI_SPANS, DEFAULT_SECTION_ORDER, DEFAULT_TOP_WIDGET_ORDER, DEFAULT_TOP_WIDGET_SPANS, arrayMove, clampDashboardSpan } from "../slices/dashboard-layout.defaults";
 
 import type { DashboardLayoutStore } from "./store-types";
 

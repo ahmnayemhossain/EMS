@@ -1,4 +1,4 @@
-import type { Facility, Group, UtilityRecord } from "@/core/types/ems";
+import type { Facility, Group, UtilityRecord } from "@/core/types/models/ems";
 
 export const group: Group = {
   id: "grp_greenstitch",

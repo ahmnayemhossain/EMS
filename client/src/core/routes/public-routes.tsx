@@ -1,6 +1,6 @@
 import { Navigate } from "react-router";
 
-import { RouteErrorPage } from "@/core/RouteErrorPage";
+import { RouteErrorPage } from "@/core/errors/RouteErrorPage";
 import { lazyPage } from "@/core/routes/lazy-page";
 import { publicRouteDefs } from "@/core/routes/public-route-registry";
 

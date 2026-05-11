@@ -1,4 +1,4 @@
-import type { AppUser } from "@/core/types/admin";
+import type { AppUser } from "@/core/types/models/admin";
 
 import { isoDateTime } from "./helpers";
 

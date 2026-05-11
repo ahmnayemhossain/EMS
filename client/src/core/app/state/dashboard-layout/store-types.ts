@@ -1,4 +1,4 @@
-import type { DashboardBottomWidgetKey, DashboardKpiKey, DashboardSectionKey, DashboardSpanMap, DashboardTopWidgetKey } from "../dashboard-layout.types";
+import type { DashboardBottomWidgetKey, DashboardKpiKey, DashboardSectionKey, DashboardSpanMap, DashboardTopWidgetKey } from "../slices/dashboard-layout.types";
 
 export type PersistedDashboardLayoutState = Partial<{
   kpiOrder: DashboardKpiKey[];

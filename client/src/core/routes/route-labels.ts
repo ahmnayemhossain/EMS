@@ -1,6 +1,6 @@
 import { appRouteDefs } from "@/core/routes/app-route-registry";
 import { publicRouteDefs } from "@/core/routes/public-route-registry";
-import { settingsRouteDefs } from "@/core/settings/settings-route-registry";
+import { settingsRouteDefs } from "@/features/admin/settings/config/settings-route-registry";
 
 export const routeLabels = Object.fromEntries([
   ...appRouteDefs.map((item) => [item.segment, item.label]),

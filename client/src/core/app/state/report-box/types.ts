@@ -3,7 +3,7 @@ import type {
   ReportBoxMessageKind,
   ReportBoxRecord,
   ReportBoxReport,
-} from "@/core/types/ems";
+} from "@/core/types/models/ems";
 
 export type NewReportInput = {
   facilityId?: string;

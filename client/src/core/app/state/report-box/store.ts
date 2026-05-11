@@ -42,7 +42,6 @@ export const useReportBoxStore = create<ReportBoxApi>((set, get) => ({
 }));
 
 if (typeof window !== "undefined") {
-  useReportBoxStore.subscribe((s) => s.reports, persistReports);
-  useReportBoxStore.subscribe((s) => s.records, persistRecords);
+  useReportBoxStore.subscribe((state) => persistReports(state.reports));
+  useReportBoxStore.subscribe((state) => persistRecords(state.records));
 }
-

@@ -1,5 +1,5 @@
 import type { ReportBoxApi } from "@/core/app/state/report-box/types";
-import type { ReportBoxReport } from "@/core/types/ems";
+import type { ReportBoxReport } from "@/core/types/models/ems";
 
 type SetReportBoxState = (recipe: (state: ReportBoxApi) => Partial<ReportBoxApi>) => void;
 
