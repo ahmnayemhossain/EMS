@@ -21,7 +21,7 @@ export function getWasteColumns(): Array<DataColumn<WasteRecord>> {
         <div className="min-w-0">
           <div className="truncate font-medium">{w.stream}</div>
           <div className="text-muted-foreground mt-1 text-xs">
-            {getFacilityName(w.facilityId)} â€¢ {w.storageLocation}
+            {getFacilityName(w.facilityId)} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {w.storageLocation}
           </div>
         </div>
       ),
@@ -73,7 +73,7 @@ export function getWasteColumns(): Array<DataColumn<WasteRecord>> {
       cell: (w) => (
         <div className="flex justify-end">
           <StatusBadge tone={w.dueBy ? "warning" : "neutral"}>
-            {w.dueBy ? formatDate(w.dueBy) : "â€”"}
+            {w.dueBy ? formatDate(w.dueBy) : "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â"}
           </StatusBadge>
         </div>
       ),

@@ -15,7 +15,7 @@ export const appRoutes = [{
     { index: true, element: <Navigate to="/dashboard" replace /> },
     { path: "index.html", element: <Navigate to="/dashboard" replace /> },
     { path: "notifications", element: <Navigate to="/inbox" replace /> },
-    { path: "inbox", lazy: lazyPage(() => import("@/features/workspace/inbox"), "InboxPage") },
+    { path: "inbox", lazy: lazyPage(() => import("@/features/workspace/inbox/pages/index"), "InboxPage") },
     ...appRouteDefs.filter((item) => item.load && item.exportName).map((item) => ({ path: item.path, lazy: lazyPage(item.load!, item.exportName!) })),
     settingsRoute,
     { path: "*", element: <NotFoundPage /> },

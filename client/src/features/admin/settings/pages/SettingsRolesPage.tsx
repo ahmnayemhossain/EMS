@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router";
 
 import { Button } from "@/components/ui/primitives/button";
-import { RolesModule } from "../modules/root/RolesModule";
+import { RolesModule } from "../modules/screens/RolesModule";
 
 export function SettingsRolesPage() {
   const navigate = useNavigate();

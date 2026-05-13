@@ -64,7 +64,7 @@ export function useUtilityFormErrors(props: UtilityFormProps): UtilityFormErrors
           : typeof dieselNumber !== "number" || Number.isNaN(dieselNumber) || dieselNumber <= 0
             ? "Diesel consumption must be > 0."
             : typeof props.generatorDieselKwhPerLiter !== "number"
-              ? "Generator diesel conversion factor is missing (set it in Settings Ã¢â€ â€™ Operations Ã¢â€ â€™ Utilities rules)."
+              ? "Generator diesel conversion factor is missing (set it in Settings ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Operations ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Utilities rules)."
               : ""
       : readingEnabled
         ? ""

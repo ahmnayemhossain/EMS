@@ -4,7 +4,6 @@ import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { cn } from "@/components/ui/primitives/utils";
 import { getFacilityName } from "@/core/data/catalog/mock";
 import type { ReportBoxReport } from "@/core/types/models/ems";
-
 import { formatReportNumber, getWorkingUsersForComplaint } from "@/features/people/complaint-box/config/utils";
 
 export function ComplaintList({
@@ -12,7 +11,7 @@ export function ComplaintList({
   onOpenComplaint,
 }: {
   rows: ReportBoxReport[];
-  onOpenComplaint: (r: ReportBoxReport) => void;
+  onOpenComplaint: (report: ReportBoxReport) => void;
 }) {
   if (!rows.length) {
     return (
@@ -25,41 +24,36 @@ export function ComplaintList({
 
   return (
     <div className="grid gap-3">
-      {rows.map((r) => (
+      {rows.map((report) => (
         <button
-          key={r.id}
+          key={report.id}
           type="button"
           className={cn(
             "rounded-xl border bg-card p-3 text-left shadow-xs transition hover:bg-muted/20",
-            r.flagged && "border-destructive/30 bg-destructive/5",
+            report.flagged && "border-destructive/30 bg-destructive/5",
           )}
-          onClick={() => onOpenComplaint(r)}
+          onClick={() => onOpenComplaint(report)}
         >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="truncate text-sm font-semibold">
-                {formatReportNumber(r.id)}{" "}
-                <span className="text-muted-foreground font-normal">ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢</span>{" "}
-                {r.facilityId ? getFacilityName(r.facilityId) : "Unknown company"}
+                {formatReportNumber(report.id)} <span className="text-muted-foreground font-normal">•</span>{" "}
+                {report.facilityId ? getFacilityName(report.facilityId) : "Unknown company"}
               </div>
-              <div className="text-muted-foreground mt-1 line-clamp-2 text-xs">{r.subject}</div>
+              <div className="text-muted-foreground mt-1 line-clamp-2 text-xs">{report.subject}</div>
             </div>
             <div className="shrink-0 space-y-1 text-right">
-              <StatusBadge
-                tone={
-                  r.status === "handled" ? "compliant" : r.status === "triaged" ? "warning" : "info"
-                }
-              >
-                {r.status}
+              <StatusBadge tone={report.status === "handled" ? "compliant" : report.status === "triaged" ? "warning" : "info"}>
+                {report.status}
               </StatusBadge>
-              {r.flagged ? <StatusBadge tone="critical">flagged</StatusBadge> : null}
+              {report.flagged ? <StatusBadge tone="critical">flagged</StatusBadge> : null}
             </div>
           </div>
           <div className="text-muted-foreground mt-2 flex flex-wrap items-center justify-between gap-2 text-[11px]">
-            <div className="truncate">{r.assignedTo ? `Supervisor: ${r.assignedTo}` : "Unassigned"}</div>
+            <div className="truncate">{report.assignedTo ? `Supervisor: ${report.assignedTo}` : "Unassigned"}</div>
             <div className="flex items-center gap-2">
-              <div className="tabular-nums">{new Date(r.createdAt).toLocaleString()}</div>
-              <AvatarStack people={getWorkingUsersForComplaint(r)} className="ml-1" />
+              <div className="tabular-nums">{new Date(report.createdAt).toLocaleString()}</div>
+              <AvatarStack people={getWorkingUsersForComplaint(report)} className="ml-1" />
             </div>
           </div>
         </button>
@@ -67,5 +61,3 @@ export function ComplaintList({
     </div>
   );
 }
-
-

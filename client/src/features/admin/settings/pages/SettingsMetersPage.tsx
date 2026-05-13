@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router";
 
 import { Button } from "@/components/ui/primitives/button";
-import { MetersSettingsModule } from "../modules/root/MetersSettingsModule";
+import { MetersSettingsModule } from "../modules/screens/MetersSettingsModule";
 
 export function SettingsMetersPage() {
   const navigate = useNavigate();

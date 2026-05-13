@@ -31,7 +31,7 @@ export function UtilitiesComparisonCard({
                 {monthWarnings.slice(0, 4).map((item) => (
                   <div key={item.month} className="rounded-md bg-muted/30 px-2 py-1.5 text-xs">
                     <span className="font-medium">{item.month}</span>
-                    <span className="text-muted-foreground"> â€” {item.detail}</span>
+                    <span className="text-muted-foreground"> ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â {item.detail}</span>
                   </div>
                 ))}
               </div>

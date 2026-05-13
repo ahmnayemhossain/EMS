@@ -350,7 +350,7 @@ function MeterForm(props: {
       <div className="flex items-center justify-between rounded-lg border bg-muted/30 p-3">
         <div className="min-w-0">
           <div className="text-sm font-medium">Active</div>
-          <div className="text-xs text-muted-foreground">Inactive meters wonÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢t appear in Utilities selection.</div>
+          <div className="text-xs text-muted-foreground">Inactive meters wonÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢t appear in Utilities selection.</div>
         </div>
         <Switch checked={props.value.isActive} onCheckedChange={(checked) => props.onChange({ ...props.value, isActive: checked })} />
       </div>

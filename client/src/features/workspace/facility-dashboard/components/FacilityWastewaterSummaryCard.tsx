@@ -24,7 +24,7 @@ export function FacilityWastewaterSummaryCard({
               <div className="min-w-0">
                 <div className="text-muted-foreground text-xs">Latest sample</div>
                 <div className="mt-1 truncate text-sm font-medium">
-                  {formatDate(latest.sampleDate)} â€¢ {latest.point}
+                  {formatDate(latest.sampleDate)} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {latest.point}
                 </div>
               </div>
               <StatusBadge tone={latest.exceedance?.length ? "critical" : "compliant"}>

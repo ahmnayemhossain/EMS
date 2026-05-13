@@ -22,7 +22,7 @@ function AuditMiniRow({
         <div className="min-w-0">
           <div className="truncate text-sm font-medium">{audit.name}</div>
           <div className="text-muted-foreground mt-1 text-xs">
-            {getFacilityName(audit.facilityId)} â€¢ {formatAuditDate(audit.date)}
+            {getFacilityName(audit.facilityId)} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {formatAuditDate(audit.date)}
           </div>
         </div>
         <StatusBadge

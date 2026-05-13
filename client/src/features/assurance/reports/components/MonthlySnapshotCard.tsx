@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/primitives/card";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
-import type { MonthlyReportSnapshot } from "@/features/assurance/reports/report-types";
+import type { MonthlyReportSnapshot } from "@/features/assurance/reports/types/report-types";
 import { formatNumber } from "@/core/utils/format";
 
 export function MonthlySnapshotCard({ rows }: { rows: MonthlyReportSnapshot[] }) {

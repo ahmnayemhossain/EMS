@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router";
 
 import { Button } from "@/components/ui/primitives/button";
-import { ReportsSettingsModule } from "../modules/root/ReportsSettingsModule";
+import { ReportsSettingsModule } from "../modules/screens/ReportsSettingsModule";
 
 export function SettingsReportsPage() {
   const navigate = useNavigate();

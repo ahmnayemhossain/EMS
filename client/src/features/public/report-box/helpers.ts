@@ -20,14 +20,24 @@ export function getCompanyIdFromCode(code?: string | null) {
 
 export function getCompanyBnName(companyId?: string | null) {
   const code = facilities.find((facility) => facility.id === companyId)?.code?.toLowerCase();
-  const labels: Record<string, string> = { hfl: "à¦à¦‡à¦šà¦à¦«à¦à¦² (à¦¹à§à¦¯à¦¾à¦¬à¦¿à¦Ÿà¦¾à¦¸ à¦«à§à¦¯à¦¾à¦¶à¦¨ à¦²à¦¿à¦®à¦¿à¦Ÿà§‡à¦¡)", qfl: "à¦•à¦¿à¦‰à¦à¦«à¦à¦²", fgl: "à¦à¦«à¦œà¦¿à¦à¦²", afl: "à¦à¦à¦«à¦à¦²", kadl: "à¦•à§‡à¦à¦¡à¦¿à¦à¦²", rsbl: "à¦†à¦°à¦à¦¸à¦¬à¦¿à¦à¦²", sarah: "à¦¸à¦¾à¦°à¦¾à¦¹ à¦°à¦¿à¦¸à§‹à¦°à§à¦Ÿ", dtr: "à¦¡à¦¾à¦‰à¦¨à¦Ÿà¦¾à¦‰à¦¨ à¦°à¦¿à¦¸à§‹à¦°à§à¦Ÿ" };
-  return code && labels[code] ? labels[code] : companyId ? getFacilityName(companyId) : "à¦²à¦¿à¦‚à¦•à¦Ÿà¦¿ à¦¸à¦ à¦¿à¦• à¦¨à§Ÿ";
+  const labels: Record<string, string> = {
+    hfl: "HFL",
+    qfl: "QFL",
+    fgl: "FGL",
+    afl: "AFL",
+    kadl: "KADL",
+    rsbl: "RSBL",
+    sarah: "SARAH",
+    dtr: "DTR",
+  };
+
+  return code && labels[code] ? labels[code] : companyId ? getFacilityName(companyId) : "অজানা প্রতিষ্ঠান";
 }
 
 export function blobToDataUrl(blob: Blob) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
-    reader.onerror = () => reject(new Error("à¦«à¦¾à¦‡à¦² à¦ªà§œà¦¾ à¦¯à¦¾à§Ÿà¦¨à¦¿"));
+    reader.onerror = () => reject(new Error("ফাইল পড়া যায়নি"));
     reader.onload = () => resolve(String(reader.result || ""));
     reader.readAsDataURL(blob);
   });

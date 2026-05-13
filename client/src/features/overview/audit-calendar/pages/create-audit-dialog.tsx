@@ -40,6 +40,6 @@ function Field(props: { label: string; className?: string; children: React.React
 }
 
 function DurationField(props: { duration: string; computedEndTime?: string; conflict: boolean; onChange: (value: string) => void }) {
-  return <Field label="Duration"><SelectFilter value={props.duration} onChange={props.onChange} placeholder="Duration" items={durationOptions.map((value) => ({ value, label: `${value} min` }))} /><div className="text-muted-foreground text-xs tabular-nums">Ends at {props.computedEndTime ?? "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â"}</div>{props.conflict ? <div className="text-destructive text-xs font-medium">Time overlaps another audit for this day.</div> : null}</Field>;
+  return <Field label="Duration"><SelectFilter value={props.duration} onChange={props.onChange} placeholder="Duration" items={durationOptions.map((value) => ({ value, label: `${value} min` }))} /><div className="text-muted-foreground text-xs tabular-nums">Ends at {props.computedEndTime ?? "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â"}</div>{props.conflict ? <div className="text-destructive text-xs font-medium">Time overlaps another audit for this day.</div> : null}</Field>;
 }
 

@@ -43,7 +43,7 @@ export function ChemicalsContent({
           if (!open) onSelect(null);
         }}
         title={selected ? selected.name : "Chemical"}
-        description={selected ? `${getCompanyName(String(selected.facilityId))} â€¢ ${selected.storageArea}` : undefined}
+        description={selected ? `${getCompanyName(String(selected.facilityId))} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ${selected.storageArea}` : undefined}
       >
         {selected ? <ChemicalDetail chemical={selected} sdsFileName={sdsFileName} /> : null}
       </DetailPanel>

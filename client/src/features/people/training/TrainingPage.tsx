@@ -51,7 +51,7 @@ export function TrainingPage() {
         left={
           <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
             <div className="w-full lg:w-[320px]">
-              <SearchInput value={search} onChange={setSearch} placeholder="Search trainingsâ€¦" />
+              <SearchInput value={search} onChange={setSearch} placeholder="Search trainingsÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦" />
             </div>
             <SelectFilter
               value={facilityId}

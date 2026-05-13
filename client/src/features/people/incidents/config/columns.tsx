@@ -16,7 +16,7 @@ export function getIncidentColumns(): Array<DataColumn<Incident>> {
         <div className="min-w-0">
           <div className="truncate font-medium">{i.title}</div>
           <div className="text-muted-foreground mt-1 text-xs">
-            {getFacilityName(i.facilityId)} â€¢ {formatDate(i.date)}
+            {getFacilityName(i.facilityId)} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {formatDate(i.date)}
           </div>
         </div>
       ),

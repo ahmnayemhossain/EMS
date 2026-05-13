@@ -16,7 +16,7 @@ type ThemeModeStore = {
 const STORAGE_KEY = "ems-theme-mode";
 
 export function getAutoTheme(now: Date = new Date()): "light" | "dark" {
-  // "Day" = 07:00–16:59, "Evening/Night" = 17:00–06:59
+  // "Day" = 07:00Ã¢â‚¬â€œ16:59, "Evening/Night" = 17:00Ã¢â‚¬â€œ06:59
   const hour = now.getHours();
   return hour >= 17 || hour < 7 ? "dark" : "light";
 }

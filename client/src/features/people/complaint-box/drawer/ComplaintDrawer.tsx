@@ -1,10 +1,9 @@
 import * as React from "react";
 
-import { Dialog, DialogContent } from "@/components/ui/primitives/dialog";
 import { DetailPanel } from "@/components/layout/primitives/DetailPanel";
+import { Dialog, DialogContent } from "@/components/ui/primitives/dialog";
 import { getFacilityName } from "@/core/data/catalog/mock";
 import type { ReportBoxReport } from "@/core/types/models/ems";
-
 import { formatReportNumber } from "@/features/people/complaint-box/config/utils";
 import { ComplaintDrawerBody } from "@/features/people/complaint-box/drawer/ComplaintDrawerBody";
 
@@ -49,9 +48,7 @@ export function ComplaintDrawer({
         title={complaint ? formatReportNumber(complaint.id) : "Complaint"}
         description={
           complaint
-            ? `${formatReportNumber(complaint.id)} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ${
-                complaint.facilityId ? getFacilityName(complaint.facilityId) : "Unknown company"
-              } ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ${new Date(complaint.createdAt).toLocaleString()}`
+            ? `${formatReportNumber(complaint.id)} • ${complaint.facilityId ? getFacilityName(complaint.facilityId) : "Unknown company"} • ${new Date(complaint.createdAt).toLocaleString()}`
             : undefined
         }
       >
@@ -74,7 +71,7 @@ export function ComplaintDrawer({
         ) : null}
       </DetailPanel>
 
-      <Dialog open={Boolean(imagePreview)} onOpenChange={(o) => (!o ? setImagePreview(null) : null)}>
+      <Dialog open={Boolean(imagePreview)} onOpenChange={(nextOpen) => (!nextOpen ? setImagePreview(null) : null)}>
         <DialogContent className="max-w-[min(920px,calc(100%-2rem))] p-3">
           {imagePreview ? (
             <img
@@ -88,5 +85,3 @@ export function ComplaintDrawer({
     </>
   );
 }
-
-

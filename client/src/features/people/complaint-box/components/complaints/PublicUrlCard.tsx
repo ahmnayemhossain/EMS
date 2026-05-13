@@ -9,7 +9,7 @@ export function PublicUrlCard({ publicUrl }: { publicUrl: string }) {
         <div className="min-w-0">
           <div className="truncate text-sm font-medium">{publicUrl || "--"}</div>
           <div className="text-muted-foreground mt-1 text-xs">
-            Scan / open â†’ submit complaint (text / voice / photo). Company is taken from header selection.
+            Scan or open this link to submit a complaint by text, voice, or photo. Company is taken from header selection.
           </div>
         </div>
         <div className="flex w-full shrink-0 flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap sm:justify-end">
@@ -20,7 +20,7 @@ export function PublicUrlCard({ publicUrl }: { publicUrl: string }) {
               try {
                 await navigator.clipboard.writeText(publicUrl);
               } catch {
-                // ignore
+                return;
               }
             }}
             disabled={!publicUrl}
@@ -42,5 +42,3 @@ export function PublicUrlCard({ publicUrl }: { publicUrl: string }) {
     </div>
   );
 }
-
-

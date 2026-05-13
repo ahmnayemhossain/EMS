@@ -49,7 +49,7 @@ const columns: Array<DataColumn<TestingRow>> = [
       <div className="min-w-0">
         <div className="text-sm font-medium">{r.test}</div>
         <div className="text-muted-foreground mt-1 text-xs">
-          {getFacilityName(r.facilityId)} â€¢ {r.frequency}
+          {getFacilityName(r.facilityId)} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {r.frequency}
         </div>
       </div>
     ),

@@ -6,9 +6,9 @@ export const audits: Audit[] = [
 ];
 
 export const capas: CAPA[] = [
-  { id: "capa_001", facilityId: "fac_dyeing_d", title: "ETP outlet pH exceedance â€” dosing control tuning", owner: "User Four (EMP-0004)", severity: "major", status: "overdue", dueDate: "2026-04-08", evidenceCount: 2 },
+  { id: "capa_001", facilityId: "fac_dyeing_d", title: "ETP outlet pH exceedance ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â dosing control tuning", owner: "User Four (EMP-0004)", severity: "major", status: "overdue", dueDate: "2026-04-08", evidenceCount: 2 },
   { id: "capa_002", facilityId: "fac_garments_a", title: "Update waste segregation signage in loading bay", owner: "User Five (EMP-0005)", severity: "minor", status: "in_progress", dueDate: "2026-04-18", evidenceCount: 1 },
-  { id: "capa_003", facilityId: "fac_shoe_s", title: "Restricted adhesive approval â€” substitute review", owner: "User Six (EMP-0006)", severity: "major", status: "open", dueDate: "2026-04-25", evidenceCount: 0 },
+  { id: "capa_003", facilityId: "fac_shoe_s", title: "Restricted adhesive approval ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â substitute review", owner: "User Six (EMP-0006)", severity: "major", status: "open", dueDate: "2026-04-25", evidenceCount: 0 },
 ];
 
 export const documents: Document[] = [

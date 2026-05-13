@@ -16,7 +16,7 @@ class PanelErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error) {
-    // Keep a console breadcrumb so debugging is easier than â€œoverlay onlyâ€.
+    // Keep a console breadcrumb so debugging is easier than ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œoverlay onlyÃƒÂ¢Ã¢â€šÂ¬Ã‚Â.
     console.error("[DetailPanel] render error:", error);
   }
 

@@ -44,7 +44,7 @@ export function ActivityList({
                     </div>
                     <div className="text-muted-foreground mt-1 text-xs">
                       {item.time}
-                      {item.meta ? ` â€¢ ${item.meta}` : ""}
+                      {item.meta ? ` ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ${item.meta}` : ""}
                     </div>
                   </div>
                   <StatusBadge tone={item.tone}>{item.tone}</StatusBadge>

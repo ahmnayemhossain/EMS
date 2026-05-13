@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router";
 
 import { Button } from "@/components/ui/primitives/button";
-import { UsersModule } from "../modules/root/UsersModule";
+import { UsersModule } from "../modules/screens/UsersModule";
 
 export function SettingsUsersPage() {
   const navigate = useNavigate();

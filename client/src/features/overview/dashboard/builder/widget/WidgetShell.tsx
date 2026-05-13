@@ -41,7 +41,7 @@ export function WidgetShell({
               "bg-transparent text-muted-foreground hover:bg-muted/20",
               "cursor-grab active:cursor-grabbing touch-none",
             )}
-            title={title ? `Drag â€¢ ${title}` : "Drag"}
+            title={title ? `Drag ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ${title}` : "Drag"}
           >
             <DotsHandle />
           </div>

@@ -33,7 +33,7 @@ export function DashboardDragLayer() {
     const rows = widget?.rows ?? 3;
     width = Math.max(180, Math.min(680, span * PREVIEW_COL + (span - 1) * PREVIEW_GAP));
     height = Math.max(84, Math.min(520, rows * PREVIEW_ROW_HEIGHT + (rows - 1) * PREVIEW_GAP));
-    label = <DragLayerLabel title={`${span}Ã—${rows}`} />;
+    label = <DragLayerLabel title={`${span}ÃƒÆ’Ã¢â‚¬â€${rows}`} />;
   } else if (itemType === DND_CONTAINER) {
     const dragItem = item as ContainerDragItem | null;
     const container = dragItem ? containers.find((c) => c.id === dragItem.containerId) : undefined;

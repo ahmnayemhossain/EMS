@@ -65,7 +65,7 @@ export function DashboardGridItem<TId extends string>({
             aria-orientation="horizontal"
           >
             <div className="grid h-full w-full place-items-center text-muted-foreground text-xs">
-              â†”
+              ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Â
             </div>
           </div>
         </>

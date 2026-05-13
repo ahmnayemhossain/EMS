@@ -50,7 +50,7 @@ export function UtilitiesRecordsMobile({
                       {r.meterName}
                     </div>
                     <div className="text-muted-foreground mt-2 text-[11px]">
-                      {formatDate(r.periodStart)} â†’ {formatDate(r.periodEnd)}
+                      {formatDate(r.periodStart)} ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ {formatDate(r.periodEnd)}
                     </div>
                     {r.sourceName ? <div className="text-muted-foreground mt-1 text-[11px]">Source: {r.sourceName}</div> : null}
                   </div>

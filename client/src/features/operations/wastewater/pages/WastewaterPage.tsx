@@ -46,11 +46,11 @@ export function WastewaterPage() {
       <PageHeader actions={<WastewaterCreateDialog />} />
 
       <WastewaterKpis
-        inflow="â€”"
-        outflow="â€”"
-        latestPh={latest ? latest.pH : "â€”"}
-        latestCod={latest ? `${latest.COD} mg/L` : "â€”"}
-        latestBod={latest ? `${latest.BOD} mg/L` : "â€”"}
+        inflow="ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â"
+        outflow="ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â"
+        latestPh={latest ? latest.pH : "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â"}
+        latestCod={latest ? `${latest.COD} mg/L` : "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â"}
+        latestBod={latest ? `${latest.BOD} mg/L` : "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â"}
         exceedanceCount={exceedances}
       />
 

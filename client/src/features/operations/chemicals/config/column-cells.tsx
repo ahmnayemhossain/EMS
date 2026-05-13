@@ -10,7 +10,7 @@ export function renderChemicalName(chemical: Chemical) {
     <div className="min-w-0">
       <div className="truncate font-medium">{chemical.name}</div>
       <div className="text-muted-foreground mt-1 text-xs">
-        {chemical.supplier} â€¢ {chemical.storageArea}
+        {chemical.supplier} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {chemical.storageArea}
       </div>
     </div>
   );
@@ -61,7 +61,7 @@ export function renderChemicalExpiry(chemical: Chemical) {
         : "neutral";
   return (
     <div className="flex justify-end">
-      <StatusBadge tone={tone}>{chemical.expiryDate ? formatDate(chemical.expiryDate) : "â€”"}</StatusBadge>
+      <StatusBadge tone={tone}>{chemical.expiryDate ? formatDate(chemical.expiryDate) : "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â"}</StatusBadge>
     </div>
   );
 }

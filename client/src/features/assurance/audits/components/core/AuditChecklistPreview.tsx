@@ -9,7 +9,7 @@ export function AuditChecklistPreview({
   return (
     <>
       <div className="flex items-center justify-between rounded-lg border p-3 sm:col-span-2">
-        <div><div className="text-sm font-medium">Checklist preview</div><div className="text-muted-foreground mt-1 text-xs">Total items {stats.total} â€¢ Default score {stats.score}%</div></div>
+        <div><div className="text-sm font-medium">Checklist preview</div><div className="text-muted-foreground mt-1 text-xs">Total items {stats.total} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ Default score {stats.score}%</div></div>
         <div className="flex items-center gap-2"><StatusBadge tone="neutral">{stats.template.name}</StatusBadge></div>
       </div>
       <div className="sm:col-span-2">

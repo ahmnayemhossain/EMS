@@ -2,7 +2,7 @@ import { Download, FileSpreadsheet, LineChart, TriangleAlert } from "lucide-reac
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/primitives/card";
 import { PageKpiGrid } from "@/components/layout/primitives/PageKpiGrid";
-import type { ReportSummary } from "@/features/assurance/reports/report-types";
+import type { ReportSummary } from "@/features/assurance/reports/types/report-types";
 import { formatNumber, formatUtilityType } from "@/core/utils/format";
 
 export function ReportSummaryGrid(props: { loading: boolean; summary: ReportSummary }) {

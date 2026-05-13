@@ -12,7 +12,7 @@ export function NotFoundPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-muted-foreground text-sm">
-            The page youâ€™re looking for doesnâ€™t exist or has moved.
+            The page youÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢re looking for doesnÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢t exist or has moved.
           </p>
           <Button asChild>
             <Link to="/dashboard">Go to dashboard</Link>

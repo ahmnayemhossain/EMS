@@ -20,7 +20,7 @@ export function getAuditColumns(): Array<DataColumn<AuditRecord>> {
             </div>
             <div className="text-muted-foreground mt-1 text-xs">
               {getFacilityName(a.facilityId)}
-              {a.customerName ? ` â€¢ ${a.customerName}` : ""} â€¢ {formatAuditDate(a.date)}
+              {a.customerName ? ` ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ${a.customerName}` : ""} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {formatAuditDate(a.date)}
             </div>
             <div className="mt-2 flex flex-wrap gap-2">
               <StatusBadge tone="neutral">{templateName}</StatusBadge>

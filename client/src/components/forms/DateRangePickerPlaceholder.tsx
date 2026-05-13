@@ -34,11 +34,11 @@ export function DateRangePickerPlaceholder({
         <div className="grid gap-2 text-sm">
           <div className="flex items-center justify-between">
             <span>From</span>
-            <span className="text-muted-foreground">â€”</span>
+            <span className="text-muted-foreground">ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</span>
           </div>
           <div className="flex items-center justify-between">
             <span>To</span>
-            <span className="text-muted-foreground">â€”</span>
+            <span className="text-muted-foreground">ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</span>
           </div>
         </div>
       </PopoverContent>

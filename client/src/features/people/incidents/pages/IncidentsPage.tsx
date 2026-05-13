@@ -49,7 +49,7 @@ export function IncidentsPage() {
         left={
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <div className="w-full sm:w-[320px]">
-              <SearchInput value={search} onChange={setSearch} placeholder="Search incidentsâ€¦" />
+              <SearchInput value={search} onChange={setSearch} placeholder="Search incidentsÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦" />
             </div>
             <SelectFilter
               value={companyId}

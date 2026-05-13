@@ -22,7 +22,7 @@ export function UtilitiesFiltersBar({
             <SearchInput
               value={search}
               onChange={onSearchChange}
-              placeholder="Search meter / companyâ€¦"
+              placeholder="Search meter / companyÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦"
             />
           </div>
           <div className="border-input bg-input-background text-foreground flex h-9 w-full items-center rounded-md border px-3 text-sm sm:w-[220px]">

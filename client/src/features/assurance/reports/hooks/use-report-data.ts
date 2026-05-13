@@ -3,7 +3,7 @@ import * as React from "react";
 import { toast } from "@/core/app/lib/toast";
 import { listUtilityRecords } from "@/features/operations/utilities/services/api";
 import { utilityTypes } from "@/features/operations/utilities/config/constants";
-import type { ReportData } from "@/features/assurance/reports/report-types";
+import type { ReportData } from "@/features/assurance/reports/types/report-types";
 import type { UtilityRecord } from "@/core/types/models/ems";
 import type { UtilityType } from "@/core/types/models/ems";
 import { formatUtilityType } from "@/core/utils/format";

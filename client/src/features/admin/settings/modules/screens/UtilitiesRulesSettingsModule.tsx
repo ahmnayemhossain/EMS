@@ -68,9 +68,9 @@ export function UtilitiesRulesSettingsModule() {
       <div className="grid gap-4 px-4 pb-4 pt-4 sm:grid-cols-2 sm:px-6">
         <Card className="shadow-xs">
           <CardHeader>
-            <CardTitle className="text-base">Generator diesel ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ kWh</CardTitle>
+            <CardTitle className="text-base">Generator diesel ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ kWh</CardTitle>
             <CardDescription>
-              Electricity source is Generator: kWh = liters ÃƒÆ’Ã¢â‚¬â€ factor.
+              Electricity source is Generator: kWh = liters ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â factor.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3">

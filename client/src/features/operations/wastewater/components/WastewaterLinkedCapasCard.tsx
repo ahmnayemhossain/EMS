@@ -24,7 +24,7 @@ export function WastewaterLinkedCapasCard({ items }: { items: CAPA[] }) {
                 <div className="min-w-0">
                   <div className="truncate text-sm font-medium">{c.title}</div>
                   <div className="text-muted-foreground mt-1 text-xs">
-                    {getFacilityName(c.facilityId)} â€¢ Due {formatDate(c.dueDate)}
+                    {getFacilityName(c.facilityId)} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ Due {formatDate(c.dueDate)}
                   </div>
                 </div>
                 <StatusBadge

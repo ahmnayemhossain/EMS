@@ -19,7 +19,7 @@ export function FacilityRecentIncidentsCard({ items }: { items: Incident[] }) {
                 <div className="min-w-0">
                   <div className="truncate text-sm font-medium">{i.title}</div>
                   <div className="text-muted-foreground mt-1 text-xs">
-                    {formatDate(i.date)} â€¢ {i.type.replace(/_/g, " ")}
+                    {formatDate(i.date)} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {i.type.replace(/_/g, " ")}
                   </div>
                 </div>
                 <StatusBadge

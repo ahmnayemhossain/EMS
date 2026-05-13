@@ -20,7 +20,7 @@ export function RouteErrorPage() {
         : error.statusText || description;
     meta = (
       <div className="text-muted-foreground mt-2 text-xs">
-        {error.status} â€¢ {error.statusText}
+        {error.status} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {error.statusText}
       </div>
     );
   } else if (error instanceof Error) {

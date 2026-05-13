@@ -17,7 +17,7 @@ export function ReportFilters(props: {
       left={
         <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
           <div className="w-full sm:w-[320px]">
-            <SearchInput value={props.search} onChange={props.onSearchChange} placeholder="Search meter, source, remarksÃ¢â‚¬Â¦" />
+            <SearchInput value={props.search} onChange={props.onSearchChange} placeholder="Search meter, source, remarksÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦" />
           </div>
           <SelectFilter
             value={props.typeFilter}

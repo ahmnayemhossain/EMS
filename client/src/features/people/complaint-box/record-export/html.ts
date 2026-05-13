@@ -1,6 +1,5 @@
 import { getFacilityName } from "@/core/data/catalog/mock";
 import type { ReportBoxRecord } from "@/core/types/models/ems";
-
 import { formatReportNumber, getAttachmentSrc, stripEmsNotePrefix } from "@/features/people/complaint-box/config/utils";
 
 export function buildRecordHtml(record: ReportBoxRecord) {
@@ -11,7 +10,7 @@ export function buildRecordHtml(record: ReportBoxRecord) {
   const recordedAt = new Date(record.recordedAt).toLocaleString();
   const messagesHtml = report.messages.map(buildMessageHtml).join("");
 
-  return `<!doctype html><html><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>${escapeHtml(title)}</title>${getRecordStyles()}</head><body><div class="wrap"><div class="card"><div class="header"><div><div class="pill">EMS Platform</div><h1 class="h1" style="margin-top:10px;">${escapeHtml(title)}</h1><div class="meta"><div><b>Complaint #</b> ${formatReportNumber(report.id)} Ãƒâ€šÃ‚Â· <b>${escapeHtml(companyName)}</b></div><div><b>Created</b> ${createdAt} Ãƒâ€šÃ‚Â· <b>Recorded</b> ${recordedAt}</div><div><b>Status</b> ${escapeHtml(report.status)}${buildMetaTags(report)}</div></div></div></div><div class="content">${messagesHtml || getEmptyMessageHtml()}</div></div></div></body></html>`;
+  return `<!doctype html><html><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>${escapeHtml(title)}</title>${getRecordStyles()}</head><body><div class="wrap"><div class="card"><div class="header"><div><div class="pill">EMS Platform</div><h1 class="h1" style="margin-top:10px;">${escapeHtml(title)}</h1><div class="meta"><div><b>Complaint #</b> ${formatReportNumber(report.id)} • <b>${escapeHtml(companyName)}</b></div><div><b>Created</b> ${createdAt} • <b>Recorded</b> ${recordedAt}</div><div><b>Status</b> ${escapeHtml(report.status)}${buildMetaTags(report)}</div></div></div></div><div class="content">${messagesHtml || getEmptyMessageHtml()}</div></div></div></body></html>`;
 }
 
 function buildMessageHtml(message: ReportBoxRecord["snapshot"]["messages"][number]) {
@@ -19,7 +18,7 @@ function buildMessageHtml(message: ReportBoxRecord["snapshot"]["messages"][numbe
   const isNote = message.kind === "text" && (message.text || "").toLowerCase().startsWith("ems note:");
   const text = isNote ? stripEmsNotePrefix(message.text) : message.text || "";
   const media = buildMessageMedia(message);
-  return `<div style="${getMessageStyle(isNote)}"><div style="font-size:11px;color:rgba(100,116,139,.95);margin-bottom:6px;">${isNote ? "<b>NOTE</b> Ãƒâ€šÃ‚Â· " : ""}${at}</div>${text ? `<div style="font-size:14px;line-height:1.5;white-space:pre-wrap;">${escapeHtml(text)}</div>` : ""}${media}</div>`;
+  return `<div style="${getMessageStyle(isNote)}"><div style="font-size:11px;color:rgba(100,116,139,.95);margin-bottom:6px;">${isNote ? "<b>NOTE</b> • " : ""}${at}</div>${text ? `<div style="font-size:14px;line-height:1.5;white-space:pre-wrap;">${escapeHtml(text)}</div>` : ""}${media}</div>`;
 }
 
 function buildMessageMedia(message: ReportBoxRecord["snapshot"]["messages"][number]) {
@@ -30,7 +29,7 @@ function buildMessageMedia(message: ReportBoxRecord["snapshot"]["messages"][numb
 }
 
 function buildMetaTags(report: ReportBoxRecord["snapshot"]) {
-  return `${report.flagged ? " Ãƒâ€šÃ‚Â· <b>Flagged</b>" : ""}${report.category ? ` Ãƒâ€šÃ‚Â· <b>Category</b> ${escapeHtml(report.category)}` : ""}${report.assignedTo ? ` Ãƒâ€šÃ‚Â· <b>Supervisor</b> ${escapeHtml(report.assignedTo)}` : ""}${report.handledBy ? ` Ãƒâ€šÃ‚Â· <b>Handler</b> ${escapeHtml(report.handledBy)}` : ""}`;
+  return `${report.flagged ? " • <b>Flagged</b>" : ""}${report.category ? ` • <b>Category</b> ${escapeHtml(report.category)}` : ""}${report.assignedTo ? ` • <b>Supervisor</b> ${escapeHtml(report.assignedTo)}` : ""}${report.handledBy ? ` • <b>Handler</b> ${escapeHtml(report.handledBy)}` : ""}`;
 }
 
 function getMessageStyle(isNote: boolean) {

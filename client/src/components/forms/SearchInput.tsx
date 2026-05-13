@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/primitives/input";
 export function SearchInput({
   value,
   onChange,
-  placeholder = "Searchâ€¦",
+  placeholder = "SearchÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦",
 }: {
   value: string;
   onChange: (value: string) => void;

@@ -22,16 +22,16 @@ export function WastewaterThresholdsCard({
           <div className="flex items-center justify-between">
             <span>pH</span>
             <StatusBadge tone="neutral">
-              {thresholds.pH.min}â€“{thresholds.pH.max}
+              {thresholds.pH.min}ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“{thresholds.pH.max}
             </StatusBadge>
           </div>
           <div className="flex items-center justify-between">
             <span>COD</span>
-            <StatusBadge tone="neutral">â‰¤ {thresholds.COD.max} mg/L</StatusBadge>
+            <StatusBadge tone="neutral">ÃƒÂ¢Ã¢â‚¬Â°Ã‚Â¤ {thresholds.COD.max} mg/L</StatusBadge>
           </div>
           <div className="flex items-center justify-between">
             <span>BOD</span>
-            <StatusBadge tone="neutral">â‰¤ {thresholds.BOD.max} mg/L</StatusBadge>
+            <StatusBadge tone="neutral">ÃƒÂ¢Ã¢â‚¬Â°Ã‚Â¤ {thresholds.BOD.max} mg/L</StatusBadge>
           </div>
           <div className="text-muted-foreground text-xs">
             Threshold panel placeholder; make company-specific later.

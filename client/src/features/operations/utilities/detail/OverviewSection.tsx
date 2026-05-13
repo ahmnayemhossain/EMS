@@ -24,7 +24,7 @@ export function OverviewSection({ record, companyName }: { record: UtilityRecord
         <div className="text-muted-foreground text-xs">Type</div>
         <div className="mt-1 text-sm font-semibold">{formatUtilityType(record.type)}</div>
         <div className="text-muted-foreground mt-1 text-xs">
-          {formatDate(record.periodStart)} Ã¢â€ â€™ {formatDate(record.periodEnd)}
+          {formatDate(record.periodStart)} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ {formatDate(record.periodEnd)}
         </div>
         {record.sourceName ? (
           <div className="text-muted-foreground mt-1 text-xs">Source: {record.sourceName}</div>

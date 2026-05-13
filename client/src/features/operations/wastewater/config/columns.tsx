@@ -23,7 +23,7 @@ export function getWastewaterColumns({
         <div className="min-w-0">
           <div className="truncate font-medium">{getFacilityName(r.facilityId)}</div>
           <div className="text-muted-foreground mt-1 text-xs">
-            {formatDate(r.sampleDate)} â€¢ {r.point}
+            {formatDate(r.sampleDate)} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {r.point}
           </div>
         </div>
       ),

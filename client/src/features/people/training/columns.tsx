@@ -15,7 +15,7 @@ export function getTrainingColumns(): Array<DataColumn<TrainingRecord>> {
         <div className="min-w-0">
           <div className="truncate font-medium">{t.title}</div>
           <div className="text-muted-foreground mt-1 text-xs">
-            {t.audience} â€¢ {getFacilityName(t.facilityId)}
+            {t.audience} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {getFacilityName(t.facilityId)}
           </div>
         </div>
       ),
@@ -30,7 +30,7 @@ export function getTrainingColumns(): Array<DataColumn<TrainingRecord>> {
     {
       id: "next",
       header: "Next due",
-      cell: (t) => <div className="text-sm">{t.nextDueOn ? formatDate(t.nextDueOn) : "â€”"}</div>,
+      cell: (t) => <div className="text-sm">{t.nextDueOn ? formatDate(t.nextDueOn) : "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â"}</div>,
       className: "min-w-[160px]",
     },
     {

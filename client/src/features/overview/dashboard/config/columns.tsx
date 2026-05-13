@@ -14,7 +14,7 @@ export function getFacilityColumns(): Array<DataColumn<Facility>> {
         <div className="min-w-0">
           <div className="truncate font-medium">{row.name}</div>
           <div className="text-muted-foreground mt-1 text-xs">
-            {row.location.city} â€¢ {row.code}
+            {row.location.city} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {row.code}
           </div>
         </div>
       ),
