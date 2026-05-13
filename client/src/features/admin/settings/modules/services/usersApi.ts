@@ -1,5 +1,5 @@
 import type { AppUser, Role } from "@/core/types/models/admin";
-import { parseUserJsonResponse, userApiPath, userHeaders } from "@/features/admin/settings/modules/usersApi.shared";
+import { parseUserJsonResponse, userApiPath, userHeaders } from "@/features/admin/settings/modules/services/usersApi.shared";
 
 export type UserEmployeeOption = {
   id: string;
@@ -67,3 +67,4 @@ export async function resetUserPassword(id: string, userId: string) {
     headers: userHeaders(userId),
   }));
 }
+

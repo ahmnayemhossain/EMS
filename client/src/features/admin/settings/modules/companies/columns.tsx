@@ -1,6 +1,6 @@
 import type { DataColumn } from "@/components/table/DataTable";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
-import type { CompanyEntity } from "@/features/admin/settings/modules/companiesApi";
+import type { CompanyEntity } from "@/features/admin/settings/modules/services/companiesApi";
 
 export function buildCompanyColumns(): Array<DataColumn<CompanyEntity>> {
   return [
@@ -10,4 +10,5 @@ export function buildCompanyColumns(): Array<DataColumn<CompanyEntity>> {
     { id: "status", header: "Status", cell: (company) => <StatusBadge tone={company.status === 1 ? "compliant" : "neutral"}>{company.status === 1 ? "active" : "inactive"}</StatusBadge>, className: "text-right" },
   ];
 }
+
 

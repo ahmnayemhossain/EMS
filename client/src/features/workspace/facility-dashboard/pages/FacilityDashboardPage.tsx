@@ -2,9 +2,9 @@ import { PageHeader } from "@/components/layout/primitives/PageHeader";
 
 import { FacilityKpis } from "../components/FacilityKpis";
 import { FacilityNotFoundCard } from "../components/FacilityNotFoundCard";
-import { FacilityHeaderActions } from "../page/FacilityHeaderActions";
-import { FacilitySections } from "../page/FacilitySections";
-import { useFacilityDashboard } from "../page/use-facility-dashboard";
+import { FacilityHeaderActions } from "../components/FacilityHeaderActions";
+import { FacilitySections } from "../components/FacilitySections";
+import { useFacilityDashboard } from "../hooks/use-facility-dashboard";
 
 export function FacilityDashboardPage() {
   const page = useFacilityDashboard();
@@ -21,6 +21,7 @@ export function FacilityDashboardPage() {
         dueTests={page.dueTests}
       />
       <FacilitySections
+        facilityTrend={page.facilityTrend}
         facilityWastewater={page.facilityWastewater}
         facilityIncidents={page.facilityIncidents}
         facilityDocs={page.facilityDocs}

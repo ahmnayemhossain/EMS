@@ -1,6 +1,6 @@
 export type { SourceWiringEntity, UomWiringEntity, UtilityTypeOption } from "@/features/admin/settings/modules/wiring-api/types";
 
-import type { SettingsEntity } from "@/features/admin/settings/modules/settingsEntityApi";
+import type { SettingsEntity } from "@/features/admin/settings/modules/services/settingsEntityApi";
 import { listWiring, listWiringLookups, removeWiring, saveWiring } from "@/features/admin/settings/modules/wiring-api/helpers";
 import type { SourceWiringEntity, UomWiringEntity, UtilityTypeOption, WiringLookups } from "@/features/admin/settings/modules/wiring-api/types";
 
@@ -45,3 +45,4 @@ export function updateSourceWiring(item: Pick<SourceWiringEntity, "id" | "source
 export function deleteSourceWiring(id: string, userId: string) {
   return removeWiring("source-wiring", id, userId, "Could not delete source wiring.");
 }
+

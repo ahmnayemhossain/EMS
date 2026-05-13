@@ -1,4 +1,4 @@
-import type { ID } from "@/core/types/models/ems/core";
+import type { ID } from "@/core/types/ems/core";
 
 export type Document = {
   id: ID;
@@ -16,4 +16,5 @@ export type Document = {
   status: "valid" | "expiring" | "expired";
   fileName: string;
 };
+
 

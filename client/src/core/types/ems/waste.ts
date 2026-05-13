@@ -1,4 +1,4 @@
-import type { ID } from "@/core/types/models/ems/core";
+import type { ID } from "@/core/types/ems/core";
 
 export type WasteType =
   | "hazardous"
@@ -35,4 +35,5 @@ export type WastewaterRecord = {
   exceedance?: WastewaterMetric[];
   labReport?: { fileName: string; uploadedAt: string };
 };
+
 

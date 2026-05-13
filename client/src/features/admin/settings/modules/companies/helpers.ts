@@ -1,4 +1,4 @@
-import type { CompanyEntity } from "@/features/admin/settings/modules/companiesApi";
+import type { CompanyEntity } from "@/features/admin/settings/modules/services/companiesApi";
 import type { CompanyValidationErrors } from "@/features/admin/settings/modules/companies/companies.types";
 
 export function blankCompany(): CompanyEntity {
@@ -18,3 +18,4 @@ export function validateCompany(company: CompanyEntity, rows: CompanyEntity[], c
 export function firstCompanyError(errors: CompanyValidationErrors) {
   return Object.values(errors)[0] ?? null;
 }
+

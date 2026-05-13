@@ -3,7 +3,7 @@ import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { AvatarInitials } from "@/features/admin/settings/modules/users/avatar-initials";
 import { getOptionName } from "@/features/admin/settings/modules/employees/helpers";
 import type { EmployeeRow } from "@/features/admin/settings/modules/employees/employees.types";
-import type { EmployeeLookupOption } from "@/features/admin/settings/modules/employeesApi";
+import type { EmployeeLookupOption } from "@/features/admin/settings/modules/services/employeesApi";
 
 export function buildEmployeeColumns(lookups: {
   facilities: EmployeeLookupOption[];
@@ -17,4 +17,5 @@ export function buildEmployeeColumns(lookups: {
     { id: "status", header: "Status", cell: (employee) => <StatusBadge tone={employee.status === 1 ? "compliant" : "neutral"}>{employee.status === 1 ? "active" : "inactive"}</StatusBadge>, className: "text-right" },
   ];
 }
+
 

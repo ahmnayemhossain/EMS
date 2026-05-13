@@ -1,4 +1,4 @@
-import type { RoleEntity } from "@/features/admin/settings/modules/settingsEntityApi";
+import type { RoleEntity } from "@/features/admin/settings/modules/services/settingsEntityApi";
 
 export type RoleValidationErrors = Partial<Record<"name" | "permissionKeys" | "status", string>>;
 
@@ -6,13 +6,13 @@ export type PermissionColumn = "read" | "write" | "update" | "delete";
 
 export type PermissionGroup = {
   name: string;
-  permissions: Partial<Record<PermissionColumn, import("@/features/admin/settings/modules/settingsEntityApi").PermissionOption>>;
+  permissions: Partial<Record<PermissionColumn, import("@/features/admin/settings/modules/services/settingsEntityApi").PermissionOption>>;
 };
 
 export type RolesVm = {
   userId: string;
   roles: RoleEntity[];
-  permissions: import("@/features/admin/settings/modules/settingsEntityApi").PermissionOption[];
+  permissions: import("@/features/admin/settings/modules/services/settingsEntityApi").PermissionOption[];
   loading: boolean;
   search: string;
   selected: RoleEntity | null;
@@ -23,3 +23,4 @@ export type RolesVm = {
   createErrors: RoleValidationErrors;
   editErrors: RoleValidationErrors;
 };
+

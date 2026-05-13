@@ -3,7 +3,7 @@ import { toast } from "@/core/app/lib/toast";
 import { useUser } from "@/core/app/state/slices/user";
 import { blankEntity } from "@/features/admin/settings/modules/entity-manager/helpers";
 import type { EntityManagerConfig } from "@/features/admin/settings/modules/entity-manager/types";
-import { listSettingsEntities, type SettingsEntity } from "@/features/admin/settings/modules/settingsEntityApi";
+import { listSettingsEntities, type SettingsEntity } from "@/features/admin/settings/modules/services/settingsEntityApi";
 
 export function useEntityManager(config: EntityManagerConfig) {
   const { userId } = useUser();
@@ -28,3 +28,4 @@ export function useEntityManager(config: EntityManagerConfig) {
   const filteredRows = React.useMemo(() => rows.filter((row) => !search.trim() || row.name.toLowerCase().includes(search.trim().toLowerCase())).sort((a, b) => (a.name > b.name ? 1 : -1)), [rows, search]);
   return { userId, rows, loading, search, selected, editDraft, confirmDelete, createOpen, draft, createErrors, editErrors, filteredRows, setRows, setSearch, setSelected, setEditDraft, setConfirmDelete, setCreateOpen, setDraft, setCreateErrors, setEditErrors, loadRows };
 }
+

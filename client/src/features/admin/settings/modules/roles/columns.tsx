@@ -1,6 +1,6 @@
 import type { DataColumn } from "@/components/table/DataTable";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
-import type { RoleEntity } from "@/features/admin/settings/modules/settingsEntityApi";
+import type { RoleEntity } from "@/features/admin/settings/modules/services/settingsEntityApi";
 
 export function buildRoleColumns(): Array<DataColumn<RoleEntity>> {
   return [
@@ -8,4 +8,5 @@ export function buildRoleColumns(): Array<DataColumn<RoleEntity>> {
     { id: "status", header: "Status", cell: (role) => <StatusBadge tone={role.status === 1 ? "compliant" : "neutral"}>{role.status === 1 ? "active" : "inactive"}</StatusBadge>, className: "text-right" },
   ];
 }
+
 

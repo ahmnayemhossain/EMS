@@ -1,5 +1,5 @@
-import type { SettingsEntity } from "@/features/admin/settings/modules/settingsEntityApi";
-import type { UtilityTypeOption } from "@/features/admin/settings/modules/uomSettingsApi";
+import type { SettingsEntity } from "@/features/admin/settings/modules/services/settingsEntityApi";
+import type { UtilityTypeOption } from "@/features/admin/settings/modules/services/uomSettingsApi";
 
 export type WiringDraft = {
   id: string;
@@ -43,3 +43,4 @@ export type MasterWiringApi = {
   updateWiring: (item: WiringDraft, userId: string) => Promise<WiringRow>;
   deleteWiring: (id: string, userId: string) => Promise<{ ok: true }>;
 };
+

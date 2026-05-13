@@ -32,3 +32,4 @@ export type Facility = {
   complianceScore: number; // 0-100
 };
 
+

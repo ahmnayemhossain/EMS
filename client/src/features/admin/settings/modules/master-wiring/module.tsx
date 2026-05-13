@@ -6,7 +6,7 @@ import { ActionModal } from "@/components/feedback/ActionModal";
 import { CreateActionDialog } from "@/components/layout/primitives/CreateActionDialog";
 import { DataTable } from "@/components/table/DataTable";
 import { SectionCard } from "@/components/layout/primitives/SectionCard";
-import { createSettingsEntity, deleteSettingsEntity, updateSettingsEntity } from "@/features/admin/settings/modules/settingsEntityApi";
+import { createSettingsEntity, deleteSettingsEntity, updateSettingsEntity } from "@/features/admin/settings/modules/services/settingsEntityApi";
 import { buildEntityColumns, buildWiringColumns } from "@/features/admin/settings/modules/master-wiring/columns";
 import { EntityFilterBar, WiringFilterBar } from "@/features/admin/settings/modules/master-wiring/filters";
 import { MasterEntityForm, WiringForm } from "@/features/admin/settings/modules/master-wiring/forms";
@@ -72,4 +72,5 @@ async function deleteWiring(vm: any, api: MasterWiringApi) {
   vm.setWiringRows((current: any[]) => current.filter((row) => row.id !== vm.deleteWiringId));
   toast.success("Deleted");
 }
+
 

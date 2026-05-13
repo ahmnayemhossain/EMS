@@ -1,6 +1,6 @@
 import type { Employee } from "@/core/types/models/admin";
 import type { EmployeeLookups, EmployeeValidationErrors } from "@/features/admin/settings/modules/employees/employees.types";
-import type { EmployeeLookupOption } from "@/features/admin/settings/modules/employeesApi";
+import type { EmployeeLookupOption } from "@/features/admin/settings/modules/services/employeesApi";
 
 export function getOptionName(options: EmployeeLookupOption[], id?: string) {
   if (!id) return "-";
@@ -44,3 +44,4 @@ function createId(prefix: string) {
 function nextEmployeeId(employees: Employee[]) {
   return employees.reduce((highest, employee) => Math.max(highest, Number(employee.employeeId) || 0), 1000) + 1;
 }
+

@@ -1,4 +1,4 @@
-import type { ID } from "@/core/types/models/ems/core";
+import type { ID } from "@/core/types/ems/core";
 
 export type Incident = {
   id: ID;
@@ -14,4 +14,5 @@ export type Incident = {
   severity: "low" | "medium" | "high";
   status: "open" | "investigating" | "closed";
 };
+
 

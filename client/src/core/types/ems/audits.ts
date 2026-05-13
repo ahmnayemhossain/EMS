@@ -1,4 +1,4 @@
-import type { ID } from "@/core/types/models/ems/core";
+import type { ID } from "@/core/types/ems/core";
 
 export type FindingSeverity = "minor" | "major" | "critical";
 
@@ -44,3 +44,4 @@ export type CAPA = {
   evidenceCount: number;
   relatedFindingId?: ID;
 };
+

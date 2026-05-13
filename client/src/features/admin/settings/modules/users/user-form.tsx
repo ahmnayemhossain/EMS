@@ -5,7 +5,7 @@ import { EmployeeSelect } from "@/features/admin/settings/modules/users/employee
 import { Field } from "@/features/admin/settings/modules/users/field";
 import { buildUserFromEmployee } from "@/features/admin/settings/modules/users/form-helpers";
 import type { UserCompanyOption, UserRoleOption, UserValidationErrors } from "@/features/admin/settings/modules/users/users.types";
-import type { UserEmployeeOption, UserInput } from "@/features/admin/settings/modules/usersApi";
+import type { UserEmployeeOption, UserInput } from "@/features/admin/settings/modules/services/usersApi";
 
 export function UserForm(props: {
   value: UserInput;
@@ -50,4 +50,5 @@ function RoleCheckbox(props: { role: UserRoleOption; value: UserInput; onChange:
     </label>
   );
 }
+
 

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { toast } from "@/core/app/lib/toast";
 import { useUser } from "@/core/app/state/slices/user";
-import { listEmployeeLookups, listEmployees, type EmployeeLookupOption } from "@/features/admin/settings/modules/employeesApi";
+import { listEmployeeLookups, listEmployees, type EmployeeLookupOption } from "@/features/admin/settings/modules/services/employeesApi";
 import type { Employee } from "@/core/types/models/admin";
 import type { EmployeeLookups, EmployeeRow } from "@/features/admin/settings/modules/employees/employees.types";
 import { createBlankEmployee } from "@/features/admin/settings/modules/employees/helpers";
@@ -40,3 +40,4 @@ export function useEmployeesModule() {
   const rows = React.useMemo(() => employees.filter((employee) => !companyId || employee.companyId === companyId).filter((employee) => !search.trim() || `${employee.name} ${employee.employeeId} ${employee.email} ${employee.phone ?? ""}`.toLowerCase().includes(search.trim().toLowerCase())).sort((a, b) => (a.employeeId > b.employeeId ? 1 : -1)), [companyId, employees, search]);
   return { userId, employees, lookups, loading, search, companyId, selected, editDraft, editErrors, confirmDelete, createOpen, createErrors, draft, rows, setEmployees, setSearch, setCompanyId, setSelected, setEditDraft, setEditErrors, setConfirmDelete, setCreateOpen, setCreateErrors, setDraft, loadEmployees };
 }
+

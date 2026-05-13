@@ -1,4 +1,4 @@
-import type { SettingsEntity, SettingsEntityKind } from "@/features/admin/settings/modules/settingsEntityApi";
+import type { SettingsEntity, SettingsEntityKind } from "@/features/admin/settings/modules/services/settingsEntityApi";
 
 export type EntityManagerConfig = {
   kind: SettingsEntityKind;
@@ -9,3 +9,4 @@ export type EntityManagerConfig = {
 
 export type EntityValidationErrors = Partial<Record<"name" | "status", string>>;
 export type EntityRow = SettingsEntity;
+

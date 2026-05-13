@@ -13,7 +13,7 @@ import { UsersDetailView } from "@/features/admin/settings/modules/users/users-d
 import { UserForm } from "@/features/admin/settings/modules/users/user-form";
 import { firstError, validateUser } from "@/features/admin/settings/modules/users/form-helpers";
 import { useUsersModule } from "@/features/admin/settings/modules/users/use-users-module";
-import { deleteUser, resetUserPassword, updateUser } from "@/features/admin/settings/modules/usersApi";
+import { deleteUser, resetUserPassword, updateUser } from "@/features/admin/settings/modules/services/usersApi";
 
 export function UsersModule() {
   const vm = useUsersModule();
@@ -55,4 +55,5 @@ async function resetPassword(vm: ReturnType<typeof useUsersModule>) {
   if (!vm.selected) return;
   try { const result = await resetUserPassword(vm.selected.id, vm.userId); toast.success(`Password reset to ${result.password}`); } catch (error) { toast.error(error instanceof Error ? error.message : "Password reset failed"); }
 }
+
 

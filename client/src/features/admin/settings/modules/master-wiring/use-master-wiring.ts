@@ -1,9 +1,9 @@
 import * as React from "react";
 import { toast } from "@/core/app/lib/toast";
 import { useUser } from "@/core/app/state/slices/user";
-import type { SettingsEntity } from "@/features/admin/settings/modules/settingsEntityApi";
+import type { SettingsEntity } from "@/features/admin/settings/modules/services/settingsEntityApi";
 import type { MasterWiringApi, WiringDraft, WiringRow } from "@/features/admin/settings/modules/master-wiring/types";
-import type { UtilityTypeOption } from "@/features/admin/settings/modules/uomSettingsApi";
+import type { UtilityTypeOption } from "@/features/admin/settings/modules/services/uomSettingsApi";
 
 export function useMasterWiring(api: MasterWiringApi) {
   const { userId } = useUser();
@@ -29,3 +29,4 @@ export function useMasterWiring(api: MasterWiringApi) {
   React.useEffect(() => { void loadAll(); }, [loadAll]);
   return { userId, loading, search, wiringSearch, utilityTypeFilter, statusFilter, entityRows, wiringRows, utilityTypeOptions, entityDraft, wiringDraft, entityEdit, wiringEdit, deleteEntityId, deleteWiringId, setSearch, setWiringSearch, setUtilityTypeFilter, setStatusFilter, setEntityRows, setWiringRows, setEntityDraft, setWiringDraft, setEntityEdit, setWiringEdit, setDeleteEntityId, setDeleteWiringId, loadAll };
 }
+

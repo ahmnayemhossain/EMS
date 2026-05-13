@@ -2,7 +2,7 @@ import * as React from "react";
 import { toast } from "@/core/app/lib/toast";
 import { useUser } from "@/core/app/state/slices/user";
 import { blankRole } from "@/features/admin/settings/modules/roles/helpers";
-import { listRoleLookups, listRoles, type PermissionOption, type RoleEntity } from "@/features/admin/settings/modules/settingsEntityApi";
+import { listRoleLookups, listRoles, type PermissionOption, type RoleEntity } from "@/features/admin/settings/modules/services/settingsEntityApi";
 
 export function useRolesModule() {
   const { userId } = useUser();
@@ -28,3 +28,4 @@ export function useRolesModule() {
   const rows = React.useMemo(() => roles.filter((role) => !search.trim() || `${role.name} ${role.description || ""}`.toLowerCase().includes(search.trim().toLowerCase())).sort((a, b) => (a.name > b.name ? 1 : -1)), [roles, search]);
   return { userId, roles, permissions, loading, search, selected, editDraft, confirmDelete, createOpen, draft, createErrors, editErrors, rows, setRoles, setSearch, setSelected, setEditDraft, setConfirmDelete, setCreateOpen, setDraft, setCreateErrors, setEditErrors, loadRoles };
 }
+

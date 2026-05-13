@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 
 import { Button } from "@/components/ui/primitives/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/primitives/card";
-import { EmailSettingsModule } from "@/features/admin/settings/modules/EmailSettingsModule";
+import { EmailSettingsModule } from "../modules/root/EmailSettingsModule";
 
 type EmailCardKey = "home" | "login_log" | "utility_approval_submission";
 
@@ -93,4 +93,5 @@ export function SettingsEmailPage() {
     </div>
   );
 }
+
 

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { toast } from "@/core/app/lib/toast";
 import { useUser } from "@/core/app/state/slices/user";
-import { createUser, deleteUser, listUserLookups, listUsers, resetUserPassword, updateUser, type UserInput } from "@/features/admin/settings/modules/usersApi";
+import { createUser, deleteUser, listUserLookups, listUsers, resetUserPassword, updateUser, type UserInput } from "@/features/admin/settings/modules/services/usersApi";
 import { blankUser, firstError, validateUser } from "@/features/admin/settings/modules/users/form-helpers";
 
 export function useUsersModule() {
@@ -43,3 +43,4 @@ export function useUsersModule() {
 
   return { userId, state, search, companyId, selected, draft, editDraft, createErrors, editErrors, createOpen, confirmDelete, rows, setSearch, setCompanyId, setSelected, setDraft, setEditDraft, setCreateErrors, setEditErrors, setCreateOpen, setConfirmDelete, loadUsers, submitCreate };
 }
+

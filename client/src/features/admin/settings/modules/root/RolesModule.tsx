@@ -14,7 +14,7 @@ import { RolesDetailView } from "@/features/admin/settings/modules/roles/detail-
 import { RoleForm } from "@/features/admin/settings/modules/roles/form";
 import { firstRoleError, validateRole } from "@/features/admin/settings/modules/roles/helpers";
 import { useRolesModule } from "@/features/admin/settings/modules/roles/use-roles-module";
-import { createRole, deleteRole, updateRole } from "@/features/admin/settings/modules/settingsEntityApi";
+import { createRole, deleteRole, updateRole } from "@/features/admin/settings/modules/services/settingsEntityApi";
 
 export function RolesModule() {
   const vm = useRolesModule();
@@ -37,4 +37,5 @@ async function saveEdit(vm: ReturnType<typeof useRolesModule>) {
   if (message) return toast.error(message);
   try { const updated = await updateRole(vm.editDraft, vm.userId); vm.setSelected(updated); vm.setEditDraft(null); vm.setEditErrors({}); toast.success("Saved"); await vm.loadRoles(); } catch (error) { toast.error(error instanceof Error ? error.message : "Role save failed"); }
 }
+
 

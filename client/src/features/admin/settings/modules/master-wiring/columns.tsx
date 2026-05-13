@@ -3,7 +3,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/primitives/button";
 import { DataTable, type DataColumn } from "@/components/table/DataTable";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
-import type { SettingsEntity } from "@/features/admin/settings/modules/settingsEntityApi";
+import type { SettingsEntity } from "@/features/admin/settings/modules/services/settingsEntityApi";
 import type { MasterWiringConfig, WiringDraft, WiringRow } from "@/features/admin/settings/modules/master-wiring/types";
 
 export function buildEntityColumns(config: MasterWiringConfig, actions: { onEdit: (row: SettingsEntity) => void; onDelete: (id: string) => void }): Array<DataColumn<SettingsEntity>> {
@@ -17,4 +17,5 @@ export function buildWiringColumns(actions: { onEdit: (row: WiringDraft) => void
 function RowActions(props: { onEdit: () => void; onDelete: () => void }) {
   return <div className="flex items-center justify-end gap-2"><Button type="button" size="icon" variant="outline" onClick={props.onEdit}><Pencil className="size-4" /></Button><Button type="button" size="icon" variant="outline" onClick={props.onDelete}><Trash2 className="size-4" /></Button></div>;
 }
+
 

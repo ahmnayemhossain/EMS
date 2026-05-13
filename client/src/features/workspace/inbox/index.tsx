@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/primitives/input";
 import { useNotifications, type NotificationItem } from "@/core/app/state/slices/notifications";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { getFacilityName } from "@/core/data/catalog/mock";
-import { formatDateTime } from "@/features/workspace/notifications-legacy/utils";
 
 export function InboxPage() {
   const notifications = useNotifications();
@@ -363,5 +362,17 @@ function toneIcon(tone: NotificationItem["tone"]) {
     default:
       return null;
   }
+}
+
+function formatDateTime(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 

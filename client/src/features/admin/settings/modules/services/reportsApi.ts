@@ -62,3 +62,4 @@ export async function deleteReportDefinition(userId: string, id: string) {
   return parseSystemResponse<{ ok: true }>(response, "Reports request failed.");
 }
 
+

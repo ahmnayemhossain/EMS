@@ -1,6 +1,6 @@
 import type { DataColumn } from "@/components/table/DataTable";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
-import type { SettingsEntity } from "@/features/admin/settings/modules/settingsEntityApi";
+import type { SettingsEntity } from "@/features/admin/settings/modules/services/settingsEntityApi";
 
 export function buildEntityManagerColumns(noun: string): Array<DataColumn<SettingsEntity>> {
   return [
@@ -8,4 +8,5 @@ export function buildEntityManagerColumns(noun: string): Array<DataColumn<Settin
     { id: "status", header: "Status", cell: (row) => <StatusBadge tone={row.status === 1 ? "compliant" : "neutral"}>{row.status === 1 ? "active" : "inactive"}</StatusBadge>, className: "text-right" },
   ];
 }
+
 

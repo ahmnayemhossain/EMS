@@ -98,3 +98,4 @@ export async function deleteSettingsEntity(kind: SettingsEntityKind, id: string,
   });
   return parseSystemResponse<{ ok: true }>(response, "Delete failed.");
 }
+

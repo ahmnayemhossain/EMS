@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router";
 
 import { Button } from "@/components/ui/primitives/button";
-import { CompaniesModule } from "@/features/admin/settings/modules/CompaniesModule";
+import { CompaniesModule } from "../modules/root/CompaniesModule";
 
 export function SettingsCompaniesPage() {
   const navigate = useNavigate();
@@ -19,4 +19,5 @@ export function SettingsCompaniesPage() {
     </div>
   );
 }
+
 

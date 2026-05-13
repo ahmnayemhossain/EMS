@@ -1,4 +1,4 @@
-import type { ID } from "@/core/types/models/ems/core";
+import type { ID } from "@/core/types/ems/core";
 
 export type HazardClass =
   | "corrosive"
@@ -66,3 +66,4 @@ export type SDSRecord = {
     uploadedAt: string;
   }>;
 };
+

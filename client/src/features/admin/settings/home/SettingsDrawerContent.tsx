@@ -1,4 +1,4 @@
-import { PlaceholderModule } from "@/features/admin/settings/modules/PlaceholderModule";
+import { PlaceholderModule } from "../modules/root/PlaceholderModule";
 import type { SettingsCardKey } from "@/features/admin/settings/home/settings-types";
 
 export function renderSettingsDrawer(key: SettingsCardKey | null) {
@@ -15,3 +15,4 @@ export function renderSettingsDrawer(key: SettingsCardKey | null) {
       return null;
   }
 }
+

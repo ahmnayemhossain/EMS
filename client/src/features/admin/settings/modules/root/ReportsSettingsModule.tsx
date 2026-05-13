@@ -21,7 +21,7 @@ import {
   type ReportDefinitionEntity,
   type ReportVariableDef,
   updateReportDefinition,
-} from "@/features/admin/settings/modules/reportsApi";
+} from "@/features/admin/settings/modules/services/reportsApi";
 
 type Draft = {
   id?: string;
@@ -315,5 +315,6 @@ function ReportForm(props: { value: Draft; onChange: (next: Draft) => void }) {
     </div>
   );
 }
+
 
 

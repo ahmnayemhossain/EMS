@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/primit
 import { DetailPanel } from "@/components/layout/primitives/DetailPanel";
 import { renderSettingsDrawer } from "@/features/admin/settings/home/SettingsDrawerContent";
 import { settingsCards, settingsTabs } from "@/features/admin/settings/home/settings-cards";
-import { findSettingsCard } from "@/features/admin/settings/settings-route-registry";
+import { findSettingsCard } from "@/features/admin/settings/config/settings-route-registry";
 import { SettingsTabPanel } from "@/features/admin/settings/home/SettingsTabPanel";
 import type { SettingsCardKey, SettingsTab } from "@/features/admin/settings/home/settings-types";
 
@@ -35,4 +35,5 @@ export function SettingsHomePage() {
 function titleCase(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
+
 

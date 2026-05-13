@@ -1,4 +1,4 @@
-import type { ID } from "@/core/types/models/ems/core";
+import type { ID } from "@/core/types/ems/core";
 
 export type UtilityType =
   | "electricity"
@@ -96,3 +96,4 @@ export type UtilityRecord = {
   createdByUserId?: ID;
   updatedByUserId?: ID;
 };
+

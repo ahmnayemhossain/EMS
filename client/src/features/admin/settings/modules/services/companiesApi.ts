@@ -47,3 +47,4 @@ export async function deleteCompany(id: string, userId: string) {
   });
   return parseSystemResponse<{ ok: true }>(response, "Company request failed.");
 }
+

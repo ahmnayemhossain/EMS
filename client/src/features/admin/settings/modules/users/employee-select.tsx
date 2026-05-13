@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/primitives/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/primitives/popover";
 import { cn } from "@/components/ui/primitives/utils";
 import { AvatarInitials } from "@/features/admin/settings/modules/users/avatar-initials";
-import type { UserEmployeeOption } from "@/features/admin/settings/modules/usersApi";
+import type { UserEmployeeOption } from "@/features/admin/settings/modules/services/usersApi";
 
 export function EmployeeSelect(props: {
   value?: string;
@@ -60,4 +60,5 @@ function EmployeeOption(props: { employee: UserEmployeeOption; value?: string; o
     </button>
   );
 }
+
 

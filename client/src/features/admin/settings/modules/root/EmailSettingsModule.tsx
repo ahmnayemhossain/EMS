@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/primitives/textarea";
 import { toast } from "@/core/app/lib/toast";
 import { useUser } from "@/core/app/state/slices/user";
 import { SectionCard } from "@/components/layout/primitives/SectionCard";
-import { getEmailSettings, type EmailSettings, updateEmailSettings } from "@/features/admin/settings/modules/emailSettingsApi";
+import { getEmailSettings, type EmailSettings, updateEmailSettings } from "@/features/admin/settings/modules/services/emailSettingsApi";
 
 type Draft = Omit<EmailSettings, "id" | "key">;
 
@@ -264,4 +264,5 @@ function Field(props: { label: string; children: React.ReactNode }) {
 function renderTemplate(template: string, variables: Record<string, string>) {
   return String(template || "").replace(/{{\s*([a-zA-Z0-9_]+)\s*}}/g, (_, key) => variables[key] ?? "");
 }
+
 

@@ -1,4 +1,4 @@
-import type { CompanyEntity } from "@/features/admin/settings/modules/companiesApi";
+import type { CompanyEntity } from "@/features/admin/settings/modules/services/companiesApi";
 
 export type CompanyValidationErrors = Partial<Record<"name" | "shortName" | "status", string>>;
 export type CompanyVm = {
@@ -14,3 +14,4 @@ export type CompanyVm = {
   createErrors: CompanyValidationErrors;
   editErrors: CompanyValidationErrors;
 };
+

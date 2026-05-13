@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router";
 
 import { Button } from "@/components/ui/primitives/button";
-import { ReferenceSettingsModule } from "@/features/admin/settings/modules/ReferenceSettingsModule";
+import { ReferenceSettingsModule } from "../modules/root/ReferenceSettingsModule";
 
 export function SettingsDesignationsPage() {
   const navigate = useNavigate();
@@ -24,4 +24,5 @@ export function SettingsDesignationsPage() {
     </div>
   );
 }
+
 

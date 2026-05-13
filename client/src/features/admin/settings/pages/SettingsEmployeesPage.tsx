@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router";
 
 import { Button } from "@/components/ui/primitives/button";
-import { EmployeesModule } from "@/features/admin/settings/modules/EmployeesModule";
+import { EmployeesModule } from "../modules/root/EmployeesModule";
 
 export function SettingsEmployeesPage() {
   const navigate = useNavigate();
@@ -19,5 +19,6 @@ export function SettingsEmployeesPage() {
     </div>
   );
 }
+
 
 

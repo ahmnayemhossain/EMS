@@ -409,11 +409,6 @@ export default defineConfig({
   ],
   resolve: {
     alias: [
-      { find: /^@\/features\/admin\/settings\/settings-route-registry$/, replacement: path.resolve(__dirname, "./src/features/admin/settings/config/settings-route-registry.tsx") },
-      { find: /^@\/features\/admin\/settings\/(Settings[^/]+Page)$/, replacement: path.resolve(__dirname, "./src/features/admin/settings/pages/$1.tsx") },
-      { find: /^@\/features\/admin\/settings\/modules\/([A-Z][^/]+)$/, replacement: path.resolve(__dirname, "./src/features/admin/settings/modules/root/$1.tsx") },
-      { find: /^@\/features\/admin\/settings\/modules\/([a-z][^/]+Api(?:\.shared)?)$/, replacement: path.resolve(__dirname, "./src/features/admin/settings/modules/services/$1.ts") },
-      { find: /^@\/features\/admin\/settings\/modules\/PlaceholderModule$/, replacement: path.resolve(__dirname, "./src/features/admin/settings/modules/root/PlaceholderModule.tsx") },
       { find: "@", replacement: path.resolve(__dirname, "./src") },
     ],
   },
@@ -423,7 +418,12 @@ export default defineConfig({
         manualChunks(id) {
           if (!id.includes("node_modules")) return undefined;
           if (id.includes("recharts")) return "vendor-charts";
+          if (id.includes("react-dnd") || id.includes("dnd-core") || id.includes("react-dnd-html5-backend")) return "vendor-dnd";
           if (id.includes("@mui")) return "vendor-mui";
+          if (id.includes("@radix-ui") || id.includes("cmdk") || id.includes("vaul") || id.includes("embla-carousel-react")) return "vendor-ui";
+          if (id.includes("date-fns") || id.includes("react-day-picker")) return "vendor-date";
+          if (id.includes("motion")) return "vendor-motion";
+          if (id.includes("zustand") || id.includes("next-themes")) return "vendor-state";
           if (id.includes("react-router")) return "vendor-router";
           if (id.includes("lucide-react")) return "vendor-icons";
           return "vendor";

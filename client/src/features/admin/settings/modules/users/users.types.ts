@@ -1,4 +1,4 @@
-import type { UserInput } from "@/features/admin/settings/modules/usersApi";
+import type { UserInput } from "@/features/admin/settings/modules/services/usersApi";
 
 export type UserValidationErrors = Partial<
   Record<"employeeDbId" | "username" | "email" | "companyAccessIds" | "roleIds", string>
@@ -17,8 +17,9 @@ export type UserCompanyOption = {
 
 export type UsersState = {
   users: UserInput[];
-  employees: import("@/features/admin/settings/modules/usersApi").UserEmployeeOption[];
+  employees: import("@/features/admin/settings/modules/services/usersApi").UserEmployeeOption[];
   roles: UserRoleOption[];
   companies: UserCompanyOption[];
   loading: boolean;
 };
+

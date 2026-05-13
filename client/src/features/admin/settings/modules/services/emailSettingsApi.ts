@@ -36,3 +36,4 @@ export async function updateEmailSettings(
   });
   return parseSystemResponse<EmailSettings>(response, "Email settings request failed.");
 }
+

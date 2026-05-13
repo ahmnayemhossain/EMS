@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/primitives/input";
 import { SelectFilter } from "@/components/forms/SelectFilter";
-import type { SettingsEntity } from "@/features/admin/settings/modules/settingsEntityApi";
-import type { UtilityTypeOption } from "@/features/admin/settings/modules/uomSettingsApi";
+import type { SettingsEntity } from "@/features/admin/settings/modules/services/settingsEntityApi";
+import type { UtilityTypeOption } from "@/features/admin/settings/modules/services/uomSettingsApi";
 import type { MasterWiringConfig, WiringDraft } from "@/features/admin/settings/modules/master-wiring/types";
 
 export function MasterEntityForm(props: { config: MasterWiringConfig; value: SettingsEntity; onChange: (next: SettingsEntity) => void }) {
@@ -19,4 +19,5 @@ function Field(props: { label: string; children: React.ReactNode }) {
 function StatusField(props: { value: 0 | 1; onChange: (status: 0 | 1) => void }) {
   return <Field label="Status"><SelectFilter value={String(props.value)} onChange={(status) => props.onChange(status === "0" ? 0 : 1)} placeholder="Status" className="w-full" items={[{ value: "1", label: "Active" }, { value: "0", label: "Inactive" }]} /></Field>;
 }
+
 

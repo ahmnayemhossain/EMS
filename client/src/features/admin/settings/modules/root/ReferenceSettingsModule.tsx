@@ -15,7 +15,7 @@ import { EntityManagerForm } from "@/features/admin/settings/modules/entity-mana
 import { firstEntityError, validateEntity } from "@/features/admin/settings/modules/entity-manager/helpers";
 import type { EntityManagerConfig } from "@/features/admin/settings/modules/entity-manager/types";
 import { useEntityManager } from "@/features/admin/settings/modules/entity-manager/use-entity-manager";
-import { createSettingsEntity, deleteSettingsEntity, updateSettingsEntity } from "@/features/admin/settings/modules/settingsEntityApi";
+import { createSettingsEntity, deleteSettingsEntity, updateSettingsEntity } from "@/features/admin/settings/modules/services/settingsEntityApi";
 
 export function ReferenceSettingsModule(config: EntityManagerConfig) {
   const vm = useEntityManager(config);
@@ -38,4 +38,5 @@ async function saveEntity(config: EntityManagerConfig, vm: ReturnType<typeof use
   if (message) return toast.error(message);
   try { const updated = await updateSettingsEntity(config.kind, vm.editDraft, vm.userId); vm.setSelected(updated); vm.setEditDraft(null); vm.setEditErrors({}); toast.success("Saved"); await vm.loadRows(); } catch (error) { toast.error(error instanceof Error ? error.message : "Save failed"); }
 }
+
 

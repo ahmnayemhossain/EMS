@@ -1,4 +1,4 @@
-import type { SettingsEntity } from "@/features/admin/settings/modules/settingsEntityApi";
+import type { SettingsEntity } from "@/features/admin/settings/modules/services/settingsEntityApi";
 import type { EntityValidationErrors } from "@/features/admin/settings/modules/entity-manager/types";
 
 export function blankEntity(): SettingsEntity {
@@ -16,3 +16,4 @@ export function validateEntity(item: SettingsEntity, rows: SettingsEntity[], lab
 export function firstEntityError(errors: EntityValidationErrors) {
   return Object.values(errors)[0] ?? null;
 }
+

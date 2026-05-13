@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router";
 
 import { Button } from "@/components/ui/primitives/button";
-import { UomSettingsModule } from "@/features/admin/settings/modules/UomSettingsModule";
+import { UomSettingsModule } from "../modules/root/UomSettingsModule";
 
 export function SettingsUomPage() {
   const navigate = useNavigate();
@@ -19,4 +19,5 @@ export function SettingsUomPage() {
     </div>
   );
 }
+
 

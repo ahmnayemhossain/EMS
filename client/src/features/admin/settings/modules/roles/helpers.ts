@@ -1,4 +1,4 @@
-import type { PermissionOption, RoleEntity } from "@/features/admin/settings/modules/settingsEntityApi";
+import type { PermissionOption, RoleEntity } from "@/features/admin/settings/modules/services/settingsEntityApi";
 import type { PermissionColumn, PermissionGroup, RoleValidationErrors } from "@/features/admin/settings/modules/roles/roles.types";
 
 export const permissionColumns: PermissionColumn[] = ["read", "write", "update", "delete"];
@@ -33,3 +33,4 @@ export function groupPermissions(permissions: PermissionOption[]) {
   }
   return groups;
 }
+

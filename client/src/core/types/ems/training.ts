@@ -1,4 +1,4 @@
-import type { ID } from "@/core/types/models/ems/core";
+import type { ID } from "@/core/types/ems/core";
 
 export type TrainingRecord = {
   id: ID;
@@ -9,4 +9,5 @@ export type TrainingRecord = {
   nextDueOn?: string; // ISO date
   status: "complete" | "due_soon" | "overdue";
 };
+
 

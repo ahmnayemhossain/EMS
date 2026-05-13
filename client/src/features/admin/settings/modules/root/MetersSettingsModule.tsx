@@ -14,9 +14,9 @@ import { FilterBar } from "@/components/forms/FilterBar";
 import { SearchInput } from "@/components/forms/SearchInput";
 import { SectionCard } from "@/components/layout/primitives/SectionCard";
 import { SelectFilter } from "@/components/forms/SelectFilter";
-import { listCompanies, type CompanyEntity } from "@/features/admin/settings/modules/companiesApi";
-import { listSourceWiringLookups, listUomWiringLookups, type UtilityTypeOption } from "@/features/admin/settings/modules/uomSettingsApi";
-import { createMeter, deleteMeter, listMeters, updateMeter, type MeterEntity } from "@/features/admin/settings/modules/metersApi";
+import { listCompanies, type CompanyEntity } from "@/features/admin/settings/modules/services/companiesApi";
+import { listSourceWiringLookups, listUomWiringLookups, type UtilityTypeOption } from "@/features/admin/settings/modules/services/uomSettingsApi";
+import { createMeter, deleteMeter, listMeters, updateMeter, type MeterEntity } from "@/features/admin/settings/modules/services/metersApi";
 
 type Draft = {
   id?: string;
@@ -350,11 +350,12 @@ function MeterForm(props: {
       <div className="flex items-center justify-between rounded-lg border bg-muted/30 p-3">
         <div className="min-w-0">
           <div className="text-sm font-medium">Active</div>
-          <div className="text-xs text-muted-foreground">Inactive meters wonÃ¢â‚¬â„¢t appear in Utilities selection.</div>
+          <div className="text-xs text-muted-foreground">Inactive meters wonÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢t appear in Utilities selection.</div>
         </div>
         <Switch checked={props.value.isActive} onCheckedChange={(checked) => props.onChange({ ...props.value, isActive: checked })} />
       </div>
     </div>
   );
 }
+
 

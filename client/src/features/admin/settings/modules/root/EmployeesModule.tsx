@@ -15,7 +15,7 @@ import { EmployeesDetailView } from "@/features/admin/settings/modules/employees
 import { EmployeeForm } from "@/features/admin/settings/modules/employees/form";
 import { firstValidationMessage, getEmployeeValidationErrors, normalizeEmployee } from "@/features/admin/settings/modules/employees/helpers";
 import { useEmployeesModule } from "@/features/admin/settings/modules/employees/use-employees-module";
-import { createEmployee, deleteEmployee, updateEmployee } from "@/features/admin/settings/modules/employeesApi";
+import { createEmployee, deleteEmployee, updateEmployee } from "@/features/admin/settings/modules/services/employeesApi";
 
 export function EmployeesModule() {
   const vm = useEmployeesModule();
@@ -60,4 +60,5 @@ async function saveEdit(vm: ReturnType<typeof useEmployeesModule>) {
   if (validation) return toast.error(validation);
   try { const updated = await updateEmployee(employee, vm.userId); vm.setSelected(updated); vm.setEditDraft(null); vm.setEditErrors({}); toast.success("Saved"); await vm.loadEmployees(); } catch (error) { toast.error(error instanceof Error ? error.message : "Employee save failed"); }
 }
+
 

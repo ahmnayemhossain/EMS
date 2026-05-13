@@ -1,4 +1,4 @@
-import type { SettingsEntity } from "@/features/admin/settings/modules/settingsEntityApi";
+import type { SettingsEntity } from "@/features/admin/settings/modules/services/settingsEntityApi";
 
 export type UtilityTypeOption = {
   id: string;
@@ -43,3 +43,4 @@ export type WiringLookups = {
   sourceOptions?: SettingsEntity[];
   utilityTypeOptions: UtilityTypeOption[];
 };
+

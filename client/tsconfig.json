@@ -12,21 +12,7 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@/components/ui/*": ["src/components/ui/primitives/*", "src/components/ui/*"],
-      "@/components/ui/primitives/sidebar": ["src/components/ui/primitives/sidebar.tsx"],
-      "@/components/ui/primitives/sidebar/*": ["src/components/ui/sidebar/*"],
-      "@/components/layout/*": ["src/components/layout/primitives/*", "src/components/layout/*"],
-      "@/core/app/state/*": ["src/core/app/state/slices/*", "src/core/app/state/*"],
-      "@/core/app/state/slices/report-box/*": ["src/core/app/state/report-box/*"],
-      "@/core/data/*": ["src/core/data/catalog/*", "src/core/data/*"],
-      "@/core/data/catalog/*": ["src/core/data/catalog/*", "src/core/data/admin/*", "src/core/data/mock/*", "src/core/data/audit-templates/*"],
-      "@/core/types/*": ["src/core/types/models/*", "src/core/types/*"],
-      "@/core/types/models/ems": ["src/core/types/models/ems.ts"],
-      "@/core/types/models/ems/*": ["src/core/types/ems/*"],
-      "@/features/admin/settings/*": ["src/features/admin/settings/pages/*", "src/features/admin/settings/config/*", "src/features/admin/settings/home/*", "src/features/admin/settings/*"],
-      "@/features/admin/settings/modules/*": ["src/features/admin/settings/modules/root/*", "src/features/admin/settings/modules/services/*", "src/features/admin/settings/modules/*"],
-      "@/features/overview/audit-calendar/*": ["src/features/overview/audit-calendar/pages/*", "src/features/overview/audit-calendar/config/*", "src/features/overview/audit-calendar/*"]
+      "@/*": ["src/*"]
     }
   },
   "include": ["src"]

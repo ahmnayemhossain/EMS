@@ -2,7 +2,7 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router";
 
 import { Button } from "@/components/ui/primitives/button";
-import { UtilitiesRulesSettingsModule } from "@/features/admin/settings/modules/UtilitiesRulesSettingsModule";
+import { UtilitiesRulesSettingsModule } from "../modules/root/UtilitiesRulesSettingsModule";
 
 export function SettingsUtilitiesRulesPage() {
   const navigate = useNavigate();
@@ -18,5 +18,6 @@ export function SettingsUtilitiesRulesPage() {
     </div>
   );
 }
+
 
 

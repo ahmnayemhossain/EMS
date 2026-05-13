@@ -1,4 +1,4 @@
-import type { ID } from "@/core/types/models/ems/core";
+import type { ID } from "@/core/types/ems/core";
 
 export type ReportBoxMessageKind = "text" | "voice" | "photo";
 
@@ -42,4 +42,5 @@ export type ReportBoxRecord = {
   title: string;
   snapshot: ReportBoxReport;
 };
+
 

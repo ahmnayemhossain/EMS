@@ -1,4 +1,4 @@
-import type { UserEmployeeOption, UserInput } from "@/features/admin/settings/modules/usersApi";
+import type { UserEmployeeOption, UserInput } from "@/features/admin/settings/modules/services/usersApi";
 import type { UserValidationErrors } from "@/features/admin/settings/modules/users/users.types";
 
 export function blankUser(roleIds: string[]): UserInput {
@@ -45,3 +45,4 @@ export function buildUserFromEmployee(user: UserInput, employeeDbId: string, emp
 function isDuplicate(users: UserInput[], currentId: string | undefined, value: string, field: "username" | "email") {
   return users.some((row) => row.id !== currentId && row[field].toLowerCase() === value.toLowerCase());
 }
+

@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/primitives/input";
 import { Label } from "@/components/ui/primitives/label";
 import { SectionCard } from "@/components/layout/primitives/SectionCard";
-import { listUtilityConversionRules, upsertUtilityConversionRule } from "@/features/admin/settings/modules/utilitiesRulesApi";
+import { listUtilityConversionRules, upsertUtilityConversionRule } from "@/features/admin/settings/modules/services/utilitiesRulesApi";
 
 const RULE_KEY = "generator_diesel_kwh_per_liter";
 
@@ -68,9 +68,9 @@ export function UtilitiesRulesSettingsModule() {
       <div className="grid gap-4 px-4 pb-4 pt-4 sm:grid-cols-2 sm:px-6">
         <Card className="shadow-xs">
           <CardHeader>
-            <CardTitle className="text-base">Generator diesel Ã¢â€ â€™ kWh</CardTitle>
+            <CardTitle className="text-base">Generator diesel ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ kWh</CardTitle>
             <CardDescription>
-              Electricity source is Generator: kWh = liters Ãƒâ€” factor.
+              Electricity source is Generator: kWh = liters ÃƒÆ’Ã¢â‚¬â€ factor.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3">
@@ -96,5 +96,6 @@ export function UtilitiesRulesSettingsModule() {
     </SectionCard>
   );
 }
+
 
 

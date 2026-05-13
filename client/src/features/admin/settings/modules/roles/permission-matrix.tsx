@@ -1,6 +1,6 @@
 import { cn } from "@/components/ui/primitives/utils";
 import { groupPermissions, permissionColumns, permissionColumnLabels } from "@/features/admin/settings/modules/roles/helpers";
-import type { PermissionOption } from "@/features/admin/settings/modules/settingsEntityApi";
+import type { PermissionOption } from "@/features/admin/settings/modules/services/settingsEntityApi";
 
 export function PermissionMatrix(props: { permissionKeys: string[]; permissions: PermissionOption[]; invalid?: boolean; onChange: (keys: string[]) => void }) {
   const groups = groupPermissions(props.permissions);
@@ -31,4 +31,5 @@ function toggleColumn(groups: any[], selectedKeys: string[], column: any, checke
   const columnKeys = groups.map((group) => group.permissions[column]?.key).filter(Boolean);
   return checked ? Array.from(new Set([...selectedKeys, ...columnKeys])) : selectedKeys.filter((key) => !columnKeys.includes(key));
 }
+
 

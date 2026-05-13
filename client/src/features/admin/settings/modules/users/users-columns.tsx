@@ -2,7 +2,7 @@ import type { DataColumn } from "@/components/table/DataTable";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { AvatarInitials } from "@/features/admin/settings/modules/users/avatar-initials";
 import type { UserRoleOption } from "@/features/admin/settings/modules/users/users.types";
-import type { UserInput } from "@/features/admin/settings/modules/usersApi";
+import type { UserInput } from "@/features/admin/settings/modules/services/usersApi";
 
 export function buildUsersColumns(roles: UserRoleOption[]): Array<DataColumn<UserInput>> {
   return [
@@ -38,4 +38,5 @@ function RoleBadges(props: { user: UserInput; roles: UserRoleOption[] }) {
     </div>
   );
 }
+
 

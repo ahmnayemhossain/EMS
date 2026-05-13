@@ -14,7 +14,7 @@ import { CompaniesDetailView } from "@/features/admin/settings/modules/companies
 import { CompanyForm } from "@/features/admin/settings/modules/companies/form";
 import { firstCompanyError, validateCompany } from "@/features/admin/settings/modules/companies/helpers";
 import { useCompaniesModule } from "@/features/admin/settings/modules/companies/use-companies-module";
-import { createCompany, deleteCompany, updateCompany } from "@/features/admin/settings/modules/companiesApi";
+import { createCompany, deleteCompany, updateCompany } from "@/features/admin/settings/modules/services/companiesApi";
 
 export function CompaniesModule() {
   const vm = useCompaniesModule();
@@ -37,4 +37,5 @@ async function saveEdit(vm: ReturnType<typeof useCompaniesModule>) {
   if (message) return toast.error(message);
   try { const updated = await updateCompany(vm.editDraft, vm.userId); vm.setSelected(updated); vm.setEditDraft(null); vm.setEditErrors({}); toast.success("Saved"); await vm.loadCompanies(); } catch (error) { toast.error(error instanceof Error ? error.message : "Company save failed"); }
 }
+
 

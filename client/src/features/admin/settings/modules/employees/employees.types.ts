@@ -1,5 +1,5 @@
 import type { Employee } from "@/core/types/models/admin";
-import type { EmployeeLookupOption } from "@/features/admin/settings/modules/employeesApi";
+import type { EmployeeLookupOption } from "@/features/admin/settings/modules/services/employeesApi";
 
 export type EmployeeRow = Employee & {
   createdByUserName?: string;
@@ -15,3 +15,4 @@ export type EmployeeLookups = {
 };
 
 export type EmployeeValidationErrors = Partial<Record<"employeeId" | "name" | "email" | "companyId" | "departmentId" | "designationId" | "status", string>>;
+

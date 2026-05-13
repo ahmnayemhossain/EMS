@@ -2,7 +2,7 @@ import * as React from "react";
 import { toast } from "@/core/app/lib/toast";
 import { useUser } from "@/core/app/state/slices/user";
 import { blankCompany } from "@/features/admin/settings/modules/companies/helpers";
-import { listCompanies, type CompanyEntity } from "@/features/admin/settings/modules/companiesApi";
+import { listCompanies, type CompanyEntity } from "@/features/admin/settings/modules/services/companiesApi";
 
 export function useCompaniesModule() {
   const { userId } = useUser();
@@ -27,3 +27,4 @@ export function useCompaniesModule() {
   const rows = React.useMemo(() => companies.filter((company) => !search.trim() || `${company.name} ${company.shortName} ${company.localName || ""} ${company.address || ""}`.toLowerCase().includes(search.trim().toLowerCase())).sort((a, b) => a.name.localeCompare(b.name)), [companies, search]);
   return { userId, companies, loading, search, selected, editDraft, confirmDelete, createOpen, draft, createErrors, editErrors, rows, setCompanies, setSearch, setSelected, setEditDraft, setConfirmDelete, setCreateOpen, setDraft, setCreateErrors, setEditErrors, loadCompanies };
 }
+

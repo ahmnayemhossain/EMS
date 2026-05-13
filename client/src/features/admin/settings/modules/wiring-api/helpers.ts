@@ -19,3 +19,4 @@ export async function removeWiring(path: string, id: string, userId: string, fal
   const response = await fetch(`${SYSTEM_API}/${path}/${id}`, { method: "DELETE", headers: createSystemHeaders(userId) });
   return parseSystemResponse<{ ok: true }>(response, fallback);
 }
+
