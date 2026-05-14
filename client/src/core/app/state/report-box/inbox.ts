@@ -7,7 +7,7 @@ export type InboxIndexItem = {
   createdAt: string;
   companyId?: string;
   subject: string;
-  reportFile?: string; // relative to /report-box/inbox/
+  reportFile?: string;
   flagged?: boolean;
   status?: ReportBoxReport["status"];
   assignedTo?: string;
@@ -26,10 +26,8 @@ export async function loadInboxIndex(): Promise<InboxIndexItem[]> {
   return Array.isArray(parsed) ? (parsed as InboxIndexItem[]) : [];
 }
 
-export async function hydrateInboxReport(
-  item: InboxIndexItem,
-): Promise<ReportBoxReport> {
-  const baseUrl = "/report-box/inbox/";
+export async function hydrateInboxReport(item: InboxIndexItem): Promise<ReportBoxReport> {
+  const baseUrl = "/cdn/report-box/inbox/";
   const reportUrl = item.reportFile ? `${baseUrl}${item.reportFile}` : undefined;
 
   let reportDoc: any = null;
@@ -47,10 +45,18 @@ export async function hydrateInboxReport(
     rawMessages.map(async (m: any, index: number) => {
       const kind = (m?.kind as ReportBoxMessageKind) || "text";
       const textUrl = m?.textFile ? `${baseUrl}${m.textFile}` : undefined;
-      const mediaUrl = m?.mediaFile ? `${baseUrl}${m.mediaFile}` : undefined;
+      const mediaUrl = m?.url
+        ? String(m.url)
+        : m?.mediaFile
+          ? `${baseUrl}${m.mediaFile}`
+          : undefined;
 
       const messageText =
-        kind === "text" && textUrl ? await loadTextFile(textUrl) : undefined;
+        typeof m?.text === "string"
+          ? m.text
+          : kind === "text" && textUrl
+            ? await loadTextFile(textUrl)
+            : undefined;
 
       return {
         id: String(m?.id || `${item.id}__m${index + 1}`),
@@ -58,11 +64,12 @@ export async function hydrateInboxReport(
         kind,
         text: messageText?.trim() || undefined,
         durationSec: typeof m?.durationSec === "number" ? m.durationSec : undefined,
+        author: typeof m?.author === "string" ? m.author : undefined,
         attachment:
           kind === "voice" && mediaUrl
-            ? { mime: "audio/*", name: m?.mediaFile, url: mediaUrl }
+            ? { mime: String(m?.mime || "audio/*"), name: m?.mediaFile || m?.name, url: mediaUrl }
             : kind === "photo" && mediaUrl
-              ? { mime: "image/*", name: m?.mediaFile, url: mediaUrl }
+              ? { mime: String(m?.mime || "image/*"), name: m?.mediaFile || m?.name, url: mediaUrl }
               : undefined,
       };
     }),
@@ -76,8 +83,11 @@ export async function hydrateInboxReport(
     origin: "inbox",
     status: item.status ?? "new",
     flagged: Boolean(item.flagged),
-    subject: item.subject,
+    subject: reportDoc?.subject || item.subject,
     messages: messages.length ? messages : [],
-    assignedTo: item.assignedTo,
+    assignedTo: reportDoc?.assignedTo || item.assignedTo,
+    category: reportDoc?.category,
+    handledAt: reportDoc?.handledAt,
+    handledBy: reportDoc?.handledBy,
   };
 }

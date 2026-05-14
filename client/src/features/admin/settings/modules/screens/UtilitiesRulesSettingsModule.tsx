@@ -4,11 +4,20 @@ import { Save, RefreshCw } from "lucide-react";
 import { toast } from "@/core/app/lib/toast";
 import { useUser } from "@/core/app/state/slices/user";
 import { Button } from "@/components/ui/primitives/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/primitives/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/primitives/card";
 import { Input } from "@/components/ui/primitives/input";
 import { Label } from "@/components/ui/primitives/label";
 import { SectionCard } from "@/components/layout/primitives/SectionCard";
-import { listUtilityConversionRules, upsertUtilityConversionRule } from "@/features/admin/settings/modules/services/utilitiesRulesApi";
+import {
+  listUtilityConversionRules,
+  upsertUtilityConversionRule,
+} from "@/features/admin/settings/modules/services/utilitiesRulesApi";
 
 const RULE_KEY = "generator_diesel_kwh_per_liter";
 
@@ -22,7 +31,10 @@ export function UtilitiesRulesSettingsModule() {
     try {
       setLoading(true);
       const rules = await listUtilityConversionRules(userId);
-      const hit = rules.find((r) => r.key === RULE_KEY && r.companyId === null) ?? rules.find((r) => r.key === RULE_KEY) ?? null;
+      const hit =
+        rules.find((r) => r.key === RULE_KEY && r.companyId === null) ??
+        rules.find((r) => r.key === RULE_KEY) ??
+        null;
       setValue(hit ? String(hit.value) : "3.5");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not load utilities rules.");
@@ -37,10 +49,17 @@ export function UtilitiesRulesSettingsModule() {
 
   async function save() {
     const next = Number(value);
-    if (!Number.isFinite(next) || next <= 0) return toast.error("Value must be a positive number.");
+    if (!Number.isFinite(next) || next <= 0) {
+      return toast.error("Value must be a positive number.");
+    }
     setSaving(true);
     try {
-      await upsertUtilityConversionRule(userId, { companyId: null, key: RULE_KEY, value: next, isActive: true });
+      await upsertUtilityConversionRule(userId, {
+        companyId: null,
+        key: RULE_KEY,
+        value: next,
+        isActive: true,
+      });
       toast.success("Saved.");
       void load();
     } catch (error) {
@@ -68,10 +87,8 @@ export function UtilitiesRulesSettingsModule() {
       <div className="grid gap-4 px-4 pb-4 pt-4 sm:grid-cols-2 sm:px-6">
         <Card className="shadow-xs">
           <CardHeader>
-            <CardTitle className="text-base">Generator diesel ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ kWh</CardTitle>
-            <CardDescription>
-              Electricity source is Generator: kWh = liters ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â factor.
-            </CardDescription>
+            <CardTitle className="text-base">Generator diesel → kWh</CardTitle>
+            <CardDescription>Electricity source is Generator: kWh = liters × factor.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3">
             <div className="grid gap-1.5">
@@ -96,6 +113,3 @@ export function UtilitiesRulesSettingsModule() {
     </SectionCard>
   );
 }
-
-
-

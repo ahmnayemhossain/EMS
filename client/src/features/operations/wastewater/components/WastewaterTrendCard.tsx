@@ -21,7 +21,7 @@ export function WastewaterTrendCard({
     <Card className="shadow-xs min-w-0">
       <CardHeader className="pb-2">
         <CardTitle>Trends</CardTitle>
-        <div className="text-muted-foreground text-sm">pH, COD and BOD (mock records)</div>
+        <div className="text-muted-foreground text-sm">pH, COD and BOD</div>
       </CardHeader>
       <CardContent className="pt-0">
         <ChartContainer

@@ -24,8 +24,7 @@ export function ExpiringDocsCard({
               <div className="min-w-0">
                 <div className="truncate text-sm font-medium">{d.title}</div>
                 <div className="text-muted-foreground mt-1 text-xs">
-                  {d.expiresOn ? `Expires ${formatDate(d.expiresOn)}` : "No expiry date"} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢{" "}
-                  {d.ownerDepartment}
+                  {d.expiresOn ? `Expires ${formatDate(d.expiresOn)}` : "No expiry date"} • {d.ownerDepartment}
                 </div>
               </div>
               <StatusBadge tone={d.status === "expired" ? "critical" : "warning"}>
@@ -39,5 +38,3 @@ export function ExpiringDocsCard({
     </Card>
   );
 }
-
-

@@ -10,7 +10,7 @@ export function renderChemicalName(chemical: Chemical) {
     <div className="min-w-0">
       <div className="truncate font-medium">{chemical.name}</div>
       <div className="text-muted-foreground mt-1 text-xs">
-        {chemical.supplier} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {chemical.storageArea}
+        {chemical.supplier} • {chemical.storageArea}
       </div>
     </div>
   );
@@ -24,9 +24,7 @@ export function renderChemicalHazard(chemical: Chemical) {
           {hazardLabels[hazard as HazardClass]}
         </StatusBadge>
       ))}
-      {chemical.hazardClasses.length > 2 ? (
-        <StatusBadge tone="neutral">+{chemical.hazardClasses.length - 2}</StatusBadge>
-      ) : null}
+      {chemical.hazardClasses.length > 2 ? <StatusBadge tone="neutral">+{chemical.hazardClasses.length - 2}</StatusBadge> : null}
     </div>
   );
 }
@@ -61,9 +59,7 @@ export function renderChemicalExpiry(chemical: Chemical) {
         : "neutral";
   return (
     <div className="flex justify-end">
-      <StatusBadge tone={tone}>{chemical.expiryDate ? formatDate(chemical.expiryDate) : "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â"}</StatusBadge>
+      <StatusBadge tone={tone}>{chemical.expiryDate ? formatDate(chemical.expiryDate) : "—"}</StatusBadge>
     </div>
   );
 }
-
-

@@ -11,9 +11,7 @@ export function NotFoundPage() {
           <CardTitle>Page not found</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-muted-foreground text-sm">
-            The page youÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢re looking for doesnÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢t exist or has moved.
-          </p>
+          <p className="text-muted-foreground text-sm">The page you’re looking for doesn’t exist or has moved.</p>
           <Button asChild>
             <Link to="/dashboard">Go to dashboard</Link>
           </Button>
@@ -22,4 +20,3 @@ export function NotFoundPage() {
     </div>
   );
 }
-

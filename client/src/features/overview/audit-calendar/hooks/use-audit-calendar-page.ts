@@ -7,7 +7,7 @@ import type { AuditListFilter, AuditCalendarView, ScheduledAudit } from "@/featu
 
 export function useAuditCalendarPage() {
   const [scheduled, setScheduled] = React.useState<ScheduledAudit[]>(() => audits.slice().map((audit, index) => ({ ...audit, time: index % 3 === 0 ? { start: "09:30", end: "11:00" } : index % 3 === 1 ? { start: "14:00", end: "15:30" } : undefined })));
-  const [anchorMonth, setAnchorMonth] = React.useState<Date>(() => startOfMonth(scheduled[0]?.date ? toPickerDate(scheduled[0].date) : new Date()));
+  const [anchorMonth, setAnchorMonth] = React.useState<Date>(() => startOfMonth(new Date()));
   const [selectedDateKey, setSelectedDateKey] = React.useState<string | null>(null);
   const [view, setView] = React.useState<AuditCalendarView>("calendar");
   const [createOpen, setCreateOpen] = React.useState(false);

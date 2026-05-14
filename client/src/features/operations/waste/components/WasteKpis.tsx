@@ -28,7 +28,7 @@ export function WasteKpis({
       <KPIStatCard
         title="Due soon"
         value={dueSoon}
-        helper="Before Apr 15, 2026 (mock)"
+        helper="Upcoming disposal deadline"
         icon={CalendarClock}
         tone={dueSoon > 0 ? "warning" : "compliant"}
       />

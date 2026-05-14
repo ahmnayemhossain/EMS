@@ -1,10 +1,14 @@
 import { utilityTypeFieldConfig } from "@/features/operations/utilities/config/constants";
-import type { UtilityFormErrors, UtilityFormProps } from "@/features/operations/utilities/form/config/types";
+import type {
+  UtilityFormErrors,
+  UtilityFormProps,
+} from "@/features/operations/utilities/form/config/types";
 
 export function useUtilityFormErrors(props: UtilityFormProps): UtilityFormErrors {
   const config = utilityTypeFieldConfig[props.type];
   const sourceEnabled = config.allowSource && props.sourceOptions.length > 0;
-  const selectedSourceName = props.sourceOptions.find((source) => source.id === props.sourceId)?.name ?? "";
+  const selectedSourceName =
+    props.sourceOptions.find((source) => source.id === props.sourceId)?.name ?? "";
   const generatorMode = props.type === "electricity" && selectedSourceName.toLowerCase() === "generator";
   const generatorReadingLocked = generatorMode && props.dieselLitersInput.trim() !== "";
   const generatorDieselLocked =
@@ -24,7 +28,9 @@ export function useUtilityFormErrors(props: UtilityFormProps): UtilityFormErrors
     periodEnd:
       !props.periodEnd
         ? "Period end is required."
-        : props.periodStart && props.periodEnd && props.periodStart.slice(0, 7) !== props.periodEnd.slice(0, 7)
+        : props.periodStart &&
+            props.periodEnd &&
+            props.periodStart.slice(0, 7) !== props.periodEnd.slice(0, 7)
           ? "One utility entry cannot span more than one month."
           : "",
     coverage: "",
@@ -64,7 +70,7 @@ export function useUtilityFormErrors(props: UtilityFormProps): UtilityFormErrors
           : typeof dieselNumber !== "number" || Number.isNaN(dieselNumber) || dieselNumber <= 0
             ? "Diesel consumption must be > 0."
             : typeof props.generatorDieselKwhPerLiter !== "number"
-              ? "Generator diesel conversion factor is missing (set it in Settings ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Operations ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Utilities rules)."
+              ? "Generator diesel conversion factor is missing (set it in Settings → Operations → Utilities rules)."
               : ""
       : readingEnabled
         ? ""

@@ -27,11 +27,7 @@ export function IncidentsPage() {
     .filter((i) => {
       const q = search.trim().toLowerCase();
       if (!q) return true;
-      return (
-        i.title.toLowerCase().includes(q) ||
-        i.type.toLowerCase().includes(q) ||
-        i.status.toLowerCase().includes(q)
-      );
+      return i.title.toLowerCase().includes(q) || i.type.toLowerCase().includes(q) || i.status.toLowerCase().includes(q);
     });
 
   return (
@@ -49,7 +45,7 @@ export function IncidentsPage() {
         left={
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <div className="w-full sm:w-[320px]">
-              <SearchInput value={search} onChange={setSearch} placeholder="Search incidentsÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦" />
+              <SearchInput value={search} onChange={setSearch} placeholder="Search incidents..." />
             </div>
             <SelectFilter
               value={companyId}
@@ -77,4 +73,3 @@ export function IncidentsPage() {
     </div>
   );
 }
-

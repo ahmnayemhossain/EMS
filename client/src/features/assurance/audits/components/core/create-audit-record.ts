@@ -34,6 +34,6 @@ export function createAuditRecord({
   const checklist = Object.entries(statusesByItemId).map(([itemId, status]) => ({ itemId, status, evidenceCount: 0 }));
   const findings = buildFindings({ drafts: findingsDrafts, fallbackCustomerName: customerName });
   onCreate(buildAuditRecord({ id: `audit_${Date.now()}`, nowIso: new Date().toISOString(), facilityId, name, customerName, date, nextAuditDate, auditor, templateId, progress: computed.progress, overallScore: computed.score, checklist, findings }));
-  toast.success("Audit created (mock)");
+  toast.success("Audit created");
   return true;
 }

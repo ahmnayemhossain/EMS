@@ -24,9 +24,7 @@ export function WidgetShell({
   children: React.ReactNode;
 }) {
   return (
-    <div
-      className={cn("relative min-w-0 h-full", enabled ? "rounded-xl ring-1 ring-border/60" : undefined)}
-    >
+    <div className={cn("relative min-w-0 h-full", enabled ? "rounded-xl ring-1 ring-border/60" : undefined)}>
       {children}
 
       {enabled ? (
@@ -41,7 +39,7 @@ export function WidgetShell({
               "bg-transparent text-muted-foreground hover:bg-muted/20",
               "cursor-grab active:cursor-grabbing touch-none",
             )}
-            title={title ? `Drag ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ${title}` : "Drag"}
+            title={title ? `Drag • ${title}` : "Drag"}
           >
             <DotsHandle />
           </div>
@@ -50,5 +48,3 @@ export function WidgetShell({
     </div>
   );
 }
-
-

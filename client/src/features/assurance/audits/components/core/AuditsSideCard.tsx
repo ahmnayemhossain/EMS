@@ -22,13 +22,11 @@ function AuditMiniRow({
         <div className="min-w-0">
           <div className="truncate text-sm font-medium">{audit.name}</div>
           <div className="text-muted-foreground mt-1 text-xs">
-            {getFacilityName(audit.facilityId)} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {formatAuditDate(audit.date)}
+            {getFacilityName(audit.facilityId)} • {formatAuditDate(audit.date)}
           </div>
         </div>
         <StatusBadge
-          tone={
-            audit.progress >= 85 ? "compliant" : audit.progress >= 70 ? "warning" : "critical"
-          }
+          tone={audit.progress >= 85 ? "compliant" : audit.progress >= 70 ? "warning" : "critical"}
         >
           {audit.progress}%
         </StatusBadge>
@@ -90,5 +88,3 @@ export function AuditsSideCard({
     </Card>
   );
 }
-
-

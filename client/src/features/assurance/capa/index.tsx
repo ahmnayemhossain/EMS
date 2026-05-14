@@ -55,7 +55,7 @@ export function CapaPage() {
                       <div className="min-w-0">
                         <div className="truncate text-sm font-medium">{c.title}</div>
                         <div className="text-muted-foreground mt-1 text-xs">
-                          {c.owner} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {getFacilityName(c.facilityId)}
+                          {c.owner} • {getFacilityName(c.facilityId)}
                         </div>
                       </div>
                       <StatusBadge tone={severityTone(c.severity)}>{c.severity}</StatusBadge>
@@ -86,4 +86,3 @@ export function CapaPage() {
     </div>
   );
 }
-

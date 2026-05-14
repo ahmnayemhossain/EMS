@@ -15,12 +15,10 @@ export function getAuditColumns(): Array<DataColumn<AuditRecord>> {
         const templateName = getTemplateById(a.templateId)?.name ?? "Template";
         return (
           <div className="min-w-0">
-            <div className="break-words text-sm font-medium leading-snug md:truncate">
-              {a.name}
-            </div>
+            <div className="break-words text-sm font-medium leading-snug md:truncate">{a.name}</div>
             <div className="text-muted-foreground mt-1 text-xs">
               {getFacilityName(a.facilityId)}
-              {a.customerName ? ` ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ${a.customerName}` : ""} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {formatAuditDate(a.date)}
+              {a.customerName ? ` • ${a.customerName}` : ""} • {formatAuditDate(a.date)}
             </div>
             <div className="mt-2 flex flex-wrap gap-2">
               <StatusBadge tone="neutral">{templateName}</StatusBadge>
@@ -72,5 +70,3 @@ export function getAuditColumns(): Array<DataColumn<AuditRecord>> {
     },
   ];
 }
-
-

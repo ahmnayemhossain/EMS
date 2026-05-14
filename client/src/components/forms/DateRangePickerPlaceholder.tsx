@@ -2,11 +2,7 @@ import * as React from "react";
 import { CalendarDays } from "lucide-react";
 
 import { Button } from "@/components/ui/primitives/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/primitives/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/primitives/popover";
 import { Separator } from "@/components/ui/primitives/separator";
 
 export function DateRangePickerPlaceholder({
@@ -27,23 +23,19 @@ export function DateRangePickerPlaceholder({
       </PopoverTrigger>
       <PopoverContent align="start" className="w-[320px] p-3">
         <div className="text-sm font-medium">Date range</div>
-        <div className="text-muted-foreground mt-1 text-xs">
-          Placeholder UI (wire to real calendar later).
-        </div>
+        <div className="text-muted-foreground mt-1 text-xs">Placeholder UI. Wire this to the real calendar when needed.</div>
         <Separator className="my-3" />
         <div className="grid gap-2 text-sm">
           <div className="flex items-center justify-between">
             <span>From</span>
-            <span className="text-muted-foreground">ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</span>
+            <span className="text-muted-foreground">—</span>
           </div>
           <div className="flex items-center justify-between">
             <span>To</span>
-            <span className="text-muted-foreground">ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</span>
+            <span className="text-muted-foreground">—</span>
           </div>
         </div>
       </PopoverContent>
     </Popover>
   );
 }
-
-

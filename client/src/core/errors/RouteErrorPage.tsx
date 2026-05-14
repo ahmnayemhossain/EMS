@@ -1,9 +1,9 @@
 import * as React from "react";
 import { Link, isRouteErrorResponse, useRouteError } from "react-router";
 
+import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { Button } from "@/components/ui/primitives/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/primitives/card";
-import { StatusBadge } from "@/components/feedback/StatusBadge";
 
 export function RouteErrorPage() {
   const error = useRouteError();
@@ -14,22 +14,11 @@ export function RouteErrorPage() {
 
   if (isRouteErrorResponse(error)) {
     title = `Route error (${error.status})`;
-    description =
-      typeof error.data === "string"
-        ? error.data
-        : error.statusText || description;
-    meta = (
-      <div className="text-muted-foreground mt-2 text-xs">
-        {error.status} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {error.statusText}
-      </div>
-    );
+    description = typeof error.data === "string" ? error.data : error.statusText || description;
+    meta = <div className="text-muted-foreground mt-2 text-xs">{error.status} • {error.statusText}</div>;
   } else if (error instanceof Error) {
     description = error.message || description;
-    meta = (
-      <div className="text-muted-foreground mt-2 text-xs">
-        {error.name}
-      </div>
-    );
+    meta = <div className="text-muted-foreground mt-2 text-xs">{error.name}</div>;
   }
 
   return (
@@ -52,13 +41,9 @@ export function RouteErrorPage() {
               <Link to="/">Go to home</Link>
             </Button>
           </div>
-          <div className="text-muted-foreground text-xs">
-            Check browser console for stack trace.
-          </div>
+          <div className="text-muted-foreground text-xs">Check browser console for stack trace.</div>
         </CardContent>
       </Card>
     </div>
   );
 }
-
-

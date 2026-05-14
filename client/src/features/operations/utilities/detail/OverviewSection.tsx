@@ -9,9 +9,9 @@ export function OverviewSection({ record, companyName }: { record: UtilityRecord
       ? "compliant"
       : record.approvalStatus === "submitted"
         ? "info"
-      : Number(record.missingDaysCount || 0) > 0
-        ? "warning"
-        : "info";
+        : Number(record.missingDaysCount || 0) > 0
+          ? "warning"
+          : "info";
 
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -24,7 +24,7 @@ export function OverviewSection({ record, companyName }: { record: UtilityRecord
         <div className="text-muted-foreground text-xs">Type</div>
         <div className="mt-1 text-sm font-semibold">{formatUtilityType(record.type)}</div>
         <div className="text-muted-foreground mt-1 text-xs">
-          {formatDate(record.periodStart)} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ {formatDate(record.periodEnd)}
+          {formatDate(record.periodStart)} – {formatDate(record.periodEnd)}
         </div>
         {record.sourceName ? (
           <div className="text-muted-foreground mt-1 text-xs">Source: {record.sourceName}</div>
@@ -64,4 +64,3 @@ export function OverviewSection({ record, companyName }: { record: UtilityRecord
     </div>
   );
 }
-

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/primit
 import { DataTable } from "@/components/table/DataTable";
 import { PageHeader } from "@/components/layout/primitives/PageHeader";
 import { ResponsiveWidgetGroup } from "@/components/layout/primitives/ResponsiveWidgetGroup";
-import { capas, getFacilityName, wastewaterRecords } from "@/core/data/catalog/mock";
+import { capas, wastewaterRecords } from "@/core/data/catalog/mock";
 import { formatDate } from "@/core/utils/format";
 
 import { wastewaterThresholds } from "../config/constants";
@@ -31,10 +31,7 @@ export function WastewaterPage() {
       BOD: r.BOD,
     }));
 
-  const cols = React.useMemo(
-    () => getWastewaterColumns({ thresholds: wastewaterThresholds }),
-    [],
-  );
+  const cols = React.useMemo(() => getWastewaterColumns(), []);
 
   const linkedCapas = capas.filter((c) => {
     const t = c.title.toLowerCase();
@@ -46,11 +43,11 @@ export function WastewaterPage() {
       <PageHeader actions={<WastewaterCreateDialog />} />
 
       <WastewaterKpis
-        inflow="ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â"
-        outflow="ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â"
-        latestPh={latest ? latest.pH : "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â"}
-        latestCod={latest ? `${latest.COD} mg/L` : "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â"}
-        latestBod={latest ? `${latest.BOD} mg/L` : "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â"}
+        inflow="—"
+        outflow="—"
+        latestPh={latest ? latest.pH : "—"}
+        latestCod={latest ? `${latest.COD} mg/L` : "—"}
+        latestBod={latest ? `${latest.BOD} mg/L` : "—"}
         exceedanceCount={exceedances}
       />
 
@@ -88,7 +85,7 @@ export function WastewaterPage() {
           mobileItemClassName="w-[min(92vw,520px)]"
           items={[
             { key: "sludge", node: <WastewaterSludgeCard /> },
-            { key: "capa", node: <WastewaterLinkedCapasCard items={linkedCapas} /> },
+            { key: "capa", node: <WastewaterLinkedCapasCard capas={linkedCapas} /> },
             { key: "dosing", node: <WastewaterDosingLogCard /> },
           ]}
         />
@@ -96,4 +93,3 @@ export function WastewaterPage() {
     </div>
   );
 }
-

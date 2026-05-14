@@ -29,9 +29,7 @@ export function FileUploadCard({
             </div>
             <div>
               <div className="text-sm font-medium">Drop files here</div>
-              <div className="text-muted-foreground text-xs">
-                PDF, XLSX, JPG (mock UI)
-              </div>
+              <div className="text-muted-foreground text-xs">PDF, XLSX, JPG</div>
             </div>
           </div>
           <Button variant="outline" onClick={onUpload}>

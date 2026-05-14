@@ -14,9 +14,22 @@ import { FilterBar } from "@/components/forms/FilterBar";
 import { SearchInput } from "@/components/forms/SearchInput";
 import { SectionCard } from "@/components/layout/primitives/SectionCard";
 import { SelectFilter } from "@/components/forms/SelectFilter";
-import { listCompanies, type CompanyEntity } from "@/features/admin/settings/modules/services/companiesApi";
-import { listSourceWiringLookups, listUomWiringLookups, type UtilityTypeOption } from "@/features/admin/settings/modules/services/uomSettingsApi";
-import { createMeter, deleteMeter, listMeters, updateMeter, type MeterEntity } from "@/features/admin/settings/modules/services/metersApi";
+import {
+  listCompanies,
+  type CompanyEntity,
+} from "@/features/admin/settings/modules/services/companiesApi";
+import {
+  listSourceWiringLookups,
+  listUomWiringLookups,
+  type UtilityTypeOption,
+} from "@/features/admin/settings/modules/services/uomSettingsApi";
+import {
+  createMeter,
+  deleteMeter,
+  listMeters,
+  updateMeter,
+  type MeterEntity,
+} from "@/features/admin/settings/modules/services/metersApi";
 
 type Draft = {
   id?: string;
@@ -50,7 +63,6 @@ export function MetersSettingsModule() {
   const [utilityTypes, setUtilityTypes] = React.useState<UtilityTypeOption[]>([]);
   const [uoms, setUoms] = React.useState<Array<{ id: string; name: string }>>([]);
   const [sources, setSources] = React.useState<Array<{ id: string; name: string }>>([]);
-
   const [createOpen, setCreateOpen] = React.useState(false);
   const [draft, setDraft] = React.useState<Draft>(emptyDraft);
   const [selected, setSelected] = React.useState<MeterEntity | null>(null);
@@ -90,8 +102,8 @@ export function MetersSettingsModule() {
       .includes(q);
   });
 
-  const columns = React.useMemo(() => {
-    return [
+  const columns = React.useMemo(
+    () => [
       { id: "company", header: "Company", cell: (row: MeterEntity) => row.companyName },
       { id: "type", header: "Type", cell: (row: MeterEntity) => row.utilityTypeName || row.utilityType },
       { id: "name", header: "Meter", cell: (row: MeterEntity) => row.name },
@@ -99,8 +111,9 @@ export function MetersSettingsModule() {
       { id: "uom", header: "UOM", cell: (row: MeterEntity) => row.uom },
       { id: "source", header: "Source", cell: (row: MeterEntity) => row.sourceName || "-" },
       { id: "status", header: "Status", cell: (row: MeterEntity) => (row.isActive ? "Active" : "Inactive") },
-    ];
-  }, []);
+    ],
+    [],
+  );
 
   function openEdit(row: MeterEntity) {
     setSelected(row);
@@ -230,7 +243,9 @@ export function MetersSettingsModule() {
         description="Maintain meters per company and utility type. These meters are used in Utilities create form."
       >
         {loading ? <div className="p-4 text-sm text-muted-foreground">Loading from database...</div> : null}
-        {!loading && filteredRows.length === 0 ? <div className="p-4 text-sm text-muted-foreground">No meters found.</div> : null}
+        {!loading && filteredRows.length === 0 ? (
+          <div className="p-4 text-sm text-muted-foreground">No meters found.</div>
+        ) : null}
         <DataTable rows={filteredRows} columns={columns} rowKey={(row) => row.id} onRowClick={openEdit} />
       </SectionCard>
 
@@ -335,27 +350,39 @@ function MeterForm(props: {
       <div className="grid gap-2 sm:grid-cols-2">
         <div className="grid gap-1.5 sm:col-span-2">
           <Label>Meter name</Label>
-          <Input value={props.value.name} onChange={(e) => props.onChange({ ...props.value, name: e.target.value })} placeholder="e.g. Main incomer" />
+          <Input
+            value={props.value.name}
+            onChange={(e) => props.onChange({ ...props.value, name: e.target.value })}
+            placeholder="e.g. Main incomer"
+          />
         </div>
         <div className="grid gap-1.5">
           <Label>Code (optional)</Label>
-          <Input value={props.value.code} onChange={(e) => props.onChange({ ...props.value, code: e.target.value })} placeholder="e.g. EB-MAIN" />
+          <Input
+            value={props.value.code}
+            onChange={(e) => props.onChange({ ...props.value, code: e.target.value })}
+            placeholder="e.g. EB-MAIN"
+          />
         </div>
         <div className="grid gap-1.5">
           <Label>Location (optional)</Label>
-          <Input value={props.value.location} onChange={(e) => props.onChange({ ...props.value, location: e.target.value })} placeholder="e.g. Substation" />
+          <Input
+            value={props.value.location}
+            onChange={(e) => props.onChange({ ...props.value, location: e.target.value })}
+            placeholder="e.g. Substation"
+          />
         </div>
       </div>
 
       <div className="flex items-center justify-between rounded-lg border bg-muted/30 p-3">
         <div className="min-w-0">
           <div className="text-sm font-medium">Active</div>
-          <div className="text-xs text-muted-foreground">Inactive meters wonÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢t appear in Utilities selection.</div>
+          <div className="text-xs text-muted-foreground">
+            Inactive meters won't appear in Utilities selection.
+          </div>
         </div>
         <Switch checked={props.value.isActive} onCheckedChange={(checked) => props.onChange({ ...props.value, isActive: checked })} />
       </div>
     </div>
   );
 }
-
-

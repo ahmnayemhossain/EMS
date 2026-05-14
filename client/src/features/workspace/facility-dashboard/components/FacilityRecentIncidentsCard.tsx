@@ -1,7 +1,7 @@
 import * as React from "react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/primitives/card";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/primitives/card";
 import type { Incident } from "@/core/types/models/ems";
 import { formatDate } from "@/core/utils/format";
 
@@ -13,35 +13,17 @@ export function FacilityRecentIncidentsCard({ items }: { items: Incident[] }) {
       </CardHeader>
       <CardContent className="pt-0">
         <div className="space-y-3">
-          {items.length ? (
-            items.map((i) => (
-              <div key={i.id} className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-medium">{i.title}</div>
-                  <div className="text-muted-foreground mt-1 text-xs">
-                    {formatDate(i.date)} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {i.type.replace(/_/g, " ")}
-                  </div>
-                </div>
-                <StatusBadge
-                  tone={
-                    i.severity === "high"
-                      ? "critical"
-                      : i.severity === "medium"
-                        ? "warning"
-                        : "info"
-                  }
-                >
-                  {i.status}
-                </StatusBadge>
+          {items.length ? items.map((incident) => (
+            <div key={incident.id} className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="truncate text-sm font-medium">{incident.title}</div>
+                <div className="text-muted-foreground mt-1 text-xs">{formatDate(incident.date)} • {incident.type.replace(/_/g, " ")}</div>
               </div>
-            ))
-          ) : (
-            <div className="text-muted-foreground text-sm">No incidents recorded.</div>
-          )}
+              <StatusBadge tone={incident.severity === "high" ? "critical" : incident.severity === "medium" ? "warning" : "info"}>{incident.status}</StatusBadge>
+            </div>
+          )) : <div className="text-muted-foreground text-sm">No incidents recorded.</div>}
         </div>
       </CardContent>
     </Card>
   );
 }
-
-

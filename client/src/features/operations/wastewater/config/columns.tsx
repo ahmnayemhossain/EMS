@@ -1,29 +1,18 @@
-import * as React from "react";
-
 import { StatusBadge } from "@/components/feedback/StatusBadge";
-import type { DataColumn } from "@/components/table/DataTable";
-import { getFacilityName } from "@/core/data/catalog/mock";
 import type { WastewaterRecord } from "@/core/types/models/ems";
 import { formatDate } from "@/core/utils/format";
+import type { DataColumn } from "@/components/table/DataTable";
 
-export function getWastewaterColumns({
-  thresholds,
-}: {
-  thresholds: {
-    pH: { min: number; max: number };
-    COD: { max: number };
-    BOD: { max: number };
-  };
-}): Array<DataColumn<WastewaterRecord>> {
+export function getWastewaterColumns(): Array<DataColumn<WastewaterRecord>> {
   return [
     {
-      id: "company",
-      header: "Company",
+      id: "sampleDate",
+      header: "Sample",
       cell: (r) => (
         <div className="min-w-0">
-          <div className="truncate font-medium">{getFacilityName(r.facilityId)}</div>
+          <div className="truncate font-medium capitalize">{r.point}</div>
           <div className="text-muted-foreground mt-1 text-xs">
-            {formatDate(r.sampleDate)} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {r.point}
+            {formatDate(r.sampleDate)} • {r.point}
           </div>
         </div>
       ),
@@ -32,48 +21,32 @@ export function getWastewaterColumns({
     {
       id: "ph",
       header: "pH",
-      cell: (r) => (
-        <StatusBadge
-          tone={
-            r.pH > thresholds.pH.max || r.pH < thresholds.pH.min
-              ? "critical"
-              : "compliant"
-          }
-        >
-          {r.pH}
-        </StatusBadge>
-      ),
+      cell: (r) => <div className="text-right font-medium tabular-nums">{r.pH}</div>,
+      className: "text-right min-w-[90px]",
     },
     {
       id: "cod",
-      header: "COD (mg/L)",
-      cell: (r) => (
-        <StatusBadge tone={r.COD > thresholds.COD.max ? "critical" : "neutral"}>
-          {r.COD}
-        </StatusBadge>
-      ),
+      header: "COD",
+      cell: (r) => <div className="text-right font-medium tabular-nums">{r.COD} mg/L</div>,
+      className: "text-right min-w-[120px]",
     },
     {
       id: "bod",
-      header: "BOD (mg/L)",
-      cell: (r) => (
-        <StatusBadge tone={r.BOD > thresholds.BOD.max ? "warning" : "neutral"}>
-          {r.BOD}
-        </StatusBadge>
-      ),
+      header: "BOD",
+      cell: (r) => <div className="text-right font-medium tabular-nums">{r.BOD} mg/L</div>,
+      className: "text-right min-w-[120px]",
     },
     {
-      id: "report",
-      header: "Lab report",
-      cell: (r) =>
-        r.labReport ? (
-          <div className="text-muted-foreground text-sm">{r.labReport.fileName}</div>
-        ) : (
-          <StatusBadge tone="warning">Missing</StatusBadge>
-        ),
-      className: "min-w-[220px]",
+      id: "status",
+      header: "Status",
+      cell: (r) => (
+        <div className="flex justify-end">
+          <StatusBadge tone={r.exceedance?.length ? "critical" : "compliant"}>
+            {r.exceedance?.length ? "exceedance" : "compliant"}
+          </StatusBadge>
+        </div>
+      ),
+      className: "text-right min-w-[120px]",
     },
   ];
 }
-
-

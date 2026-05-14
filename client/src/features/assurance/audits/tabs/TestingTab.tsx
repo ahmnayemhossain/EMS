@@ -14,32 +14,7 @@ type TestingRow = {
   status: "scheduled" | "due" | "overdue";
 };
 
-const rows: TestingRow[] = [
-  {
-    id: "test_1",
-    test: "ETP influent/effluent lab test",
-    facilityId: facilities[0]?.id ?? "fac_1",
-    frequency: "Monthly",
-    nextDate: "2026-04-25",
-    status: "scheduled",
-  },
-  {
-    id: "test_2",
-    test: "Stack emission test",
-    facilityId: facilities[1]?.id ?? "fac_2",
-    frequency: "Quarterly",
-    nextDate: "2026-04-10",
-    status: "overdue",
-  },
-  {
-    id: "test_3",
-    test: "Noise level monitoring",
-    facilityId: facilities[2]?.id ?? "fac_3",
-    frequency: "Quarterly",
-    nextDate: "2026-05-05",
-    status: "due",
-  },
-];
+const rows: TestingRow[] = [];
 
 const columns: Array<DataColumn<TestingRow>> = [
   {
@@ -49,7 +24,7 @@ const columns: Array<DataColumn<TestingRow>> = [
       <div className="min-w-0">
         <div className="text-sm font-medium">{r.test}</div>
         <div className="text-muted-foreground mt-1 text-xs">
-          {getFacilityName(r.facilityId)} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {r.frequency}
+          {getFacilityName(r.facilityId)} • {r.frequency}
         </div>
       </div>
     ),
@@ -66,11 +41,7 @@ const columns: Array<DataColumn<TestingRow>> = [
     header: "Status",
     cell: (r) => (
       <div className="flex justify-end">
-        <StatusBadge
-          tone={
-            r.status === "scheduled" ? "neutral" : r.status === "due" ? "warning" : "critical"
-          }
-        >
+        <StatusBadge tone={r.status === "scheduled" ? "neutral" : r.status === "due" ? "warning" : "critical"}>
           {r.status === "scheduled" ? "Scheduled" : r.status === "due" ? "Due" : "Overdue"}
         </StatusBadge>
       </div>
@@ -94,5 +65,3 @@ export function TestingTab() {
     </Card>
   );
 }
-
-

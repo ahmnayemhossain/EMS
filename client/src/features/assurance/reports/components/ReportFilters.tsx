@@ -17,13 +17,20 @@ export function ReportFilters(props: {
       left={
         <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
           <div className="w-full sm:w-[320px]">
-            <SearchInput value={props.search} onChange={props.onSearchChange} placeholder="Search meter, source, remarksÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦" />
+            <SearchInput
+              value={props.search}
+              onChange={props.onSearchChange}
+              placeholder="Search meter, source, remarks..."
+            />
           </div>
           <SelectFilter
             value={props.typeFilter}
             onChange={props.onTypeFilterChange}
             placeholder="Utility type"
-            items={[{ value: "all", label: "All utility types" }, ...utilityTypes.map((type) => ({ value: type, label: formatUtilityType(type) }))]}
+            items={[
+              { value: "all", label: "All utility types" },
+              ...utilityTypes.map((type) => ({ value: type, label: formatUtilityType(type) })),
+            ]}
             className="sm:w-[220px]"
           />
         </div>
@@ -33,4 +40,3 @@ export function ReportFilters(props: {
     />
   );
 }
-

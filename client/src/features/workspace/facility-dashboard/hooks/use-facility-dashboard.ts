@@ -13,7 +13,7 @@ export function useFacilityDashboard() {
     if (!facility) {
       return {
         facility: null,
-        water: "0 mÃ‚Â³",
+        water: "0 m³",
         electricity: "0 kWh",
         hazardousChem: 0,
         wasteKg: "0 kg",
@@ -50,7 +50,7 @@ export function useFacilityDashboard() {
 
     return {
       facility,
-      water: `${formatNumber(water)} mÃ‚Â³`,
+      water: `${formatNumber(water)} m³`,
       electricity: `${formatNumber(electricity)} kWh`,
       hazardousChem,
       wasteKg: `${formatNumber(wasteKg)} kg`,

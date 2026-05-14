@@ -21,7 +21,7 @@ export function getWasteColumns(): Array<DataColumn<WasteRecord>> {
         <div className="min-w-0">
           <div className="truncate font-medium">{w.stream}</div>
           <div className="text-muted-foreground mt-1 text-xs">
-            {getFacilityName(w.facilityId)} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {w.storageLocation}
+            {getFacilityName(w.facilityId)} • {w.storageLocation}
           </div>
         </div>
       ),
@@ -30,21 +30,13 @@ export function getWasteColumns(): Array<DataColumn<WasteRecord>> {
     {
       id: "type",
       header: "Type",
-      cell: (w) => (
-        <StatusBadge tone={toneForWasteType(w.type)}>
-          {w.type.replace(/_/g, " ")}
-        </StatusBadge>
-      ),
+      cell: (w) => <StatusBadge tone={toneForWasteType(w.type)}>{w.type.replace(/_/g, " ")}</StatusBadge>,
       className: "min-w-[160px]",
     },
     {
       id: "qty",
       header: "Qty",
-      cell: (w) => (
-        <div className="text-right font-medium tabular-nums">
-          {formatNumber(w.qtyKg)} kg
-        </div>
-      ),
+      cell: (w) => <div className="text-right font-medium tabular-nums">{formatNumber(w.qtyKg)} kg</div>,
       className: "text-right min-w-[120px]",
     },
     {
@@ -73,7 +65,7 @@ export function getWasteColumns(): Array<DataColumn<WasteRecord>> {
       cell: (w) => (
         <div className="flex justify-end">
           <StatusBadge tone={w.dueBy ? "warning" : "neutral"}>
-            {w.dueBy ? formatDate(w.dueBy) : "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â"}
+            {w.dueBy ? formatDate(w.dueBy) : "—"}
           </StatusBadge>
         </div>
       ),
@@ -81,5 +73,3 @@ export function getWasteColumns(): Array<DataColumn<WasteRecord>> {
     },
   ];
 }
-
-
