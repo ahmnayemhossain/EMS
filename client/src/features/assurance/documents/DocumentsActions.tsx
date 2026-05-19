@@ -1,8 +1,8 @@
-import { FileText } from "lucide-react";
+import { Upload } from "lucide-react";
 
-import { Button } from "@/components/ui/primitives/button";
+import { FloatingCreateButton } from "@/components/layout/primitives/FloatingCreateButton";
 
 export function DocumentsActions() {
-  return <Button variant="outline"><FileText className="mr-2 size-4" />Upload document</Button>;
+  return <FloatingCreateButton label="Upload document" icon={<Upload className="size-6 drop-shadow-sm" strokeWidth={2.75} />} />;
 }
 

@@ -22,7 +22,7 @@ export function DashboardContainerGrid({
   removeWidget,
 }: DashboardContainerGridProps) {
   return (
-    <div className={showCanvas ? "relative z-10 grid grid-cols-12 gap-4" : "relative z-10 space-y-4"} style={showCanvas ? { gridAutoRows: `${DASH_ROW_HEIGHT}px` } : undefined}>
+    <div className={showCanvas ? "relative z-10 grid grid-cols-6 gap-3" : "relative z-10 space-y-3"} style={showCanvas ? { gridAutoRows: `${DASH_ROW_HEIGHT}px` } : undefined}>
       {resolvedContainers.map((container) => (
         <ContainerItem
           key={container.id}

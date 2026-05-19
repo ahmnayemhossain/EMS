@@ -103,9 +103,10 @@ export async function uploadUtilityAttachment(
 
 export async function listUtilityMeters(
   userId: string,
-  input: { companyId: string; type: UtilityType },
+  input: { companyId: string; type: UtilityType; sourceId?: string },
 ) {
   const params = new URLSearchParams({ companyId: input.companyId, type: input.type });
+  if (input.sourceId) params.set("sourceId", input.sourceId);
   const response = await fetch(`${UTILITIES_API}/meters?${params.toString()}`, {
     cache: "no-store",
     headers: authJsonHeaders(userId),

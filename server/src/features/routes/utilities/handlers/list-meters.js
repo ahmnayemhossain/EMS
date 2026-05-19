@@ -9,12 +9,25 @@ export async function listUtilityMeters(req, res, next) {
     await ensureUtilitiesReady();
     const type = req.query.type ? String(req.query.type).trim().toLowerCase() : "";
     const companyId = req.query.companyId ? String(req.query.companyId).trim() : "";
+    const sourceId = req.query.sourceId ? String(req.query.sourceId).trim() : "";
     if (!type || !isValidUtilityType(type)) throw createHttpError(400, "Invalid utility type.");
     if (!companyId) throw createHttpError(400, "companyId is required.");
 
     const companyDbId = await getCompanyDbIdOrThrow(companyId);
     const userDbId = await getRequestUserDbId(req);
     await assertUserCompanyAccess(userDbId, companyDbId);
+
+    const params = [companyDbId, type];
+    const filters = [
+      `m.company_id = $1`,
+      `ut.key = $2`,
+      `m.is_active = 1`,
+      `ut.is_active = 1`,
+    ];
+    if (sourceId) {
+      params.push(Number(sourceId));
+      filters.push(`m.source_id = $${params.length}`);
+    }
 
     const result = await query(
       `
@@ -31,13 +44,10 @@ export async function listUtilityMeters(req, res, next) {
         JOIN utility_types ut ON ut.id = m.utility_type_id
         JOIN uom u ON u.id = m.uom_id
         LEFT JOIN sources s ON s.id = m.source_id
-        WHERE m.company_id = $1
-          AND ut.key = $2
-          AND m.is_active = 1
-          AND ut.is_active = 1
+        WHERE ${filters.join("\n          AND ")}
         ORDER BY m.name ASC
       `,
-      [companyDbId, type],
+      params,
     );
 
     res.json(
@@ -56,4 +66,3 @@ export async function listUtilityMeters(req, res, next) {
     next(error);
   }
 }
-

@@ -169,6 +169,26 @@ CREATE TABLE IF NOT EXISTS utility_conversion_rules (
   UNIQUE (company_id, key)
 );
 
+CREATE TABLE IF NOT EXISTS capa_records (
+  id BIGSERIAL PRIMARY KEY,
+  facility_id BIGINT NOT NULL REFERENCES companies(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+  title TEXT NOT NULL,
+  description TEXT,
+  owner_name TEXT NOT NULL,
+  severity TEXT NOT NULL CHECK (severity IN ('minor', 'major', 'critical')),
+  status TEXT NOT NULL CHECK (status IN ('open', 'in_progress', 'pending_verification', 'closed', 'overdue')),
+  due_date DATE NOT NULL,
+  evidence_count INTEGER NOT NULL DEFAULT 0,
+  related_finding_id TEXT,
+  position_index INTEGER NOT NULL DEFAULT 0,
+  is_dismissed SMALLINT NOT NULL DEFAULT 0 CHECK (is_dismissed IN (0, 1)),
+  dismissed_at TIMESTAMPTZ,
+  created_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  updated_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS report_definitions (
   id BIGSERIAL PRIMARY KEY,
   key TEXT UNIQUE NOT NULL,
@@ -380,6 +400,8 @@ CREATE INDEX IF NOT EXISTS idx_audit_logs_table_row ON audit_logs(table_name, ro
 CREATE INDEX IF NOT EXISTS idx_audit_logs_actor_user_id ON audit_logs(actor_user_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at);
 CREATE INDEX IF NOT EXISTS idx_utility_conversion_rules_key ON utility_conversion_rules(key);
+CREATE INDEX IF NOT EXISTS idx_capa_records_facility_status_position ON capa_records(facility_id, status, position_index);
+CREATE INDEX IF NOT EXISTS idx_capa_records_due_date ON capa_records(due_date);
 CREATE INDEX IF NOT EXISTS idx_report_definitions_active ON report_definitions(is_active);
 CREATE INDEX IF NOT EXISTS idx_report_definitions_key ON report_definitions(key);
 CREATE INDEX IF NOT EXISTS idx_email_notification_settings_key ON email_notification_settings(key);

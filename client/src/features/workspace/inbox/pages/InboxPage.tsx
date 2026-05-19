@@ -29,7 +29,7 @@ export function InboxPage() {
   }, []);
 
   React.useEffect(() => {
-    if (!notifications.items.some((item) => item.id === selectedId)) {
+    if (selectedId && !notifications.items.some((item) => item.id === selectedId)) {
       setSelectedId(notifications.items[0]?.id ?? null);
     }
   }, [notifications.items, selectedId]);
@@ -64,11 +64,7 @@ export function InboxPage() {
       });
   }, [notifications.items, query, showStarredOnly, showUnreadOnly, toneFilter]);
 
-  const selected =
-    filteredItems.find((item) => item.id === selectedId) ??
-    notifications.items.find((item) => item.id === selectedId) ??
-    filteredItems[0] ??
-    null;
+  const selected = filteredItems.find((item) => item.id === selectedId) ?? filteredItems[0] ?? null;
 
   React.useEffect(() => {
     if (filteredItems.length && !filteredItems.some((item) => item.id === selectedId)) {

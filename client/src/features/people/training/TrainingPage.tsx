@@ -1,12 +1,9 @@
 import * as React from "react";
-import { GraduationCap } from "lucide-react";
 
-import { Button } from "@/components/ui/primitives/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/primitives/tabs";
 import { DataTable } from "@/components/table/DataTable";
 import { DateRangePickerPlaceholder } from "@/components/forms/DateRangePickerPlaceholder";
 import { FilterBar } from "@/components/forms/FilterBar";
-import { PageHeader } from "@/components/layout/primitives/PageHeader";
 import { SearchInput } from "@/components/forms/SearchInput";
 import { SelectFilter } from "@/components/forms/SelectFilter";
 import { facilities, trainingRecords } from "@/core/data/catalog/mock";
@@ -40,15 +37,6 @@ export function TrainingPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        actions={
-          <Button variant="outline">
-            <GraduationCap className="mr-2 size-4" />
-            Add training
-          </Button>
-        }
-      />
-
       <FilterBar
         left={
           <div className="flex flex-col gap-2 lg:flex-row lg:items-center">

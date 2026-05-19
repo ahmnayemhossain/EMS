@@ -9,15 +9,17 @@ export function useUtilityFormErrors(props: UtilityFormProps): UtilityFormErrors
   const sourceEnabled = config.allowSource && props.sourceOptions.length > 0;
   const selectedSourceName =
     props.sourceOptions.find((source) => source.id === props.sourceId)?.name ?? "";
-  const generatorMode = props.type === "electricity" && selectedSourceName.toLowerCase() === "generator";
-  const generatorReadingLocked = generatorMode && props.dieselLitersInput.trim() !== "";
-  const generatorDieselLocked =
-    generatorMode && (props.previousReading.trim() !== "" || props.currentReading.trim() !== "");
-  const readingEnabled = config.allowMeterReading && !generatorReadingLocked;
-  const previousNumber = props.previousReading.trim() === "" ? undefined : Number(props.previousReading);
-  const currentNumber = props.currentReading.trim() === "" ? undefined : Number(props.currentReading);
-  const inputNumber = props.consumptionInput.trim() === "" ? undefined : Number(props.consumptionInput);
-  const dieselNumber = props.dieselLitersInput.trim() === "" ? undefined : Number(props.dieselLitersInput);
+  const generatorMode =
+    props.type === "electricity" && selectedSourceName.toLowerCase() === "generator";
+  const readingEnabled = config.allowMeterReading;
+  const previousNumber =
+    props.previousReading.trim() === "" ? undefined : Number(props.previousReading);
+  const currentNumber =
+    props.currentReading.trim() === "" ? undefined : Number(props.currentReading);
+  const inputNumber =
+    props.consumptionInput.trim() === "" ? undefined : Number(props.consumptionInput);
+  const dieselNumber =
+    props.dieselLitersInput.trim() === "" ? undefined : Number(props.dieselLitersInput);
 
   return {
     company: !props.companyId ? "Company is required." : "",
@@ -47,7 +49,9 @@ export function useUtilityFormErrors(props: UtilityFormProps): UtilityFormErrors
         ? ""
         : !props.previousReading.trim()
           ? "Previous reading is required."
-          : typeof previousNumber !== "number" || Number.isNaN(previousNumber) || previousNumber < 0
+          : typeof previousNumber !== "number" ||
+              Number.isNaN(previousNumber) ||
+              previousNumber < 0
             ? "Previous reading must be >= 0."
             : "",
     currentReading:
@@ -63,20 +67,20 @@ export function useUtilityFormErrors(props: UtilityFormProps): UtilityFormErrors
                 ? "Consumption must be > 0."
                 : "",
     consumption: generatorMode
-      ? generatorDieselLocked
-        ? ""
-        : !props.dieselLitersInput.trim()
-          ? "Diesel consumption is required if meter reading is not used."
-          : typeof dieselNumber !== "number" || Number.isNaN(dieselNumber) || dieselNumber <= 0
-            ? "Diesel consumption must be > 0."
-            : typeof props.generatorDieselKwhPerLiter !== "number"
-              ? "Generator diesel conversion factor is missing (set it in Settings → Operations → Utilities rules)."
-              : ""
+      ? !props.dieselLitersInput.trim()
+        ? "Diesel consumption is required."
+        : typeof dieselNumber !== "number" ||
+            Number.isNaN(dieselNumber) ||
+            dieselNumber <= 0
+          ? "Diesel consumption must be > 0."
+          : ""
       : readingEnabled
         ? ""
         : !props.consumptionInput.trim()
           ? `${config.manualValueLabel} is required.`
-          : typeof inputNumber !== "number" || Number.isNaN(inputNumber) || inputNumber <= 0
+          : typeof inputNumber !== "number" ||
+              Number.isNaN(inputNumber) ||
+              inputNumber <= 0
             ? `${config.manualValueLabel} must be > 0.`
             : "",
   };

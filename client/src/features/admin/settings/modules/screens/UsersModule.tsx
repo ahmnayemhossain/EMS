@@ -23,7 +23,7 @@ export function UsersModule() {
     <div className="space-y-4">
       <div className="flex items-center justify-end gap-2">
         <Button variant="outline" size="icon" onClick={() => void vm.loadUsers()} disabled={vm.state.loading}><RefreshCw className="size-4" /></Button>
-        <CreateActionDialog title="Create user" triggerLabel="Create" submitLabel="Create" open={vm.createOpen} onOpenChange={vm.setCreateOpen} contentClassName="sm:max-w-2xl" onCreate={vm.submitCreate}>
+        <CreateActionDialog title="Create user" triggerLabel="Create user" triggerVariant="floating" submitLabel="Create" open={vm.createOpen} onOpenChange={vm.setCreateOpen} contentClassName="sm:max-w-2xl" onCreate={vm.submitCreate}>
           <UserForm value={vm.draft} onChange={(user) => { vm.setDraft(user); if (Object.keys(vm.createErrors).length) vm.setCreateErrors({}); }} employees={vm.state.employees} roles={vm.state.roles} companies={vm.state.companies} errors={vm.createErrors} />
         </CreateActionDialog>
       </div>

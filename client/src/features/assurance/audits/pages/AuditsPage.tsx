@@ -2,7 +2,6 @@ import * as React from "react";
 
 import { auditRecords as seedAuditRecords } from "@/core/data/catalog/audit-records";
 import { Tabs, TabsContent } from "@/components/ui/primitives/tabs";
-import { PageHeader } from "@/components/layout/primitives/PageHeader";
 import type { AuditRecord } from "@/core/types/models/audit";
 
 import { AuditCreateDialog } from "../components/core/AuditCreateDialog";
@@ -19,14 +18,10 @@ export function AuditsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        actions={
-          <AuditCreateDialog
-            open={createOpen}
-            onOpenChange={setCreateOpen}
-            onCreate={(record) => setRecords((prev) => [record, ...prev])}
-          />
-        }
+      <AuditCreateDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreate={(record) => setRecords((prev) => [record, ...prev])}
       />
 
       <Tabs

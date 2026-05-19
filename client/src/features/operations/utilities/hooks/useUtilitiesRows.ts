@@ -1,6 +1,10 @@
 import type { CompanyOption } from "@/core/app/state/slices/company";
 import type { UtilityRecord, UtilityType } from "@/core/types/models/ems";
 
+function getTrackerKey(row: UtilityRecord) {
+  return [row.facilityId, row.type, row.meterKey || row.meterName].join("|");
+}
+
 export function useUtilitiesRows({
   active,
   facilityId,
@@ -14,64 +18,105 @@ export function useUtilitiesRows({
   extraRows?: UtilityRecord[];
   companies?: CompanyOption[];
 }) {
-  const companyNameById = new Map(companies.map((company) => [company.id, company.name.toLowerCase()]));
+  const companyNameById = new Map(
+    companies.map((company) => [company.id, company.name.toLowerCase()]),
+  );
+
   const rows: UtilityRecord[] = [...extraRows]
-    .filter((r) => r.type === active)
-    .filter((r) => (facilityId ? r.facilityId === facilityId : true))
-    .filter((r) => {
-      const q = search.trim().toLowerCase();
-      if (!q) return true;
+    .filter((record) => record.type === active)
+    .filter((record) => (facilityId ? record.facilityId === facilityId : true))
+    .filter((record) => {
+      const query = search.trim().toLowerCase();
+      if (!query) return true;
       return (
-        r.meterName.toLowerCase().includes(q) ||
-        (companyNameById.get(r.facilityId) || "").includes(q)
+        record.meterName.toLowerCase().includes(query) ||
+        (companyNameById.get(record.facilityId) || "").includes(query)
       );
     });
 
-  const total = rows.reduce((sum, r) => sum + r.value, 0);
-  const highVarianceCount = rows.filter((r) => r.varianceFlag === "high").length;
-  const missingBillsCount = rows.filter((r) => !(r.billFiles?.length)).length;
-  const monthGroups = new Map<string, UtilityRecord[]>();
+  const total = rows.reduce((sum, record) => sum + record.value, 0);
+  const highVarianceCount = rows.filter((record) => record.varianceFlag === "high").length;
+  const missingBillsCount = rows.filter((record) => !(record.billFiles?.length)).length;
+
+  const trackerMonthGroups = new Map<string, UtilityRecord[]>();
   for (const row of rows) {
-    const key = row.periodMonth || row.periodStart.slice(0, 7);
-    const list = monthGroups.get(key) ?? [];
+    const month = row.periodMonth || row.periodStart.slice(0, 7);
+    const key = `${getTrackerKey(row)}|${month}`;
+    const list = trackerMonthGroups.get(key) ?? [];
     list.push(row);
-    monthGroups.set(key, list);
+    trackerMonthGroups.set(key, list);
   }
-  const monthSummaries = Array.from(monthGroups.entries())
-    .map(([month, monthRows]) => {
+
+  const monthSummaries = Array.from(trackerMonthGroups.entries())
+    .map(([key, monthRows]) => {
       const sample = monthRows[0];
-      const missingDaysCount = Math.max(...monthRows.map((row) => Number(row.missingDaysCount || 0)));
+      const month = sample.periodMonth || sample.periodStart.slice(0, 7);
+      const missingDaysCount = Math.max(
+        ...monthRows.map((row) => Number(row.missingDaysCount || 0)),
+      );
       const approvalStatus = monthRows.some((row) => row.approvalStatus === "approved")
         ? "approved"
         : monthRows.some((row) => row.approvalStatus === "submitted")
           ? "submitted"
           : "pending";
       const monthComplete = monthRows.some((row) => row.monthComplete);
-      const missingRanges = monthRows.find((row) => (row.missingRanges?.length || 0) > 0)?.missingRanges ?? [];
+      const missingRanges =
+        monthRows.find((row) => (row.missingRanges?.length || 0) > 0)?.missingRanges ?? [];
+
       return {
+        key,
         month,
         facilityId: sample.facilityId,
+        meterKey: sample.meterKey || sample.meterName,
         missingDaysCount,
         approvalStatus,
         monthComplete,
         missingRanges,
       };
     })
-    .sort((a, b) => a.month.localeCompare(b.month));
+    .sort((left, right) => left.month.localeCompare(right.month));
 
-  const readyToSubmitCount = monthSummaries.filter((item) => item.monthComplete && item.approvalStatus === "pending" && item.missingDaysCount === 0).length;
-  const readyForApprovalCount = monthSummaries.filter((item) => item.approvalStatus === "submitted").length;
+  const readyToSubmitCount = monthSummaries.filter(
+    (item) =>
+      item.monthComplete &&
+      item.approvalStatus === "pending" &&
+      item.missingDaysCount === 0,
+  ).length;
+  const readyForApprovalCount = monthSummaries.filter(
+    (item) => item.approvalStatus === "submitted",
+  ).length;
 
-  const missingMonthLabels: string[] = [];
-  for (let index = 1; index < monthSummaries.length; index += 1) {
-    let cursor = nextMonth(monthSummaries[index - 1].month);
-    while (cursor < monthSummaries[index].month) {
-      missingMonthLabels.push(formatMonth(cursor));
-      cursor = nextMonth(cursor);
+  const trackerMonths = new Map<string, string[]>();
+  for (const row of rows) {
+    const key = getTrackerKey(row);
+    const month = row.periodMonth || row.periodStart.slice(0, 7);
+    const list = trackerMonths.get(key) ?? [];
+    if (!list.includes(month)) list.push(month);
+    trackerMonths.set(key, list);
+  }
+
+  const missingMonthSet = new Set<string>();
+  for (const months of trackerMonths.values()) {
+    const sortedMonths = [...months].sort((a, b) => a.localeCompare(b));
+    for (let index = 1; index < sortedMonths.length; index += 1) {
+      let cursor = nextMonth(sortedMonths[index - 1]);
+      while (cursor < sortedMonths[index]) {
+        missingMonthSet.add(formatMonth(cursor));
+        cursor = nextMonth(cursor);
+      }
     }
   }
 
-  return { rows, total, highVarianceCount, missingBillsCount, readyToSubmitCount, readyForApprovalCount, monthSummaries, missingMonthLabels };
+  return {
+    rows,
+    total,
+    highVarianceCount,
+    missingBillsCount,
+    readyToSubmitCount,
+    readyForApprovalCount,
+    monthSummaries,
+    missingMonthLabels: Array.from(missingMonthSet),
+  };
 }
 
 function nextMonth(month: string) {

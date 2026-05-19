@@ -12,10 +12,7 @@ export function getCreateDialogErrors(input: {
   manualConsumption?: number;
 }) {
   const generatorMode = input.generatorMode === true;
-  const generatorReadingLocked = generatorMode && input.state.dieselLitersInput.trim() !== "";
-  const generatorDieselLocked =
-    generatorMode && (input.state.previousReading.trim() !== "" || input.state.currentReading.trim() !== "");
-  const readingEnabled = input.config.allowMeterReading && !generatorReadingLocked;
+  const readingEnabled = input.config.allowMeterReading;
 
   return [
     !input.state.companyId ? "Company is required." : "",
@@ -47,19 +44,26 @@ export function getCreateDialogErrors(input: {
       ? "Current reading must be >= previous reading."
       : "",
     generatorMode
-      ? generatorDieselLocked
-        ? ""
-        : typeof input.manualConsumption !== "number" ||
-            Number.isNaN(input.manualConsumption) ||
-            input.manualConsumption <= 0
-          ? "Diesel consumption must be > 0."
-          : ""
+      ? typeof input.manualConsumption !== "number" ||
+          Number.isNaN(input.manualConsumption) ||
+          input.manualConsumption <= 0
+        ? "Diesel consumption must be > 0."
+        : ""
       : !readingEnabled &&
           (typeof input.manualConsumption !== "number" ||
             Number.isNaN(input.manualConsumption) ||
             input.manualConsumption <= 0)
         ? `${input.config.manualValueLabel} must be > 0.`
         : "",
+    generatorMode &&
+    (
+      typeof input.previousReading !== "number" ||
+      Number.isNaN(input.previousReading) ||
+      typeof input.currentReading !== "number" ||
+      Number.isNaN(input.currentReading)
+    )
+      ? "Generator output meter reading is required."
+      : "",
     typeof input.consumption === "number" && input.consumption <= 0 ? "Consumption must be > 0." : "",
   ].filter(Boolean);
 }

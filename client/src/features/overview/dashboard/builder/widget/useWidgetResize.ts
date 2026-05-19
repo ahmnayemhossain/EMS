@@ -1,5 +1,7 @@
 import * as React from "react";
 
+import { DASH_GAP, DASH_ROW_HEIGHT } from "../config/builder.constants";
+
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
@@ -36,11 +38,10 @@ export function useWidgetResize({
       e.stopPropagation();
 
       const gridWidth = gridRef.current?.getBoundingClientRect().width ?? 0;
-      const gridHeight = gridRef.current?.getBoundingClientRect().height ?? 0;
       if (!gridWidth) return;
 
-      const gap = 16; // matches `gap-4`
-      const rowHeight = 72;
+      const gap = DASH_GAP;
+      const rowHeight = DASH_ROW_HEIGHT;
       const colWidth = (gridWidth - gap * 11) / 12;
       const colUnit = colWidth + gap;
       const rowUnit = rowHeight + gap;
@@ -61,7 +62,6 @@ export function useWidgetResize({
         }
 
         if (axis === "y" || axis === "xy") {
-          if (!gridHeight) return;
           const startPx = startRows * rowHeight + (startRows - 1) * gap;
           const nextRows = clamp(Math.round((startPx + dy + gap) / rowUnit), minRows, maxRows);
           onRowsChange(nextRows);

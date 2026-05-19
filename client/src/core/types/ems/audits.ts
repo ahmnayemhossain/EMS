@@ -38,10 +38,13 @@ export type CAPA = {
   facilityId: ID;
   title: string;
   owner: string;
+  description?: string;
   severity: FindingSeverity;
   status: "open" | "in_progress" | "pending_verification" | "closed" | "overdue";
   dueDate: string; // ISO date
   evidenceCount: number;
   relatedFindingId?: ID;
+  positionIndex?: number;
+  dismissed?: boolean;
 };
 

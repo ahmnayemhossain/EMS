@@ -6,7 +6,6 @@ import { useSelectedCompany } from "@/core/app/state/slices/company";
 import { useCan } from "@/core/app/state/slices/permissions";
 import { useUser } from "@/core/app/state/slices/user";
 import { ActionModal } from "@/components/feedback/ActionModal";
-import { PageHeader } from "@/components/layout/primitives/PageHeader";
 import { CreateUtilityDialog } from "@/features/operations/utilities/components/CreateUtilityDialog";
 import { EditUtilityDialog } from "@/features/operations/utilities/components/EditUtilityDialog";
 import { UtilitiesFiltersBar } from "@/features/operations/utilities/components/UtilitiesFiltersBar";
@@ -40,7 +39,22 @@ export function UtilitiesPage() {
   const { utilityRows, setUtilityRows, uomOptions, sourceOptions, loading, reloadUtilities } = useUtilitiesLoader(userId, { facilityId });
   const { rows, total, highVarianceCount, missingBillsCount, readyToSubmitCount, readyForApprovalCount, monthSummaries, missingMonthLabels } = useUtilitiesRows({ active, facilityId, search, extraRows: utilityRows, companies });
   const trendData = React.useMemo(() => Array.from(rows.reduce((map, row) => map.set(row.periodStart.slice(0, 7), (map.get(row.periodStart.slice(0, 7)) ?? 0) + row.value), new Map<string, number>()), ([label, value]) => ({ label, value })).sort((a, b) => a.label.localeCompare(b.label)), [rows]);
-  const monthWarnings = React.useMemo(() => monthSummaries.filter((item) => item.missingDaysCount > 0).map((item) => ({ month: formatMonth(item.month), detail: item.missingRanges.map((range) => range.start === range.end ? range.start : `${range.start} to ${range.end}`).join(", ") })), [monthSummaries]);
+  const monthWarnings = React.useMemo(() => {
+    const byMonth = new Map<string, Set<string>>();
+    for (const item of monthSummaries) {
+      if (item.missingDaysCount <= 0) continue;
+      const month = formatMonth(item.month);
+      const details = byMonth.get(month) ?? new Set<string>();
+      for (const range of item.missingRanges) {
+        details.add(range.start === range.end ? range.start : `${range.start} to ${range.end}`);
+      }
+      byMonth.set(month, details);
+    }
+    return Array.from(byMonth.entries()).map(([month, details]) => ({
+      month,
+      detail: Array.from(details).join(", "),
+    }));
+  }, [monthSummaries]);
   const columns = React.useMemo(() => getUtilityColumns(getCompanyName), [getCompanyName]);
   const actions = createUtilityActions({ userId, selected, setSelected, setDeleteOpen, setUtilityRows, reloadUtilities });
 
@@ -48,19 +62,15 @@ export function UtilitiesPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        actions={
-          <CreateUtilityDialog
-            userId={userId}
-            companies={selectedCompany ? [selectedCompany] : companies}
-            defaultCompanyId={selectedCompanyId}
-            activeType={active}
-            uomOptions={uomOptions}
-            sourceOptions={sourceOptions}
-            existingRecords={utilityRows}
-            onCreateUsage={async (payload) => { await actions.createUsage(payload); }}
-          />
-        }
+      <CreateUtilityDialog
+        userId={userId}
+        companies={selectedCompany ? [selectedCompany] : companies}
+        defaultCompanyId={selectedCompanyId}
+        activeType={active}
+        uomOptions={uomOptions}
+        sourceOptions={sourceOptions}
+        existingRecords={utilityRows}
+        onCreateUsage={async (payload) => { await actions.createUsage(payload); }}
       />
       <Tabs value={active} onValueChange={(value) => setActive(value as UtilityType)}>
         <UtilitiesTabStrip types={utilityTypes} />

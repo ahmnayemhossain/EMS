@@ -5,7 +5,7 @@ import { useDashboardInteraction } from "../config/dashboardInteraction";
 
 export function DashboardCanvasOverlay({ rows, active }: { rows: number; active: boolean }) {
   const interaction = useDashboardInteraction();
-  const opacity = interaction.isInteracting ? 1 : active ? 0.28 : 0;
+  const opacity = interaction.isInteracting ? 0.7 : active ? 0.16 : 0;
   if (!active) return null;
   return (
     <div

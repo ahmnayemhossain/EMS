@@ -1,9 +1,9 @@
 import type { DashboardGridRect } from "@/core/app/state/slices/dashboard-builder.types";
 
-export const DASH_COLS = 12;
+export const DASH_COLS = 6;
 export const DASH_GAP = 16;
 export const DASH_ROW_HEIGHT = 72;
-export const MIN_W = 3;
+export const MIN_W = 2;
 export const MIN_H = 3;
 
 export function clampRect(rect: DashboardGridRect): DashboardGridRect {

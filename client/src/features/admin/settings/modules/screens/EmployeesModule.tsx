@@ -25,7 +25,7 @@ export function EmployeesModule() {
     <div className="space-y-4">
       <div className="flex items-center justify-end gap-2">
         <Button variant="outline" size="icon" onClick={() => void vm.loadEmployees()} disabled={vm.loading}><RefreshCw className="size-4" /></Button>
-        <CreateActionDialog title="Create employee" triggerLabel="Create" submitLabel="Create" open={vm.createOpen} onOpenChange={vm.setCreateOpen} contentClassName="sm:max-w-2xl" onCreate={() => createNewEmployee(vm)}>
+        <CreateActionDialog title="Create employee" triggerLabel="Create employee" triggerVariant="floating" submitLabel="Create" open={vm.createOpen} onOpenChange={vm.setCreateOpen} contentClassName="sm:max-w-2xl" onCreate={() => createNewEmployee(vm)}>
           <EmployeeForm value={vm.draft} onChange={(employee) => { vm.setDraft(employee); if (Object.keys(vm.createErrors).length) vm.setCreateErrors({}); }} lookups={vm.lookups} errors={vm.createErrors} />
         </CreateActionDialog>
       </div>

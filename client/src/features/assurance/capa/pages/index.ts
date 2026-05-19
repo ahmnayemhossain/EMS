@@ -1,0 +1,1 @@
+export { CapaPage } from "./CapaPage";

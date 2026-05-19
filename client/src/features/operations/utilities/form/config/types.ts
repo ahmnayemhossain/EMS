@@ -31,7 +31,6 @@ export type UtilityFormProps = {
   onConsumptionInputChange: (value: string) => void;
   dieselLitersInput: string;
   onDieselLitersInputChange: (value: string) => void;
-  generatorDieselKwhPerLiter?: number | null;
   consumption?: number;
   status?: UtilityUsageStatus;
   coverageWarning?: string;

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/primitives/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/primitives/dialog";
 import { ActionModal } from "@/components/feedback/ActionModal";
 import type { UtilityUsagePayload } from "@/features/operations/utilities/config/baseline-settings";
-import { getUtilityConversionRules, listUtilityMeters } from "@/features/operations/utilities/services/api";
+import { listUtilityMeters } from "@/features/operations/utilities/services/api";
 import { buildUtilityPayload } from "@/features/operations/utilities/dialog/build-utility-payload";
 import { getCoveragePreview } from "@/features/operations/utilities/dialog/coverage-preview";
 import { CreateDialogContent } from "@/features/operations/utilities/dialog/create-dialog-content";
@@ -29,7 +29,6 @@ export function EditUtilityDialog(props: {
 }) {
   const [state, setState] = React.useState(() => createEmptyUtilityFormState("", "electricity"));
   const [meterOptions, setMeterOptions] = React.useState<UtilityMeterOption[]>([]);
-  const [generatorDieselKwhPerLiter, setGeneratorDieselKwhPerLiter] = React.useState<number | null>(null);
   const [showValidation, setShowValidation] = React.useState(false);
   const [validationOpen, setValidationOpen] = React.useState(false);
 
@@ -39,7 +38,7 @@ export function EditUtilityDialog(props: {
     setShowValidation(false);
   }, [props.open, props.record]);
 
-  const logic = useUtilityDialogLogic(state, props.uomOptions, props.sourceOptions, { generatorDieselKwhPerLiter });
+  const logic = useUtilityDialogLogic(state, props.uomOptions, props.sourceOptions);
   useSyncedUtilityForm(state, setState, { logic });
 
   React.useEffect(() => {
@@ -47,7 +46,11 @@ export function EditUtilityDialog(props: {
     let cancelled = false;
     async function loadMeters() {
       try {
-        const meters = await listUtilityMeters(props.userId, { companyId: state.companyId, type: state.type });
+        const meters = await listUtilityMeters(props.userId, {
+          companyId: state.companyId,
+          type: state.type,
+          sourceId: state.sourceId || undefined,
+        });
         if (!cancelled) setMeterOptions(meters);
       } catch {
         if (!cancelled) setMeterOptions([]);
@@ -57,7 +60,7 @@ export function EditUtilityDialog(props: {
     return () => {
       cancelled = true;
     };
-  }, [props.open, props.record, props.userId, state.companyId, state.type]);
+  }, [props.open, props.record, props.userId, state.companyId, state.type, state.sourceId]);
 
   React.useEffect(() => {
     if (!state.meterId) return;
@@ -72,21 +75,19 @@ export function EditUtilityDialog(props: {
   }, [meterOptions, state.meterId, setState]);
 
   React.useEffect(() => {
-    let cancelled = false;
-    async function loadRules() {
-      try {
-        if (!state.companyId) return;
-        const rules = await getUtilityConversionRules(props.userId, { companyId: state.companyId });
-        if (!cancelled) setGeneratorDieselKwhPerLiter(typeof rules.generatorDieselKwhPerLiter === "number" ? rules.generatorDieselKwhPerLiter : null);
-      } catch {
-        if (!cancelled) setGeneratorDieselKwhPerLiter(null);
-      }
-    }
-    void loadRules();
-    return () => {
-      cancelled = true;
-    };
-  }, [props.userId, state.companyId]);
+    if (!state.meterId) return;
+    const currentMeter = meterOptions.find((meter) => meter.id === state.meterId);
+    if (currentMeter) return;
+    setState((current) => ({
+      ...current,
+      meterId: "",
+      meterName: "",
+      unit: "",
+      previousReading: "",
+      currentReading: "",
+      consumptionInput: "",
+    }));
+  }, [meterOptions, setState, state.meterId]);
 
   React.useEffect(() => {
     const selectedSourceName = props.sourceOptions.find((s) => s.id === state.sourceId)?.name ?? "";
@@ -159,7 +160,6 @@ export function EditUtilityDialog(props: {
                 coverageWarning={coveragePreview.warning}
                 showValidation={showValidation}
                 updateState={updateState}
-                generatorDieselKwhPerLiter={generatorDieselKwhPerLiter}
               />
             ) : null}
             <DialogFooter>

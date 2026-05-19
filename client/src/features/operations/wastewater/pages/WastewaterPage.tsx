@@ -2,7 +2,6 @@ import * as React from "react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/primitives/card";
 import { DataTable } from "@/components/table/DataTable";
-import { PageHeader } from "@/components/layout/primitives/PageHeader";
 import { ResponsiveWidgetGroup } from "@/components/layout/primitives/ResponsiveWidgetGroup";
 import { capas, wastewaterRecords } from "@/core/data/catalog/mock";
 import { formatDate } from "@/core/utils/format";
@@ -40,7 +39,7 @@ export function WastewaterPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader actions={<WastewaterCreateDialog />} />
+      <WastewaterCreateDialog floating />
 
       <WastewaterKpis
         inflow="—"

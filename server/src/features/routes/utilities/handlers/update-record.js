@@ -7,25 +7,6 @@ import { syncUtilityMonthlyApproval } from "../../../modules/utilities/monthly-a
 import { ensureUtilitiesReady } from "../ready.js";
 import { getCompanyDbIdOrThrow, getRequestUserDbId } from "../request-context.js";
 
-async function getGeneratorDieselFactor(companyDbId) {
-  const companyRes = await query(
-    `SELECT value FROM utility_conversion_rules WHERE key = $1 AND company_id = $2 AND is_active = 1 LIMIT 1`,
-    ["generator_diesel_kwh_per_liter", companyDbId],
-  );
-  if (companyRes.rows[0]) return Number(companyRes.rows[0].value);
-  const globalRes = await query(
-    `SELECT value FROM utility_conversion_rules WHERE key = $1 AND company_id IS NULL AND is_active = 1 LIMIT 1`,
-    ["generator_diesel_kwh_per_liter"],
-  );
-  return globalRes.rows[0] ? Number(globalRes.rows[0].value) : null;
-}
-
-async function isGeneratorSource(sourceId) {
-  if (!sourceId) return false;
-  const res = await query(`SELECT name FROM sources WHERE id = $1 LIMIT 1`, [sourceId]);
-  return String(res.rows[0]?.name || "").trim().toLowerCase().includes("generator");
-}
-
 export async function updateUtilityRecord(req, res, next) {
   try {
     await ensureUtilitiesReady();
@@ -47,20 +28,11 @@ export async function updateUtilityRecord(req, res, next) {
     const uom = meter.uom;
     const sourceId = meter.sourceId;
 
-    let value = record.value;
+    const value = record.value;
     let dieselLiters = record.dieselLiters ?? null;
     let calcMethod = null;
     let calcFactor = null;
-
-    if (record.type === "electricity" && dieselLiters && (await isGeneratorSource(sourceId))) {
-      const factor = await getGeneratorDieselFactor(companyDbId);
-      if (!factor || !Number.isFinite(factor) || factor <= 0) throw createHttpError(400, "Generator diesel conversion factor is not configured.");
-      value = Number(dieselLiters) * Number(factor);
-      calcMethod = "diesel_to_kwh";
-      calcFactor = Number(factor);
-    } else {
-      dieselLiters = null;
-    }
+    if (typeof dieselLiters !== "number" || !Number.isFinite(dieselLiters) || dieselLiters <= 0) dieselLiters = null;
 
     if (!(await isAllowedUom(record.type, uom))) throw createHttpError(400, "Invalid utility UOM.");
     if (!(await isAllowedSource(record.type, sourceId))) throw createHttpError(400, "Invalid utility source.");

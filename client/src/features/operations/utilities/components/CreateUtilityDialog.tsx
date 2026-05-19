@@ -3,7 +3,7 @@ import * as React from "react";
 import { ActionModal } from "@/components/feedback/ActionModal";
 import { CreateActionDialog } from "@/components/layout/primitives/CreateActionDialog";
 import type { UtilityUsagePayload } from "@/features/operations/utilities/config/baseline-settings";
-import { getUtilityConversionRules, listUtilityMeters } from "@/features/operations/utilities/services/api";
+import { listUtilityMeters } from "@/features/operations/utilities/services/api";
 import { buildUtilityPayload } from "@/features/operations/utilities/dialog/build-utility-payload";
 import { getCoveragePreview } from "@/features/operations/utilities/dialog/coverage-preview";
 import { CreateDialogContent } from "@/features/operations/utilities/dialog/create-dialog-content";
@@ -26,10 +26,9 @@ export function CreateUtilityDialog(props: {
 }) {
   const [state, setState] = React.useState(() => createEmptyUtilityFormState(props.defaultCompanyId, props.activeType));
   const [meterOptions, setMeterOptions] = React.useState<UtilityMeterOption[]>([]);
-  const [generatorDieselKwhPerLiter, setGeneratorDieselKwhPerLiter] = React.useState<number | null>(null);
   const [showValidation, setShowValidation] = React.useState(false);
   const [validationOpen, setValidationOpen] = React.useState(false);
-  const logic = useUtilityDialogLogic(state, props.uomOptions, props.sourceOptions, { generatorDieselKwhPerLiter });
+  const logic = useUtilityDialogLogic(state, props.uomOptions, props.sourceOptions);
   useSyncedUtilityForm(state, setState, {
     defaultCompanyId: props.defaultCompanyId,
     activeType: props.activeType,
@@ -44,7 +43,11 @@ export function CreateUtilityDialog(props: {
     let cancelled = false;
     async function loadMeters() {
       try {
-        const meters = await listUtilityMeters(props.userId, { companyId: state.companyId, type: state.type });
+        const meters = await listUtilityMeters(props.userId, {
+          companyId: state.companyId,
+          type: state.type,
+          sourceId: state.sourceId || undefined,
+        });
         if (!cancelled) setMeterOptions(meters);
       } catch {
         if (!cancelled) setMeterOptions([]);
@@ -54,7 +57,7 @@ export function CreateUtilityDialog(props: {
     return () => {
       cancelled = true;
     };
-  }, [props.userId, state.companyId, state.type]);
+  }, [props.userId, state.companyId, state.type, state.sourceId]);
 
   React.useEffect(() => {
     if (!state.meterId) return;
@@ -69,28 +72,26 @@ export function CreateUtilityDialog(props: {
   }, [meterOptions, state.meterId, setState]);
 
   React.useEffect(() => {
+    if (!state.meterId) return;
+    const currentMeter = meterOptions.find((meter) => meter.id === state.meterId);
+    if (currentMeter) return;
+    setState((current) => ({
+      ...current,
+      meterId: "",
+      meterName: "",
+      unit: "",
+      previousReading: "",
+      currentReading: "",
+      consumptionInput: "",
+    }));
+  }, [meterOptions, setState, state.meterId]);
+
+  React.useEffect(() => {
     const selectedSourceName = props.sourceOptions.find((s) => s.id === state.sourceId)?.name ?? "";
     const generatorMode = state.type === "electricity" && selectedSourceName.toLowerCase() === "generator";
     if (!generatorMode) return;
     setState((current) => (current.unit === "kWh" ? current : { ...current, unit: "kWh" }));
   }, [props.sourceOptions, setState, state.sourceId, state.type]);
-
-  React.useEffect(() => {
-    let cancelled = false;
-    async function loadRules() {
-      try {
-        if (!state.companyId) return;
-        const rules = await getUtilityConversionRules(props.userId, { companyId: state.companyId });
-        if (!cancelled) setGeneratorDieselKwhPerLiter(typeof rules.generatorDieselKwhPerLiter === "number" ? rules.generatorDieselKwhPerLiter : null);
-      } catch {
-        if (!cancelled) setGeneratorDieselKwhPerLiter(null);
-      }
-    }
-    void loadRules();
-    return () => {
-      cancelled = true;
-    };
-  }, [props.userId, state.companyId]);
 
   const coveragePreview = getCoveragePreview({ state, existingRecords: props.existingRecords });
   const errors = [
@@ -127,6 +128,8 @@ export function CreateUtilityDialog(props: {
     <>
       <CreateActionDialog
         title="Add Utility Usage"
+        triggerLabel="Add utility usage"
+        triggerVariant="floating"
         submitLabel="Create Usage Record"
         contentClassName="sm:max-w-3xl"
         onCreate={() => {
@@ -146,12 +149,11 @@ export function CreateUtilityDialog(props: {
           sourceOptions={logic.filteredSourceOptions}
           consumption={logic.consumption}
           status={payload?.status}
-          attachmentError={logic.attachmentError}
-          coverageWarning={coveragePreview.warning}
-          showValidation={showValidation}
-          updateState={updateState}
-          generatorDieselKwhPerLiter={generatorDieselKwhPerLiter}
-        />
+                attachmentError={logic.attachmentError}
+                coverageWarning={coveragePreview.warning}
+                showValidation={showValidation}
+                updateState={updateState}
+              />
       </CreateActionDialog>
       <ActionModal
         open={validationOpen}

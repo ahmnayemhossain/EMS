@@ -16,7 +16,6 @@ export function CreateDialogContent(props: {
   coverageWarning?: string;
   showValidation?: boolean;
   updateState: <K extends keyof UtilityDialogFormState>(key: K, value: UtilityDialogFormState[K]) => void;
-  generatorDieselKwhPerLiter?: number | null;
 }) {
   return (
     <UtilityFormFields
@@ -31,7 +30,6 @@ export function CreateDialogContent(props: {
       coverageWarning={props.coverageWarning}
       showValidation={props.showValidation}
       updateState={props.updateState}
-      generatorDieselKwhPerLiter={props.generatorDieselKwhPerLiter}
     />
   );
 }

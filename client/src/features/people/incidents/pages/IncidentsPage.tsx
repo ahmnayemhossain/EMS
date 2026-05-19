@@ -1,11 +1,9 @@
 import * as React from "react";
-import { TriangleAlert } from "lucide-react";
 
-import { Button } from "@/components/ui/primitives/button";
 import { DateRangePickerPlaceholder } from "@/components/forms/DateRangePickerPlaceholder";
 import { DataTable } from "@/components/table/DataTable";
 import { FilterBar } from "@/components/forms/FilterBar";
-import { PageHeader } from "@/components/layout/primitives/PageHeader";
+import { FloatingCreateButton } from "@/components/layout/primitives/FloatingCreateButton";
 import { SearchInput } from "@/components/forms/SearchInput";
 import { SelectFilter } from "@/components/forms/SelectFilter";
 import { facilities, incidents } from "@/core/data/catalog/mock";
@@ -32,14 +30,7 @@ export function IncidentsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        actions={
-          <Button variant="outline" onClick={() => setCreateOpen(true)}>
-            <TriangleAlert className="mr-2 size-4" />
-            Create
-          </Button>
-        }
-      />
+      <FloatingCreateButton label="Create incident" onClick={() => setCreateOpen(true)} />
 
       <FilterBar
         left={

@@ -1,6 +1,5 @@
 import * as React from "react";
 
-import { PageHeader } from "@/components/layout/primitives/PageHeader";
 import { useSelectedCompany } from "@/core/app/state/slices/company";
 import { useUser } from "@/core/app/state/slices/user";
 import { toast } from "@/core/app/lib/toast";
@@ -74,26 +73,21 @@ export function ChemicalsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        actions={
-          <ChemicalCreateDialog
-            companies={companies}
-            onCreated={() => {
-              // Reload after create (keeps state simple).
-              void (async () => {
-                setLoading(true);
-                try {
-                  const rows = await listChemicals(userId);
-                  setAllRows(rows);
-                } catch (error) {
-                  toast.error(error instanceof Error ? error.message : "Failed to load chemicals.");
-                } finally {
-                  setLoading(false);
-                }
-              })();
-            }}
-          />
-        }
+      <ChemicalCreateDialog
+        companies={companies}
+        onCreated={() => {
+          void (async () => {
+            setLoading(true);
+            try {
+              const rows = await listChemicals(userId);
+              setAllRows(rows);
+            } catch (error) {
+              toast.error(error instanceof Error ? error.message : "Failed to load chemicals.");
+            } finally {
+              setLoading(false);
+            }
+          })();
+        }}
       />
 
       <ChemicalKpis

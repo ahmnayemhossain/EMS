@@ -23,6 +23,8 @@ export function AuditCreateDialog({
   return (
     <CreateActionDialog
       title="Create audit"
+      triggerLabel="Create audit"
+      triggerVariant="floating"
       submitLabel="Create"
       open={open}
       onOpenChange={onOpenChange}

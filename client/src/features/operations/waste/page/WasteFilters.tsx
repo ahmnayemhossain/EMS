@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/primitives/button";
 import { DateRangePickerPlaceholder } from "@/components/forms/DateRangePickerPlaceholder";
 import { FilterBar } from "@/components/forms/FilterBar";
 import { SearchInput } from "@/components/forms/SearchInput";
@@ -34,7 +33,6 @@ export function WasteFilters(props: {
         </div>
       }
       onClear={props.clear}
-      right={<Button variant="outline">Add log</Button>}
     />
   );
 }

@@ -195,7 +195,6 @@ export function ReportsSettingsModule() {
               <RefreshCw className="mr-2 size-4" />
               Refresh
             </Button>
-            <Button size="sm" onClick={() => setCreateOpen(true)}>New report</Button>
           </>
         )}
       />
@@ -211,6 +210,8 @@ export function ReportsSettingsModule() {
 
       <CreateActionDialog
         title="Create report"
+        triggerLabel="Create report"
+        triggerVariant="floating"
         submitLabel="Create"
         open={createOpen}
         onOpenChange={setCreateOpen}

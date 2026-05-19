@@ -13,13 +13,15 @@ export function WasteCreateDialog({
   facilities,
   facilityId,
   onFacilityIdChange,
+  floating,
 }: {
   facilities: Facility[];
   facilityId?: string;
   onFacilityIdChange: (id: string | undefined) => void;
+  floating?: boolean;
 }) {
   return (
-    <CreateActionDialog title="Create waste log">
+    <CreateActionDialog title="Create waste log" triggerLabel="Create waste log" triggerVariant={floating ? "floating" : "default"}>
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="grid gap-1.5">
           <div className="text-muted-foreground text-xs">Company</div>
@@ -80,5 +82,3 @@ export function WasteCreateDialog({
     </CreateActionDialog>
   );
 }
-
-

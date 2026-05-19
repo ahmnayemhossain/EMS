@@ -6,9 +6,13 @@ import { Textarea } from "@/components/ui/primitives/textarea";
 import { CreateActionDialog } from "@/components/layout/primitives/CreateActionDialog";
 import { SelectFilter } from "@/components/forms/SelectFilter";
 
-export function WastewaterCreateDialog() {
+export function WastewaterCreateDialog(props: { floating?: boolean }) {
   return (
-    <CreateActionDialog title="Create lab record">
+    <CreateActionDialog
+      title="Create lab record"
+      triggerLabel="Create lab record"
+      triggerVariant={props.floating ? "floating" : "default"}
+    >
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="grid gap-1.5">
           <div className="text-muted-foreground text-xs">Sample date</div>
@@ -64,5 +68,3 @@ export function WastewaterCreateDialog() {
     </CreateActionDialog>
   );
 }
-
-

@@ -16,7 +16,6 @@ export function UtilityFormFields(props: {
   coverageWarning?: string;
   showValidation?: boolean;
   updateState: <K extends keyof UtilityDialogFormState>(key: K, value: UtilityDialogFormState[K]) => void;
-  generatorDieselKwhPerLiter?: number | null;
 }) {
   return (
     <CreateUtilityForm
@@ -36,7 +35,6 @@ export function UtilityFormFields(props: {
       onCurrentReadingChange={(value) => props.updateState("currentReading", value)}
       onConsumptionInputChange={(value) => props.updateState("consumptionInput", value)}
       onDieselLitersInputChange={(value) => props.updateState("dieselLitersInput", value)}
-      generatorDieselKwhPerLiter={props.generatorDieselKwhPerLiter}
       consumption={props.consumption}
       status={props.status}
       coverageWarning={props.coverageWarning}

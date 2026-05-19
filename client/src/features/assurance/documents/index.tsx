@@ -1,5 +1,4 @@
 import { DataTable } from "@/components/table/DataTable";
-import { PageHeader } from "@/components/layout/primitives/PageHeader";
 
 import { DocumentsActions } from './DocumentsActions';
 import { getDocumentColumns } from './document-columns';
@@ -10,7 +9,7 @@ export function DocumentsPage() {
   const page = useDocumentsPage();
   return (
     <div className="space-y-6">
-      <PageHeader actions={<DocumentsActions />} />
+      <DocumentsActions />
       <DocumentsFilters
         search={page.search}
         setSearch={page.setSearch}

@@ -1,4 +1,5 @@
 import * as React from "react";
+import { createPortal } from "react-dom";
 
 import { Button } from "@/components/ui/primitives/button";
 import {
@@ -11,6 +12,8 @@ import {
 } from "@/components/ui/primitives/dialog";
 import { cn } from "@/components/ui/primitives/utils";
 
+import { FloatingCreateButton } from "./FloatingCreateButton";
+
 export function CreateActionDialog({
   title,
   triggerLabel = "Create",
@@ -22,6 +25,11 @@ export function CreateActionDialog({
   children,
   onCreate,
   submitDisabled,
+  footerStart,
+  triggerVariant = "default",
+  triggerDisabled,
+  triggerIcon,
+  triggerClassName,
 }: {
   title: string;
   triggerLabel?: string;
@@ -33,16 +41,38 @@ export function CreateActionDialog({
   children: React.ReactNode;
   onCreate?: () => void | boolean | Promise<void | boolean>;
   submitDisabled?: boolean;
+  footerStart?: React.ReactNode;
+  triggerVariant?: "default" | "floating";
+  triggerDisabled?: boolean;
+  triggerIcon?: React.ReactNode;
+  triggerClassName?: string;
 }) {
   const [internalOpen, setInternalOpen] = React.useState(false);
   const open = openProp ?? internalOpen;
   const setOpen = onOpenChangeProp ?? setInternalOpen;
+  const floatingTrigger =
+    triggerVariant === "floating" ? (
+      <DialogTrigger asChild>
+        <FloatingCreateButton
+          disabled={triggerDisabled}
+          label={triggerLabel}
+          icon={triggerIcon}
+          className={triggerClassName}
+        />
+      </DialogTrigger>
+    ) : null;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {hideTrigger ? null : (
+      {hideTrigger ? null : triggerVariant === "floating" ? (
+        typeof document === "undefined" ? floatingTrigger : createPortal(floatingTrigger, document.body)
+      ) : (
         <DialogTrigger asChild>
-          <Button>{triggerLabel}</Button>
+          {
+            <Button disabled={triggerDisabled} className={triggerClassName}>
+              {triggerLabel}
+            </Button>
+          }
         </DialogTrigger>
       )}
       <DialogContent
@@ -65,6 +95,7 @@ export function CreateActionDialog({
         >
           <div className="min-h-0 overflow-y-auto px-4 py-4 sm:px-6">{children}</div>
           <DialogFooter className="border-t bg-background px-4 py-3 sm:px-6">
+            {footerStart ? <div className="mr-auto">{footerStart}</div> : null}
             <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={() => setOpen(false)}>
               Cancel
             </Button>

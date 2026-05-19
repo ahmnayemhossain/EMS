@@ -8,7 +8,6 @@ export function useUtilityDialogLogic(
   state: UtilityDialogFormState,
   uomOptions: UtilityUomOption[],
   sourceOptions: UtilitySourceOption[],
-  input?: { generatorDieselKwhPerLiter?: number | null },
 ) {
   const baseConfig = utilityTypeFieldConfig[state.type];
   const filteredSourceOptions = React.useMemo(() => sourceOptions.filter((item) => item.utilityType === state.type), [sourceOptions, state.type]);
@@ -35,19 +34,15 @@ export function useUtilityDialogLogic(
         : "";
   const readingConsumption = typeof previousReading === "number" && !Number.isNaN(previousReading) && typeof currentReading === "number" && !Number.isNaN(currentReading)
     ? currentReading - previousReading : undefined;
-  const generatorFactor = input?.generatorDieselKwhPerLiter ?? null;
-  const dieselConsumption = generatorMode && typeof dieselLiters === "number" && !Number.isNaN(dieselLiters) && dieselLiters > 0 && typeof generatorFactor === "number" && generatorFactor > 0
-    ? dieselLiters * generatorFactor
-    : undefined;
   const hasReadingInput = generatorMode && (state.previousReading.trim() !== "" || state.currentReading.trim() !== "");
-  const hasDieselInput = generatorMode && state.dieselLitersInput.trim() !== "";
   const generatorUsesReading = generatorMode && hasReadingInput;
-  const generatorUsesDiesel = generatorMode && !generatorUsesReading && hasDieselInput;
 
   const config = generatorMode ? { ...baseConfig, allowMeterReading: true } : baseConfig;
-  const effectiveManualConsumption = generatorMode ? dieselConsumption : manualConsumption;
+  const effectiveManualConsumption = manualConsumption;
   const consumption = generatorMode
-    ? (generatorUsesReading ? readingConsumption : generatorUsesDiesel ? dieselConsumption : undefined)
+    ? (typeof readingConsumption === "number" && !Number.isNaN(readingConsumption) && readingConsumption > 0
+        ? readingConsumption
+        : undefined)
     : config.allowMeterReading ? readingConsumption : effectiveManualConsumption;
 
   return {
@@ -61,6 +56,5 @@ export function useUtilityDialogLogic(
     consumption,
     generatorMode,
     generatorUsesReading,
-    generatorUsesDiesel,
   };
 }

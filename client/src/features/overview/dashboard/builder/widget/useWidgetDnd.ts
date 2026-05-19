@@ -56,12 +56,14 @@ export function useWidgetDnd({
         const clientOffset = monitor.getClientOffset();
         if (!rect || !clientOffset) return;
 
-        const hoverMiddleY = (rect.bottom - rect.top) / 2;
+        const hoverHeight = rect.bottom - rect.top;
+        const hoverUpperThreshold = hoverHeight * 0.35;
+        const hoverLowerThreshold = hoverHeight * 0.65;
         const hoverClientY = clientOffset.y - rect.top;
 
         if (sameContainer) {
-          if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
-          if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
+          if (dragIndex < hoverIndex && hoverClientY < hoverLowerThreshold) return;
+          if (dragIndex > hoverIndex && hoverClientY > hoverUpperThreshold) return;
         }
 
         onMove(

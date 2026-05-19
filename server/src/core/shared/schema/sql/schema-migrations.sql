@@ -172,6 +172,39 @@ CREATE TABLE IF NOT EXISTS utility_conversion_rules (
 );
 CREATE INDEX IF NOT EXISTS idx_utility_conversion_rules_key ON utility_conversion_rules(key);
 
+CREATE TABLE IF NOT EXISTS capa_records (
+  id BIGSERIAL PRIMARY KEY,
+  facility_id BIGINT NOT NULL REFERENCES companies(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+  title TEXT NOT NULL,
+  description TEXT,
+  owner_name TEXT NOT NULL,
+  severity TEXT NOT NULL CHECK (severity IN ('minor', 'major', 'critical')),
+  status TEXT NOT NULL CHECK (status IN ('open', 'in_progress', 'pending_verification', 'closed', 'overdue')),
+  due_date DATE NOT NULL,
+  evidence_count INTEGER NOT NULL DEFAULT 0,
+  related_finding_id TEXT,
+  position_index INTEGER NOT NULL DEFAULT 0,
+  is_dismissed SMALLINT NOT NULL DEFAULT 0 CHECK (is_dismissed IN (0, 1)),
+  dismissed_at TIMESTAMPTZ,
+  created_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  updated_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+ALTER TABLE capa_records ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE capa_records ADD COLUMN IF NOT EXISTS owner_name TEXT;
+ALTER TABLE capa_records ADD COLUMN IF NOT EXISTS evidence_count INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE capa_records ADD COLUMN IF NOT EXISTS related_finding_id TEXT;
+ALTER TABLE capa_records ADD COLUMN IF NOT EXISTS position_index INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE capa_records ADD COLUMN IF NOT EXISTS is_dismissed SMALLINT NOT NULL DEFAULT 0 CHECK (is_dismissed IN (0, 1));
+ALTER TABLE capa_records ADD COLUMN IF NOT EXISTS dismissed_at TIMESTAMPTZ;
+ALTER TABLE capa_records ADD COLUMN IF NOT EXISTS created_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE capa_records ADD COLUMN IF NOT EXISTS updated_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE capa_records ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+ALTER TABLE capa_records ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+CREATE INDEX IF NOT EXISTS idx_capa_records_facility_status_position ON capa_records(facility_id, status, position_index);
+CREATE INDEX IF NOT EXISTS idx_capa_records_due_date ON capa_records(due_date);
+
 CREATE TABLE IF NOT EXISTS email_notification_settings (
   id BIGSERIAL PRIMARY KEY,
   key TEXT UNIQUE NOT NULL,

@@ -23,12 +23,19 @@ export function InboxListPane(props: {
       <div className="min-h-0 flex-1 overflow-y-auto pb-3">
         {props.items.length ? (
           props.items.map((item) => (
-            <button
+            <div
               key={item.id}
-              type="button"
+              role="button"
+              tabIndex={0}
               onClick={() => props.onOpenItem(item)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  props.onOpenItem(item);
+                }
+              }}
               className={[
-                "w-full border-b px-4 py-3 text-left transition hover:bg-muted/20",
+                "w-full border-b px-4 py-3 text-left transition hover:bg-muted/20 focus:outline-none focus:ring-2 focus:ring-primary/30",
                 props.selectedId === item.id ? "bg-muted/30" : "",
                 item.flagged ? "border-rose-200 bg-rose-50/80 hover:bg-rose-50 dark:border-rose-900/60 dark:bg-rose-950/30 dark:hover:bg-rose-950/40" : "",
                 !item.flagged && !item.read ? "border-emerald-200 bg-emerald-50/80 hover:bg-emerald-50 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:hover:bg-emerald-950/40" : "",
@@ -63,7 +70,7 @@ export function InboxListPane(props: {
                   </div>
                 </div>
               </div>
-            </button>
+            </div>
           ))
         ) : (
           <div className="px-4 py-10 text-center text-sm text-muted-foreground">No inbox items found.</div>

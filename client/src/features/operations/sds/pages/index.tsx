@@ -1,5 +1,3 @@
-import { PageHeader } from "@/components/layout/primitives/PageHeader";
-
 import { SdsCreateDialog } from "./SdsCreateDialog";
 import { SdsDrawer } from "./SdsDrawer";
 import { SdsEditDialog } from "./SdsEditDialog";
@@ -10,22 +8,18 @@ export function SdsPage() {
   const page = useSdsPage();
   return (
     <div className="space-y-6">
-      <PageHeader
-        actions={
-          <SdsCreateDialog
-            open={page.createOpen}
-            onOpenChange={page.setCreateOpen}
-            createMeta={page.createMeta}
-            setCreateMeta={page.setCreateMeta}
-            createTab={page.createTab}
-            setCreateTab={page.setCreateTab}
-            createDraftBySectionId={page.createDraftBySectionId}
-            setCreateDraftBySectionId={page.setCreateDraftBySectionId}
-            createErrors={page.createErrors}
-            sectionTitleById={page.sectionTitleById}
-            onCreate={page.createRecord}
-          />
-        }
+      <SdsCreateDialog
+        open={page.createOpen}
+        onOpenChange={page.setCreateOpen}
+        createMeta={page.createMeta}
+        setCreateMeta={page.setCreateMeta}
+        createTab={page.createTab}
+        setCreateTab={page.setCreateTab}
+        createDraftBySectionId={page.createDraftBySectionId}
+        setCreateDraftBySectionId={page.setCreateDraftBySectionId}
+        createErrors={page.createErrors}
+        sectionTitleById={page.sectionTitleById}
+        onCreate={page.createRecord}
       />
 
       <SdsListCard

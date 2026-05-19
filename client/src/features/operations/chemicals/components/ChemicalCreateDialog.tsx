@@ -31,6 +31,8 @@ export function ChemicalCreateDialog({
   return (
     <CreateActionDialog
       title="Create chemical"
+      triggerLabel="Create chemical"
+      triggerVariant="floating"
       onCreate={async () => {
         if (!companyId) return toast.error("Company is required."), false;
         if (!supplier.trim()) return toast.error("Supplier is required."), false;

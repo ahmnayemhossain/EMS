@@ -1,74 +1,113 @@
-import type { DataColumn } from "@/components/table/DataTable";
-import type { UtilityRecord } from "@/core/types/models/ems";
+import { Droplets, FileText, Gauge, Zap } from "lucide-react";
 
-import { Button } from "@/components/ui/primitives/button";
-import { Badge } from "@/components/ui/primitives/badge";
+import type { DataColumn } from "@/components/table/DataTable";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
+import { Badge } from "@/components/ui/primitives/badge";
+import type { UtilityRecord } from "@/core/types/models/ems";
 import { formatDate, formatNumber, formatUtilityType } from "@/core/utils/format";
 
-export function getUtilityColumns(getCompanyName: (id: string) => string): Array<DataColumn<UtilityRecord>> {
+export function getUtilityColumns(
+  getCompanyName: (id: string) => string,
+): Array<DataColumn<UtilityRecord>> {
   return [
     {
-      id: "company",
-      header: "Company",
+      id: "primary",
+      header: "Utility",
+      className: "min-w-[360px]",
       cell: (row) => (
-        <div className="min-w-0">
-          <div className="truncate font-medium">{getCompanyName(row.facilityId)}</div>
-          <div className="text-muted-foreground mt-1 text-xs">{row.meterName}</div>
-        </div>
-      ),
-      className: "min-w-[320px]",
-    },
-    {
-      id: "period",
-      header: "Period",
-      cell: (row) => (
-        <div className="text-sm">
-          <div>
-            {formatDate(row.periodStart)} {"\u2192"} {formatDate(row.periodEnd)}
-          </div>
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
-            <span className="text-muted-foreground">
-              {formatUtilityType(row.type)}
-              {row.sourceName ? ` \u2022 ${row.sourceName}` : ""}
-            </span>
+        <div className="min-w-0 space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="truncate text-sm font-semibold">{row.meterName}</span>
             {row.periodMonth ? (
               <Badge className={getMonthBadgeClass(row.periodMonth)}>
                 {formatMonthTag(row.periodMonth)}
               </Badge>
             ) : null}
           </div>
+          <div className="flex flex-wrap items-center gap-2 text-[11px]">
+            <span className="rounded-full bg-muted/60 px-2 py-1 font-medium">
+              {getCompanyName(row.facilityId)}
+            </span>
+            <span className="text-muted-foreground">
+              {formatUtilityType(row.type)}
+              {row.sourceName ? ` • ${row.sourceName}` : ""}
+            </span>
+            {row.meterLocation ? (
+              <span className="text-muted-foreground">{row.meterLocation}</span>
+            ) : null}
+          </div>
         </div>
       ),
-      className: "min-w-[220px]",
     },
     {
-      id: "value",
-      header: "Reading",
+      id: "period",
+      header: "Cycle",
+      className: "min-w-[220px]",
       cell: (row) => (
-        <div className="text-right font-medium tabular-nums">
-          {formatNumber(row.value)} {row.uom}
+        <div className="space-y-2 text-sm">
+          <div className="font-medium">
+            {formatDate(row.periodStart)} → {formatDate(row.periodEnd)}
+          </div>
+          <div className="flex flex-wrap items-center gap-2 text-[11px]">
+            <StatusBadge tone={row.billFiles?.length ? "compliant" : "warning"} className="rounded-full">
+              <FileText className="mr-1 size-3" />
+              {row.billFiles?.length ? "Bill attached" : "Bill missing"}
+            </StatusBadge>
+            {row.monthRecordCount ? (
+              <span className="text-muted-foreground">{row.monthRecordCount} entries</span>
+            ) : null}
+          </div>
         </div>
       ),
-      className: "text-right min-w-[160px]",
+    },
+    {
+      id: "usage",
+      header: "Usage",
+      className: "min-w-[220px]",
+      cell: (row) => (
+        <div className="space-y-2 text-sm">
+          <div className="flex items-center gap-2 font-semibold tabular-nums">
+            <Gauge className="size-3.5 text-muted-foreground" />
+            {formatNumber(row.value)} {row.uom}
+          </div>
+          <div className="flex flex-wrap items-center gap-3 text-[11px]">
+            {typeof row.previousReading === "number" || typeof row.currentReading === "number" ? (
+              <span className="text-muted-foreground">
+                Read: {formatCompactNumber(row.previousReading)} → {formatCompactNumber(row.currentReading)}
+              </span>
+            ) : null}
+            {typeof row.dieselLiters === "number" ? (
+              <span className="inline-flex items-center gap-1 text-muted-foreground">
+                <Droplets className="size-3" />
+                {formatCompactNumber(row.dieselLiters)} L
+              </span>
+            ) : null}
+          </div>
+        </div>
+      ),
     },
     {
       id: "status",
-      header: "Status",
+      header: "Workflow",
+      className: "min-w-[220px]",
       cell: (row) => {
         const { tone, label, detail } = getWorkflowStatus(row);
         return (
-          <div className="flex flex-col items-end gap-1">
-            <StatusBadge tone={tone}>{label}</StatusBadge>
-            {detail ? <div className="text-muted-foreground max-w-[180px] text-right text-[11px] leading-4">{detail}</div> : null}
+          <div className="space-y-2">
+            <StatusBadge tone={tone} className="rounded-full px-2.5 py-1">
+              {label}
+            </StatusBadge>
+            {detail ? (
+              <div className="text-muted-foreground text-[11px] leading-4">{detail}</div>
+            ) : null}
           </div>
         );
       },
-      className: "text-right min-w-[200px]",
     },
     {
       id: "variance",
       header: "Variance",
+      className: "min-w-[150px]",
       cell: (row) => {
         const tone =
           row.varianceFlag === "high"
@@ -77,46 +116,45 @@ export function getUtilityColumns(getCompanyName: (id: string) => string): Array
               ? "warning"
               : "compliant";
         return (
-          <div className="flex justify-end">
-            <StatusBadge tone={tone}>{row.varianceFlag ?? "normal"}</StatusBadge>
+          <div className="space-y-2">
+            <StatusBadge tone={tone} className="rounded-full">
+              <Zap className="mr-1 size-3" />
+              {row.varianceFlag ?? "normal"}
+            </StatusBadge>
+            {typeof row.variancePercent === "number" ? (
+              <div className="text-muted-foreground text-[11px]">
+                {formatNumber(row.variancePercent)}%
+              </div>
+            ) : null}
           </div>
         );
       },
-      className: "text-right min-w-[140px]",
-    },
-    {
-      id: "action",
-      header: "",
-      cell: () => (
-        <div className="text-right">
-          <Button variant="outline" size="sm">
-            View
-          </Button>
-        </div>
-      ),
-      className: "text-right",
     },
   ];
 }
 
 function getWorkflowStatus(row: UtilityRecord) {
   if (row.approvalStatus === "approved") {
-    return { tone: "compliant" as const, label: "Approved", detail: "" };
+    return {
+      tone: "compliant" as const,
+      label: "Approved",
+      detail: row.approvedBy ? `Approved by ${row.approvedBy}` : "",
+    };
   }
   if (row.approvalStatus === "submitted") {
-    return { tone: "info" as const, label: "Pending approval", detail: "" };
+    return { tone: "info" as const, label: "Pending approval", detail: "Waiting for approver review" };
   }
   if (Number(row.missingDaysCount || 0) > 0) {
     return {
       tone: "warning" as const,
-      label: "Missing",
+      label: "Coverage missing",
       detail: formatMissingRanges(row.missingRanges),
     };
   }
   if (row.monthComplete) {
-    return { tone: "info" as const, label: "Ready to submit", detail: "" };
+    return { tone: "info" as const, label: "Ready to submit", detail: "Full month is covered" };
   }
-  return { tone: "neutral" as const, label: "In progress", detail: "" };
+  return { tone: "neutral" as const, label: "In progress", detail: "Month still incomplete" };
 }
 
 function formatMissingRanges(ranges?: Array<{ start: string; end: string }>) {
@@ -134,8 +172,7 @@ function formatMonthTag(periodMonth: string) {
   const [year, month] = periodMonth.split("-");
   const shortMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const monthIndex = Number(month) - 1;
-  const shortYear = String(year || "").slice(-2);
-  return `${shortMonths[monthIndex] || "Mon"} ${shortYear}`;
+  return `${shortMonths[monthIndex] || "Mon"} ${String(year || "").slice(-2)}`;
 }
 
 function getMonthBadgeClass(periodMonth: string) {
@@ -157,3 +194,7 @@ function getMonthBadgeClass(periodMonth: string) {
   return classes[monthIndex];
 }
 
+function formatCompactNumber(value?: number) {
+  if (typeof value !== "number" || Number.isNaN(value)) return "—";
+  return formatNumber(value);
+}

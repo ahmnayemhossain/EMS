@@ -209,6 +209,7 @@ export function MetersSettingsModule() {
         <CreateActionDialog
           title="Create meter"
           triggerLabel="Create meter"
+          triggerVariant="floating"
           submitLabel="Create"
           open={createOpen}
           onOpenChange={(open) => {

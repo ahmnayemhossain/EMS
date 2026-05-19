@@ -1,16 +1,7 @@
 import * as React from "react";
+import { GripHorizontal } from "lucide-react";
 
 import { cn } from "@/components/ui/primitives/utils";
-
-function DotsHandle({ className }: { className?: string }) {
-  return (
-    <div className={cn("grid grid-cols-2 gap-1", className)} aria-hidden="true">
-      {Array.from({ length: 6 }).map((_, idx) => (
-        <span key={idx} className="block size-1.5 rounded-full bg-muted-foreground/70" />
-      ))}
-    </div>
-  );
-}
 
 export function WidgetShell({
   enabled,
@@ -24,24 +15,30 @@ export function WidgetShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className={cn("relative min-w-0 h-full", enabled ? "rounded-xl ring-1 ring-border/60" : undefined)}>
+    <div className={cn("group relative h-full min-w-0", enabled ? "overflow-hidden rounded-[18px] ring-1 ring-border/50 shadow-[0_10px_28px_rgba(15,23,42,0.04)]" : undefined)}>
       {children}
 
       {enabled ? (
-        <div className="pointer-events-none absolute left-2 top-2 z-10 flex items-center gap-1">
+        <div
+          ref={dragHandleRef}
+          role="button"
+          tabIndex={0}
+          aria-label="Drag widget"
+          className={cn(
+            "absolute inset-x-2 top-2 z-10 flex h-8 items-center justify-center rounded-xl",
+            "cursor-grab active:cursor-grabbing touch-none transition",
+            "bg-background/55 text-muted-foreground/80 opacity-100 backdrop-blur-sm",
+            "hover:bg-background/92 hover:text-foreground hover:shadow-sm",
+          )}
+          title={title ? `Drag • ${title}` : "Drag"}
+        >
           <div
-            ref={dragHandleRef}
-            role="button"
-            tabIndex={0}
-            aria-label="Drag widget"
             className={cn(
-              "pointer-events-auto inline-flex size-8 items-center justify-center rounded-md",
-              "bg-transparent text-muted-foreground hover:bg-muted/20",
-              "cursor-grab active:cursor-grabbing touch-none",
+              "inline-flex size-6 items-center justify-center rounded-md",
+              "bg-transparent",
             )}
-            title={title ? `Drag • ${title}` : "Drag"}
           >
-            <DotsHandle />
+            <GripHorizontal className="size-3.5" />
           </div>
         </div>
       ) : null}

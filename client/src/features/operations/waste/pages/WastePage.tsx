@@ -1,5 +1,4 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/primitives/tabs";
-import { PageHeader } from "@/components/layout/primitives/PageHeader";
 
 import { WasteCreateDialog } from "../components/WasteCreateDialog";
 import { WasteKpis } from "../components/WasteKpis";
@@ -12,14 +11,11 @@ export function WastePage() {
   const page = useWastePage();
   return (
     <div className="space-y-6">
-      <PageHeader
-        actions={
-          <WasteCreateDialog
-            facilities={page.facilities}
-            facilityId={page.facilityId}
-            onFacilityIdChange={page.setFacilityId}
-          />
-        }
+      <WasteCreateDialog
+        facilities={page.facilities}
+        facilityId={page.facilityId}
+        onFacilityIdChange={page.setFacilityId}
+        floating
       />
       <WasteKpis
         rowsCount={page.rows.length}

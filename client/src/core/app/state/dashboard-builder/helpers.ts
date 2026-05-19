@@ -15,5 +15,5 @@ export function insertIntoArray(arr: string[], index: number, value: string) {
 }
 
 export function defaultLayout(maxY: number): DashboardGridRect {
-  return { x: 1, y: maxY + 1, w: 12, h: 8 };
+  return { x: 1, y: maxY + 1, w: 6, h: 8 };
 }

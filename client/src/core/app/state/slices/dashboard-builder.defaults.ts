@@ -10,6 +10,8 @@ function makeWidgetId(type: DashboardWidgetType) {
   return `w_${type.replaceAll(":", "_")}`;
 }
 
+export const DASHBOARD_CANVAS_COLS = 6;
+
 const WIDGETS: DashboardWidget[] = [
   { id: makeWidgetId("kpi:readiness"), type: "kpi:readiness", span: 4, rows: 2 },
   { id: makeWidgetId("kpi:openCapa"), type: "kpi:openCapa", span: 4, rows: 2 },
@@ -61,8 +63,8 @@ export const DEFAULT_CONTAINERS: DashboardContainer[] = [
 ];
 
 export const DEFAULT_DASHBOARD_BUILDER_STATE: DashboardBuilderState = {
-  containers: DEFAULT_CONTAINERS,
-  widgetsById: DEFAULT_WIDGETS_BY_ID,
+  containers: [],
+  widgetsById: {},
 };
 
 export function clampSpan(span: number) {
@@ -76,8 +78,8 @@ export function clampRows(rows: number) {
 }
 
 export function clampRect(rect: DashboardGridRect): DashboardGridRect {
-  const w = Math.max(1, Math.min(12, Math.round(rect.w)));
-  const x = Math.max(1, Math.min(12 - w + 1, Math.round(rect.x)));
+  const w = Math.max(1, Math.min(DASHBOARD_CANVAS_COLS, Math.round(rect.w)));
+  const x = Math.max(1, Math.min(DASHBOARD_CANVAS_COLS - w + 1, Math.round(rect.x)));
   const h = Math.max(1, Math.min(48, Math.round(rect.h)));
   const y = Math.max(1, Math.round(rect.y));
   return { x, y, w, h };

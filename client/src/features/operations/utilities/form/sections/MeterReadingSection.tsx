@@ -7,10 +7,7 @@ export function MeterReadingSection({ props, errors }: { props: UtilityFormProps
   const config = utilityTypeFieldConfig[props.type];
   const selectedSourceName = props.sourceOptions.find((source) => source.id === props.sourceId)?.name ?? "";
   const generatorMode = props.type === "electricity" && selectedSourceName.toLowerCase() === "generator";
-  const generatorReadingLocked = generatorMode && props.dieselLitersInput.trim() !== "";
-  const generatorDieselLocked =
-    generatorMode && (props.previousReading.trim() !== "" || props.currentReading.trim() !== "");
-  const readingEnabled = config.allowMeterReading && !generatorReadingLocked;
+  const readingEnabled = config.allowMeterReading;
   const computedKwh = typeof props.consumption === "number" ? String(props.consumption) : "";
   const value = readingEnabled ? computedKwh : props.consumptionInput;
 
@@ -46,9 +43,7 @@ export function MeterReadingSection({ props, errors }: { props: UtilityFormProps
 
         {generatorMode ? (
           <div className="grid min-w-0 gap-1.5 md:col-span-2">
-            <FieldLabel required={!props.previousReading.trim() && !props.currentReading.trim()}>
-              Diesel consumption (L)
-            </FieldLabel>
+            <FieldLabel required>Diesel consumption (L)</FieldLabel>
             <Input
               type="number"
               min={0}
@@ -56,15 +51,8 @@ export function MeterReadingSection({ props, errors }: { props: UtilityFormProps
               value={props.dieselLitersInput}
               onChange={(event) => props.onDieselLitersInputChange(event.target.value)}
               placeholder="0"
-              disabled={generatorDieselLocked}
               aria-invalid={props.showValidation && errors.consumption ? true : undefined}
             />
-            <div className="text-muted-foreground text-xs">
-              Generator source e meter reading ba diesel consumption {"\u2014"} jekono ekta dite parbe. Ekta dile arekta lock hobe.
-            </div>
-            <div className="text-muted-foreground text-xs">
-              kWh = liters {"\u00d7"} {typeof props.generatorDieselKwhPerLiter === "number" ? props.generatorDieselKwhPerLiter : "--"} (set in Settings {"\u2192"} Operations {"\u2192"} Utilities rules)
-            </div>
             <FieldError />
           </div>
         ) : (

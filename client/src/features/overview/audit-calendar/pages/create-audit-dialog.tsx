@@ -24,6 +24,7 @@ export function CreateAuditDialog(props: {
     <CreateActionDialog
       title="Add audit"
       triggerLabel="Add audit"
+      triggerVariant="floating"
       open={props.open}
       onOpenChange={props.onOpenChange}
       submitDisabled={props.createHasConflict}
