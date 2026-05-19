@@ -3,11 +3,13 @@ import { Droplets, FileText, Gauge, Zap } from "lucide-react";
 import type { DataColumn } from "@/components/table/DataTable";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { Badge } from "@/components/ui/primitives/badge";
-import type { UtilityRecord } from "@/core/types/models/ems";
+import type { UtilityApprovalFlow, UtilityRecord } from "@/core/types/models/ems";
 import { formatDate, formatNumber, formatUtilityType } from "@/core/utils/format";
+import { getWorkflowStatus } from "@/features/operations/utilities/hooks/approval-flow";
 
 export function getUtilityColumns(
   getCompanyName: (id: string) => string,
+  approvalFlow?: UtilityApprovalFlow | null,
 ): Array<DataColumn<UtilityRecord>> {
   return [
     {
@@ -91,7 +93,7 @@ export function getUtilityColumns(
       header: "Workflow",
       className: "min-w-[220px]",
       cell: (row) => {
-        const { tone, label, detail } = getWorkflowStatus(row);
+        const { tone, label, detail } = getWorkflowStatus(row, approvalFlow);
         return (
           <div className="space-y-2">
             <StatusBadge tone={tone} className="rounded-full px-2.5 py-1">
@@ -131,41 +133,6 @@ export function getUtilityColumns(
       },
     },
   ];
-}
-
-function getWorkflowStatus(row: UtilityRecord) {
-  if (row.approvalStatus === "approved") {
-    return {
-      tone: "compliant" as const,
-      label: "Approved",
-      detail: row.approvedBy ? `Approved by ${row.approvedBy}` : "",
-    };
-  }
-  if (row.approvalStatus === "submitted") {
-    return { tone: "info" as const, label: "Pending approval", detail: "Waiting for approver review" };
-  }
-  if (Number(row.missingDaysCount || 0) > 0) {
-    return {
-      tone: "warning" as const,
-      label: "Coverage missing",
-      detail: formatMissingRanges(row.missingRanges),
-    };
-  }
-  if (row.monthComplete) {
-    return { tone: "info" as const, label: "Ready to submit", detail: "Full month is covered" };
-  }
-  return { tone: "neutral" as const, label: "In progress", detail: "Month still incomplete" };
-}
-
-function formatMissingRanges(ranges?: Array<{ start: string; end: string }>) {
-  if (!ranges?.length) return "";
-  return ranges
-    .map((range) => {
-      const start = range.start.slice(8, 10);
-      const end = range.end.slice(8, 10);
-      return start === end ? start : `${start}-${end}`;
-    })
-    .join(", ");
 }
 
 function formatMonthTag(periodMonth: string) {

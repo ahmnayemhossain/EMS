@@ -13,7 +13,9 @@ import { updateUtilityRecord } from "./utilities/handlers/update-record.js";
 import { uploadUtilityAttachment } from "./utilities/handlers/upload-attachment.js";
 import { getUtilityConversionRules } from "./utilities/handlers/get-conversion-rules.js";
 import { approveUtilityMonth } from "./utilities/handlers/approve-month.js";
+import { getUtilityApprovalFlow } from "./utilities/handlers/get-approval-flow.js";
 import { submitUtilityMonth } from "./utilities/handlers/submit-month.js";
+import { transitionUtilityMonth } from "./utilities/handlers/transition-month.js";
 
 export const utilitiesRouter = Router();
 
@@ -22,10 +24,12 @@ utilitiesRouter.get("/source-options", requirePermission("utilities:read"), list
 utilitiesRouter.get("/meters", requirePermission("utilities:read"), listUtilityMeters);
 utilitiesRouter.get("/master-data", requirePermission("utilities:read"), listUtilityMasterData);
 utilitiesRouter.get("/conversion-rules", requirePermission("utilities:read"), getUtilityConversionRules);
+utilitiesRouter.get("/approval-flow", requirePermission("utilities:read"), getUtilityApprovalFlow);
 utilitiesRouter.get("/", requirePermission("utilities:read"), listUtilityRecords);
 utilitiesRouter.get("/:id", requirePermission("utilities:read"), getUtilityRecord);
 utilitiesRouter.post("/", requirePermission("utilities:write"), createUtilityRecord);
 utilitiesRouter.put("/:id", requirePermission("utilities:update"), updateUtilityRecord);
+utilitiesRouter.post("/:id/transition-month", requirePermission("utilities:read"), transitionUtilityMonth);
 utilitiesRouter.post("/:id/submit-month", requirePermission("utilities:submit"), submitUtilityMonth);
 utilitiesRouter.post("/:id/approve-month", requirePermission("utilities:approve"), approveUtilityMonth);
 utilitiesRouter.post("/:id/attachment", requirePermission("utilities:update"), uploadUtilityAttachment);

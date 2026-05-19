@@ -20,6 +20,7 @@ export async function seedDefaults() {
   await seedEmailNotificationSettings();
   await seedPermissions();
   await seedRoles();
+  await seedApprovalHierarchy();
   await seedEmployees();
   await upsertDefaultUsers(defaultUsers);
   await assignUserRole("700901", "Admin");
@@ -36,6 +37,107 @@ async function seedPermissions() {
 async function seedRoles() {
   for (const [name, scope, description] of defaultRoles) await query(`INSERT INTO roles (name, scope, description) VALUES ($1, $2, $3) ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name, scope = EXCLUDED.scope, description = EXCLUDED.description`, [name, scope, description]);
   await assignAdminPermissions(defaultPermissions);
+}
+
+async function seedApprovalHierarchy() {
+  const steps = [
+    ["draft", "Draft", 1, 1, 0],
+    ["submitted", "Submitted", 2, 0, 0],
+    ["checked", "Checked", 3, 0, 0],
+    ["recommended", "Recommended", 4, 0, 0],
+    ["approved", "Approved", 5, 0, 0],
+    ["audited", "Audited", 6, 0, 1],
+  ];
+
+  for (const [key, name, sortOrder, isInitial, isFinal] of steps) {
+    await query(
+      `INSERT INTO approval_hierarchy_steps (key, name, sort_order, is_initial, is_final, is_active)
+       VALUES ($1, $2, $3, $4, $5, 1)
+       ON CONFLICT (key) DO UPDATE
+         SET name = EXCLUDED.name,
+             sort_order = EXCLUDED.sort_order,
+             is_initial = EXCLUDED.is_initial,
+             is_final = EXCLUDED.is_final,
+             is_active = EXCLUDED.is_active`,
+      [key, name, sortOrder, isInitial, isFinal],
+    );
+  }
+
+  const transitions = [
+    ["draft_to_submitted", "Draft to submit", "draft", "submitted"],
+    ["submitted_to_draft", "Submit to draft", "submitted", "draft"],
+    ["draft_to_checked", "Draft to check", "draft", "checked"],
+    ["checked_to_draft", "Check to draft", "checked", "draft"],
+    ["submitted_to_checked", "Submit to check", "submitted", "checked"],
+    ["checked_to_submitted", "Check to submit", "checked", "submitted"],
+    ["submitted_to_recommended", "Submit to recommend", "submitted", "recommended"],
+    ["recommended_to_submitted", "Recommend to submit", "recommended", "submitted"],
+    ["draft_to_recommended", "Draft to recommend", "draft", "recommended"],
+    ["recommended_to_draft", "Recommend to draft", "recommended", "draft"],
+    ["checked_to_recommended", "Check to recommend", "checked", "recommended"],
+    ["recommended_to_checked", "Recommend to check", "recommended", "checked"],
+    ["submitted_to_approved", "Submit to approve", "submitted", "approved"],
+    ["approved_to_submitted", "Approve to submit", "approved", "submitted"],
+    ["draft_to_approved", "Draft to approve", "draft", "approved"],
+    ["approved_to_draft", "Approve to draft", "approved", "draft"],
+    ["checked_to_approved", "Check to approve", "checked", "approved"],
+    ["approved_to_checked", "Approve to check", "approved", "checked"],
+    ["recommended_to_approved", "Recommend to approve", "recommended", "approved"],
+    ["approved_to_recommended", "Approve to recommend", "approved", "recommended"],
+    ["approved_to_audited", "Approve to audit", "approved", "audited"],
+  ];
+
+  for (const [key, name, fromStepKey, toStepKey] of transitions) {
+    await query(
+      `INSERT INTO approval_hierarchy_transitions (key, name, from_step_key, to_step_key, is_active)
+       VALUES ($1, $2, $3, $4, 1)
+       ON CONFLICT (key) DO UPDATE
+         SET name = EXCLUDED.name,
+             from_step_key = EXCLUDED.from_step_key,
+             to_step_key = EXCLUDED.to_step_key,
+             is_active = EXCLUDED.is_active`,
+      [key, name, fromStepKey, toStepKey],
+    );
+  }
+
+  await query(
+    `INSERT INTO approval_hierarchy_groups (key, name, module_key, description, is_default, is_active)
+     VALUES ($1, $2, $3, $4, 1, 1)
+     ON CONFLICT (key) DO UPDATE
+       SET name = EXCLUDED.name,
+           module_key = EXCLUDED.module_key,
+           description = EXCLUDED.description,
+           is_default = EXCLUDED.is_default,
+           is_active = EXCLUDED.is_active`,
+    [
+      "utilities_approval_flow",
+      "Utilities approval flow",
+      "utilities",
+      "Default utilities month approval hierarchy.",
+    ],
+  );
+
+  for (let index = 0; index < transitions.length; index += 1) {
+    await query(
+      `INSERT INTO approval_hierarchy_group_transitions (group_key, transition_key, position_index)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (group_key, transition_key) DO UPDATE
+         SET position_index = EXCLUDED.position_index`,
+      ["utilities_approval_flow", transitions[index][0], index + 1],
+    );
+  }
+
+  const adminRoleId = await getIdByName("roles", "Admin");
+  if (adminRoleId) {
+    for (const [transitionKey] of transitions) {
+      await query(
+        `INSERT INTO approval_hierarchy_role_transitions (group_key, role_id, transition_key)
+         VALUES ($1, $2, $3)
+         ON CONFLICT (group_key, role_id, transition_key) DO NOTHING`,
+        ["utilities_approval_flow", adminRoleId, transitionKey],
+      );
+    }
+  }
 }
 
 async function seedEmployees() {

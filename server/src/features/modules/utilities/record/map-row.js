@@ -8,7 +8,7 @@ function toNumber(value) {
 
 export function rowToRecord(row) {
   const missingRanges = Array.isArray(row.missing_ranges) ? row.missing_ranges : [];
-  const approvalStatus = row.approval_status || "pending";
+  const approvalStatus = row.approval_status === "pending" ? "draft" : row.approval_status || "draft";
   return {
     id: Number(row.id),
     facilityId: String(row.facility_id),

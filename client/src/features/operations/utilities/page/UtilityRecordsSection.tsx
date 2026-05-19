@@ -1,13 +1,13 @@
 import { DataTable } from "@/components/table/DataTable";
 import { UtilitiesRecordsMobile } from "@/features/operations/utilities/components/UtilitiesRecordsMobile";
 import type { DataColumn } from "@/components/table/DataTable";
-import type { UtilityRecord } from "@/core/types/models/ems";
+import type { UtilityApprovalFlow, UtilityRecord } from "@/core/types/models/ems";
 
 export function UtilityRecordsSection(props: {
   isMobile: boolean; rows: UtilityRecord[]; loading: boolean; columns: Array<DataColumn<UtilityRecord>>;
-  getCompanyName: (id: string) => string; onSelect: (record: UtilityRecord) => void;
+  getCompanyName: (id: string) => string; onSelect: (record: UtilityRecord) => void; approvalFlow?: UtilityApprovalFlow | null;
 }) {
-  if (props.isMobile) return <UtilitiesRecordsMobile rows={props.rows} getCompanyName={props.getCompanyName} onSelect={props.onSelect} />;
+  if (props.isMobile) return <UtilitiesRecordsMobile rows={props.rows} getCompanyName={props.getCompanyName} onSelect={props.onSelect} approvalFlow={props.approvalFlow} />;
   if (props.loading) return <div className="text-muted-foreground rounded-xl border p-4 text-sm">Loading utility records...</div>;
   return (
     <div className="space-y-3">

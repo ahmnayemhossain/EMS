@@ -3,17 +3,20 @@ import { ChevronRight, Droplets, FileText, Gauge } from "lucide-react";
 import { cn } from "@/components/ui/primitives/utils";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { Badge } from "@/components/ui/primitives/badge";
-import type { UtilityRecord } from "@/core/types/models/ems";
+import type { UtilityApprovalFlow, UtilityRecord } from "@/core/types/models/ems";
 import { formatDate, formatNumber, formatUtilityType } from "@/core/utils/format";
+import { getWorkflowStatus } from "@/features/operations/utilities/hooks/approval-flow";
 
 export function UtilitiesRecordsMobile({
   rows,
   getCompanyName,
   onSelect,
+  approvalFlow,
 }: {
   rows: UtilityRecord[];
   getCompanyName: (id: string) => string;
   onSelect: (row: UtilityRecord) => void;
+  approvalFlow?: UtilityApprovalFlow | null;
 }) {
   return (
     <div className="space-y-3">
@@ -24,7 +27,7 @@ export function UtilitiesRecordsMobile({
       <div className="overflow-hidden rounded-[20px] border border-border/70 bg-card/70 shadow-[0_10px_28px_rgba(15,23,42,0.04)]">
         {rows.length ? (
           rows.map((row) => {
-            const workflow = getWorkflowStatus(row);
+            const workflow = getWorkflowStatus(row, approvalFlow);
 
             return (
               <button
@@ -93,37 +96,6 @@ export function UtilitiesRecordsMobile({
       </div>
     </div>
   );
-}
-
-function getWorkflowStatus(row: UtilityRecord) {
-  if (row.approvalStatus === "approved") {
-    return {
-      tone: "compliant" as const,
-      label: "Approved",
-      detail: row.approvedBy ? `Approved by ${row.approvedBy}` : "",
-    };
-  }
-  if (row.approvalStatus === "submitted") {
-    return { tone: "info" as const, label: "Pending approval", detail: "Waiting for approver review" };
-  }
-  if (Number(row.missingDaysCount || 0) > 0) {
-    return { tone: "warning" as const, label: "Coverage missing", detail: formatMissingRanges(row.missingRanges) };
-  }
-  if (row.monthComplete) {
-    return { tone: "info" as const, label: "Ready to submit", detail: "Full month is covered" };
-  }
-  return { tone: "neutral" as const, label: "In progress", detail: "Month still incomplete" };
-}
-
-function formatMissingRanges(ranges?: Array<{ start: string; end: string }>) {
-  if (!ranges?.length) return "";
-  return ranges
-    .map((range) => {
-      const start = range.start.slice(8, 10);
-      const end = range.end.slice(8, 10);
-      return start === end ? start : `${start}-${end}`;
-    })
-    .join(", ");
 }
 
 function formatMonthTag(periodMonth: string) {

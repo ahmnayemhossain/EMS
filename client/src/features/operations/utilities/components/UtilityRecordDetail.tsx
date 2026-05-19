@@ -1,25 +1,21 @@
+import * as React from "react";
 import { Droplets, FileText, Gauge } from "lucide-react";
 
 import { StatusBadge } from "@/components/feedback/StatusBadge";
-import type { UtilityRecord } from "@/core/types/models/ems";
+import type { UtilityApprovalFlow, UtilityRecord } from "@/core/types/models/ems";
 import { formatDate, formatNumber, formatUtilityType } from "@/core/utils/format";
+import { formatMissingRanges, getStepName, getWorkflowStatus } from "@/features/operations/utilities/hooks/approval-flow";
 
 export function UtilityRecordDetail({
   record,
   companyName,
+  approvalFlow,
 }: {
   record: UtilityRecord;
   companyName: string;
+  approvalFlow?: UtilityApprovalFlow | null;
 }) {
-  const approvalTone =
-    record.approvalStatus === "approved"
-      ? "compliant"
-      : record.approvalStatus === "submitted"
-        ? "info"
-        : Number(record.missingDaysCount || 0) > 0
-          ? "warning"
-          : "neutral";
-
+  const workflow = getWorkflowStatus(record, approvalFlow);
   const varianceTone =
     record.varianceFlag === "high"
       ? "critical"
@@ -41,13 +37,22 @@ export function UtilityRecordDetail({
         subvalue={record.periodMonth ? formatDate(record.periodMonth) : ""}
       />
       <DetailListRow
-        label="Approval"
+        label="Workflow"
         value={
-          <StatusBadge tone={approvalTone} className="rounded-full">
-            {record.approvalStatus || "pending"}
+          <StatusBadge tone={workflow.tone} className="rounded-full">
+            {workflow.label}
           </StatusBadge>
         }
-        subvalue={record.approvedBy ? `Approved by ${record.approvedBy}` : ""}
+        subvalue={
+          record.approvedBy
+            ? `Approved by ${record.approvedBy}`
+            : workflow.detail
+        }
+      />
+      <DetailListRow
+        label="Current step"
+        value={getStepName(approvalFlow, record.approvalStatus)}
+        subvalue={record.approvedAt ? `Updated ${formatDate(record.approvedAt)}` : ""}
       />
       <DetailListRow
         label="Coverage"
@@ -58,7 +63,7 @@ export function UtilityRecordDetail({
         }
         subvalue={
           Number(record.missingDaysCount || 0) > 0
-            ? `${record.missingDaysCount} day(s) missing`
+            ? formatMissingRanges(record.missingRanges)
             : "Full month covered"
         }
       />

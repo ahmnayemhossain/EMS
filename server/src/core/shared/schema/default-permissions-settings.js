@@ -12,6 +12,7 @@ export const settingsPermissions = [
   "settings:meters:read", "settings:meters:write", "settings:meters:update", "settings:meters:delete",
   "settings:suppliers:read", "settings:suppliers:write", "settings:suppliers:update", "settings:suppliers:delete",
   "settings:reports:read", "settings:reports:write", "settings:reports:update", "settings:reports:delete",
+  "settings:hierarchy:read", "settings:hierarchy:write", "settings:hierarchy:update", "settings:hierarchy:delete",
   "settings:utilities-rules:read", "settings:utilities-rules:write", "settings:utilities-rules:update", "settings:utilities-rules:delete",
   "settings:email:read", "settings:email:write", "settings:email:update", "settings:email:delete",
 ];

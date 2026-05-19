@@ -6,6 +6,7 @@ export type SettingsCardKey =
   | "employees" | "users" | "roles" | "departments" | "designations"
   | "uom" | "sources" | "meters" | "suppliers" | "companies"
   | "reports"
+  | "status_relations" | "role_mapping"
   | "utilities_rules"
   | "email" | "complaint_box" | "thresholds" | "approvals";
 

@@ -17,7 +17,11 @@ export function SettingsHomePage() {
     <div className="space-y-6">
       <Tabs value={tab} onValueChange={(value) => setTab(value as SettingsTab)} className="space-y-4">
         <TabsList className="bg-muted/30 grid h-auto w-full grid-cols-2 gap-1 rounded-xl border p-1 sm:w-auto sm:grid-cols-4">
-          {settingsTabs.map((value) => <TabsTrigger key={value} value={value}>{titleCase(value)}</TabsTrigger>)}
+          {settingsTabs.map((value) => (
+            <TabsTrigger key={value} value={value} className={tabTriggerClassName(value)}>
+              {titleCase(value)}
+            </TabsTrigger>
+          ))}
         </TabsList>
         {settingsTabs.map((value) => (
           <TabsContent key={value} value={value} className="m-0">
@@ -34,6 +38,45 @@ export function SettingsHomePage() {
 
 function titleCase(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function tabTriggerClassName(tab: SettingsTab) {
+  switch (tab) {
+    case "system":
+      return [
+        "data-[state=active]:bg-sky-500/12",
+        "data-[state=active]:text-sky-800",
+        "data-[state=active]:border-sky-200",
+        "dark:data-[state=active]:bg-sky-400/20",
+        "dark:data-[state=active]:text-sky-200",
+      ].join(" ");
+    case "operations":
+      return [
+        "data-[state=active]:bg-emerald-500/12",
+        "data-[state=active]:text-emerald-800",
+        "data-[state=active]:border-emerald-200",
+        "dark:data-[state=active]:bg-emerald-400/20",
+        "dark:data-[state=active]:text-emerald-200",
+      ].join(" ");
+    case "compliance":
+      return [
+        "data-[state=active]:bg-amber-500/14",
+        "data-[state=active]:text-amber-900",
+        "data-[state=active]:border-amber-200",
+        "dark:data-[state=active]:bg-amber-400/20",
+        "dark:data-[state=active]:text-amber-200",
+      ].join(" ");
+    case "communications":
+      return [
+        "data-[state=active]:bg-violet-500/12",
+        "data-[state=active]:text-violet-800",
+        "data-[state=active]:border-violet-200",
+        "dark:data-[state=active]:bg-violet-400/20",
+        "dark:data-[state=active]:text-violet-200",
+      ].join(" ");
+    default:
+      return "";
+  }
 }
 
 

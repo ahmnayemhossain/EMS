@@ -1,4 +1,4 @@
-import { Building2, FileSpreadsheet, Gauge, MailCheck, MessagesSquare, Ruler, ShieldCheck, SlidersHorizontal, UserRound, UsersRound, Wrench } from "lucide-react";
+import { Building2, FileSpreadsheet, Gauge, GitBranch, MailCheck, MessagesSquare, Ruler, ShieldCheck, SlidersHorizontal, UserRound, UsersRound, Wrench } from "lucide-react";
 
 import type { SettingsCardDef, SettingsCardKey } from "@/features/admin/settings/home/settings-types";
 
@@ -13,6 +13,8 @@ export const settingsRouteDefs: SettingsRouteDef[] = [
   page("users", "system", "Users", "Application accounts, login identity, and user status.", UserRound, "SettingsUsersPage", () => import("@/features/admin/settings/pages/SettingsUsersPage")),
   page("roles", "system", "Roles", "Permissions by role and company access scope.", ShieldCheck, "SettingsRolesPage", () => import("@/features/admin/settings/pages/SettingsRolesPage")),
   page("reports", "system", "Reports", "Report control: name, description, query, and variables.", FileSpreadsheet, "SettingsReportsPage", () => import("@/features/admin/settings/pages/SettingsReportsPage")),
+  page("status_relations", "compliance", "Status relations", "Page-wise status relation setup for approval flow.", GitBranch, "SettingsStatusRelationsPage", () => import("@/features/admin/settings/pages/SettingsStatusRelationsPage")),
+  page("role_mapping", "compliance", "Role mapping", "Map page-wise status relations to roles.", ShieldCheck, "SettingsRoleMappingPage", () => import("@/features/admin/settings/pages/SettingsRoleMappingPage")),
   page("departments", "system", "Departments", "Standardize departments used across the app.", Building2, "SettingsDepartmentsPage", () => import("@/features/admin/settings/pages/SettingsDepartmentsPage")),
   page("designations", "system", "Designations", "Standardize job titles used for employees.", Wrench, "SettingsDesignationsPage", () => import("@/features/admin/settings/pages/SettingsDesignationsPage")),
   page("companies", "operations", "Companies", "Manage company name, short name, local name, address, and status.", Building2, "SettingsCompaniesPage", () => import("@/features/admin/settings/pages/SettingsCompaniesPage")),

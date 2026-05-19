@@ -119,14 +119,13 @@ export async function syncUtilityMonthlyApproval(input) {
       total_diesel_liters = EXCLUDED.total_diesel_liters,
       uom = EXCLUDED.uom,
       approval_status = CASE
-        WHEN utility_monthly_approvals.approval_status IN ('approved', 'submitted')
-         AND utility_monthly_approvals.coverage_start IS NOT DISTINCT FROM EXCLUDED.coverage_start
+        WHEN utility_monthly_approvals.coverage_start IS NOT DISTINCT FROM EXCLUDED.coverage_start
          AND utility_monthly_approvals.coverage_end IS NOT DISTINCT FROM EXCLUDED.coverage_end
          AND utility_monthly_approvals.record_count = EXCLUDED.record_count
          AND utility_monthly_approvals.total_value = EXCLUDED.total_value
          AND utility_monthly_approvals.missing_days_count = EXCLUDED.missing_days_count
         THEN utility_monthly_approvals.approval_status
-        ELSE 'pending'
+        ELSE 'draft'
       END,
       approved_by_user_id = CASE
         WHEN utility_monthly_approvals.approval_status = 'approved'

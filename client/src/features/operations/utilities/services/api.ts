@@ -1,5 +1,6 @@
 import { authJsonHeaders, parseJsonResponse } from "@/core/app/lib/api";
 import type {
+  UtilityApprovalFlow,
   UtilityMasterMeter,
   UtilityMeterOption,
   UtilityRecord,
@@ -78,6 +79,16 @@ export async function submitUtilityMonth(id: number, userId: string) {
   return parseJsonResponse<UtilityRecord>(response, "Utilities request failed.");
 }
 
+export async function transitionUtilityMonth(id: number, transitionKey: string, userId: string) {
+  const response = await fetch(`${UTILITIES_API}/${id}/transition-month`, {
+    method: "POST",
+    headers: authJsonHeaders(userId),
+    body: JSON.stringify({ transitionKey }),
+  });
+
+  return parseJsonResponse<UtilityRecord>(response, "Utilities request failed.");
+}
+
 export async function deleteUtilityRecord(id: number, userId: string) {
   const response = await fetch(`${UTILITIES_API}/${id}`, {
     method: "DELETE",
@@ -121,6 +132,14 @@ export async function listUtilityMasterMeters(userId: string, input: { companyId
     headers: authJsonHeaders(userId),
   });
   return parseJsonResponse<UtilityMasterMeter[]>(response, "Utilities request failed.");
+}
+
+export async function getUtilityApprovalFlow(userId: string) {
+  const response = await fetch(`${UTILITIES_API}/approval-flow`, {
+    cache: "no-store",
+    headers: authJsonHeaders(userId),
+  });
+  return parseJsonResponse<UtilityApprovalFlow>(response, "Utilities request failed.");
 }
 
 export async function getUtilityConversionRules(userId: string, input: { companyId: string }) {

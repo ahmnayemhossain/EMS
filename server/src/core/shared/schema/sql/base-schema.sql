@@ -224,6 +224,60 @@ CREATE TABLE IF NOT EXISTS email_notification_settings (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS approval_hierarchy_steps (
+  key TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  is_initial SMALLINT NOT NULL DEFAULT 0 CHECK (is_initial IN (0, 1)),
+  is_final SMALLINT NOT NULL DEFAULT 0 CHECK (is_final IN (0, 1)),
+  is_active SMALLINT NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
+  created_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  updated_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS approval_hierarchy_transitions (
+  key TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  from_step_key TEXT NOT NULL REFERENCES approval_hierarchy_steps(key) ON UPDATE CASCADE ON DELETE CASCADE,
+  to_step_key TEXT NOT NULL REFERENCES approval_hierarchy_steps(key) ON UPDATE CASCADE ON DELETE CASCADE,
+  is_active SMALLINT NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
+  created_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  updated_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS approval_hierarchy_groups (
+  key TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  module_key TEXT NOT NULL,
+  description TEXT,
+  is_default SMALLINT NOT NULL DEFAULT 0 CHECK (is_default IN (0, 1)),
+  is_active SMALLINT NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
+  created_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  updated_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS approval_hierarchy_group_transitions (
+  group_key TEXT NOT NULL REFERENCES approval_hierarchy_groups(key) ON UPDATE CASCADE ON DELETE CASCADE,
+  transition_key TEXT NOT NULL REFERENCES approval_hierarchy_transitions(key) ON UPDATE CASCADE ON DELETE CASCADE,
+  position_index INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (group_key, transition_key)
+);
+
+CREATE TABLE IF NOT EXISTS approval_hierarchy_role_transitions (
+  group_key TEXT NOT NULL REFERENCES approval_hierarchy_groups(key) ON UPDATE CASCADE ON DELETE CASCADE,
+  role_id BIGINT NOT NULL REFERENCES roles(id) ON UPDATE CASCADE ON DELETE CASCADE,
+  transition_key TEXT NOT NULL REFERENCES approval_hierarchy_transitions(key) ON UPDATE CASCADE ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (group_key, role_id, transition_key)
+);
+
 CREATE TABLE IF NOT EXISTS role_permissions (
   id BIGSERIAL PRIMARY KEY,
   role_id BIGINT NOT NULL REFERENCES roles(id) ON UPDATE CASCADE ON DELETE CASCADE,
@@ -325,7 +379,7 @@ CREATE TABLE IF NOT EXISTS utility_monthly_approvals (
   total_value NUMERIC NOT NULL DEFAULT 0,
   total_diesel_liters NUMERIC,
   uom TEXT,
-  approval_status TEXT NOT NULL DEFAULT 'pending',
+  approval_status TEXT NOT NULL DEFAULT 'draft',
   approved_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
   approved_at TIMESTAMPTZ,
   created_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
@@ -405,6 +459,9 @@ CREATE INDEX IF NOT EXISTS idx_capa_records_due_date ON capa_records(due_date);
 CREATE INDEX IF NOT EXISTS idx_report_definitions_active ON report_definitions(is_active);
 CREATE INDEX IF NOT EXISTS idx_report_definitions_key ON report_definitions(key);
 CREATE INDEX IF NOT EXISTS idx_email_notification_settings_key ON email_notification_settings(key);
+CREATE INDEX IF NOT EXISTS idx_approval_hierarchy_groups_module ON approval_hierarchy_groups(module_key, is_default, is_active);
+CREATE INDEX IF NOT EXISTS idx_approval_hierarchy_transitions_steps ON approval_hierarchy_transitions(from_step_key, to_step_key);
+CREATE INDEX IF NOT EXISTS idx_approval_hierarchy_role_transitions_role ON approval_hierarchy_role_transitions(role_id, group_key);
 CREATE INDEX IF NOT EXISTS idx_file_assets_entity ON file_assets(module, entity_type, entity_id);
 CREATE INDEX IF NOT EXISTS idx_file_assets_company ON file_assets(company_id);
 CREATE INDEX IF NOT EXISTS idx_utility_records_type ON utility_records(type);

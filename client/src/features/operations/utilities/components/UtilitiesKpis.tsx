@@ -47,7 +47,7 @@ export function UtilitiesKpis({
       <KPIStatCard
         title="Ready for approval"
         value={readyForApprovalCount}
-        helper="Submitted months"
+        helper="Active approval months"
         tone={readyForApprovalCount > 0 ? "warning" : "neutral"}
       />
     </PageKpiGrid>

@@ -241,6 +241,96 @@ ALTER TABLE email_notification_settings ADD COLUMN IF NOT EXISTS created_at TIME
 ALTER TABLE email_notification_settings ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
 CREATE INDEX IF NOT EXISTS idx_email_notification_settings_key ON email_notification_settings(key);
 
+CREATE TABLE IF NOT EXISTS approval_hierarchy_steps (
+  key TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  is_initial SMALLINT NOT NULL DEFAULT 0 CHECK (is_initial IN (0, 1)),
+  is_final SMALLINT NOT NULL DEFAULT 0 CHECK (is_final IN (0, 1)),
+  is_active SMALLINT NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
+  created_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  updated_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+ALTER TABLE approval_hierarchy_steps ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE approval_hierarchy_steps ADD COLUMN IF NOT EXISTS is_initial SMALLINT NOT NULL DEFAULT 0 CHECK (is_initial IN (0, 1));
+ALTER TABLE approval_hierarchy_steps ADD COLUMN IF NOT EXISTS is_final SMALLINT NOT NULL DEFAULT 0 CHECK (is_final IN (0, 1));
+ALTER TABLE approval_hierarchy_steps ADD COLUMN IF NOT EXISTS is_active SMALLINT NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1));
+ALTER TABLE approval_hierarchy_steps ADD COLUMN IF NOT EXISTS created_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE approval_hierarchy_steps ADD COLUMN IF NOT EXISTS updated_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE approval_hierarchy_steps ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+ALTER TABLE approval_hierarchy_steps ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+
+CREATE TABLE IF NOT EXISTS approval_hierarchy_transitions (
+  key TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  from_step_key TEXT NOT NULL REFERENCES approval_hierarchy_steps(key) ON UPDATE CASCADE ON DELETE CASCADE,
+  to_step_key TEXT NOT NULL REFERENCES approval_hierarchy_steps(key) ON UPDATE CASCADE ON DELETE CASCADE,
+  is_active SMALLINT NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
+  created_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  updated_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+ALTER TABLE approval_hierarchy_transitions ADD COLUMN IF NOT EXISTS name TEXT;
+ALTER TABLE approval_hierarchy_transitions ADD COLUMN IF NOT EXISTS from_step_key TEXT REFERENCES approval_hierarchy_steps(key) ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE approval_hierarchy_transitions ADD COLUMN IF NOT EXISTS to_step_key TEXT REFERENCES approval_hierarchy_steps(key) ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE approval_hierarchy_transitions ADD COLUMN IF NOT EXISTS is_active SMALLINT NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1));
+ALTER TABLE approval_hierarchy_transitions ADD COLUMN IF NOT EXISTS created_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE approval_hierarchy_transitions ADD COLUMN IF NOT EXISTS updated_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE approval_hierarchy_transitions ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+ALTER TABLE approval_hierarchy_transitions ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+
+CREATE TABLE IF NOT EXISTS approval_hierarchy_groups (
+  key TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  module_key TEXT NOT NULL,
+  description TEXT,
+  is_default SMALLINT NOT NULL DEFAULT 0 CHECK (is_default IN (0, 1)),
+  is_active SMALLINT NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
+  created_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  updated_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+ALTER TABLE approval_hierarchy_groups ADD COLUMN IF NOT EXISTS module_key TEXT;
+ALTER TABLE approval_hierarchy_groups ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE approval_hierarchy_groups ADD COLUMN IF NOT EXISTS is_default SMALLINT NOT NULL DEFAULT 0 CHECK (is_default IN (0, 1));
+ALTER TABLE approval_hierarchy_groups ADD COLUMN IF NOT EXISTS is_active SMALLINT NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1));
+ALTER TABLE approval_hierarchy_groups ADD COLUMN IF NOT EXISTS created_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE approval_hierarchy_groups ADD COLUMN IF NOT EXISTS updated_by_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE approval_hierarchy_groups ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+ALTER TABLE approval_hierarchy_groups ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+
+CREATE TABLE IF NOT EXISTS approval_hierarchy_group_transitions (
+  group_key TEXT NOT NULL REFERENCES approval_hierarchy_groups(key) ON UPDATE CASCADE ON DELETE CASCADE,
+  transition_key TEXT NOT NULL REFERENCES approval_hierarchy_transitions(key) ON UPDATE CASCADE ON DELETE CASCADE,
+  position_index INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (group_key, transition_key)
+);
+ALTER TABLE approval_hierarchy_group_transitions ADD COLUMN IF NOT EXISTS position_index INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE approval_hierarchy_group_transitions ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+
+CREATE TABLE IF NOT EXISTS approval_hierarchy_role_transitions (
+  group_key TEXT NOT NULL REFERENCES approval_hierarchy_groups(key) ON UPDATE CASCADE ON DELETE CASCADE,
+  role_id BIGINT NOT NULL REFERENCES roles(id) ON UPDATE CASCADE ON DELETE CASCADE,
+  transition_key TEXT NOT NULL REFERENCES approval_hierarchy_transitions(key) ON UPDATE CASCADE ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (group_key, role_id, transition_key)
+);
+ALTER TABLE approval_hierarchy_role_transitions ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+
+ALTER TABLE utility_monthly_approvals ALTER COLUMN approval_status SET DEFAULT 'draft';
+UPDATE utility_monthly_approvals
+SET approval_status = 'draft'
+WHERE approval_status IS NULL OR approval_status = '' OR approval_status = 'pending';
+
+CREATE INDEX IF NOT EXISTS idx_approval_hierarchy_groups_module ON approval_hierarchy_groups(module_key, is_default, is_active);
+CREATE INDEX IF NOT EXISTS idx_approval_hierarchy_transitions_steps ON approval_hierarchy_transitions(from_step_key, to_step_key);
+CREATE INDEX IF NOT EXISTS idx_approval_hierarchy_role_transitions_role ON approval_hierarchy_role_transitions(role_id, group_key);
+
 ALTER TABLE suppliers DROP COLUMN IF EXISTS code;
 ALTER TABLE suppliers ADD COLUMN IF NOT EXISTS created_by_user_id BIGINT;
 ALTER TABLE suppliers ADD COLUMN IF NOT EXISTS updated_by_user_id BIGINT;

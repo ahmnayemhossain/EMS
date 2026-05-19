@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import { auditLogsRouter } from "./audit-logs.js";
+import { approvalHierarchyRouter } from "./approval-hierarchy/index.js";
 import { employeesRouter } from "./employees.js";
 import { companiesRouter } from "./companies.js";
 import { emailSettingsRouter } from "./email-settings.js";
@@ -82,5 +83,6 @@ systemRouter.use("/source-wiring", sourceWiringRouter);
 systemRouter.use("/suppliers", createReferenceSettingsRouter("suppliers"));
 systemRouter.use("/meters", metersRouter);
 systemRouter.use("/report-definitions", reportDefinitionsRouter);
+systemRouter.use("/approval-hierarchy", approvalHierarchyRouter);
 systemRouter.use("/utility-conversion-rules", utilityConversionRulesRouter);
 systemRouter.use("/email-settings", emailSettingsRouter);

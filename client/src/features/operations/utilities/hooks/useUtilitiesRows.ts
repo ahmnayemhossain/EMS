@@ -54,11 +54,11 @@ export function useUtilitiesRows({
       const missingDaysCount = Math.max(
         ...monthRows.map((row) => Number(row.missingDaysCount || 0)),
       );
-      const approvalStatus = monthRows.some((row) => row.approvalStatus === "approved")
-        ? "approved"
-        : monthRows.some((row) => row.approvalStatus === "submitted")
-          ? "submitted"
-          : "pending";
+      const approvalStatus = monthRows.some((row) => row.approvalStatus === "audited")
+        ? "audited"
+        : monthRows.some((row) => row.approvalStatus === "approved")
+          ? "approved"
+          : monthRows.find((row) => row.approvalStatus && row.approvalStatus !== "draft")?.approvalStatus || "draft";
       const monthComplete = monthRows.some((row) => row.monthComplete);
       const missingRanges =
         monthRows.find((row) => (row.missingRanges?.length || 0) > 0)?.missingRanges ?? [];
@@ -79,11 +79,11 @@ export function useUtilitiesRows({
   const readyToSubmitCount = monthSummaries.filter(
     (item) =>
       item.monthComplete &&
-      item.approvalStatus === "pending" &&
+      item.approvalStatus === "draft" &&
       item.missingDaysCount === 0,
   ).length;
   const readyForApprovalCount = monthSummaries.filter(
-    (item) => item.approvalStatus === "submitted",
+    (item) => item.monthComplete && !["draft", "approved", "audited"].includes(item.approvalStatus),
   ).length;
 
   const trackerMonths = new Map<string, string[]>();

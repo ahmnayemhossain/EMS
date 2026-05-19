@@ -40,6 +40,36 @@ export type UtilityMasterMeter = UtilityMeterOption & {
   updatedBy?: string;
 };
 
+export type UtilityApprovalStep = {
+  key: string;
+  name: string;
+  sortOrder: number;
+  isInitial: boolean;
+  isFinal: boolean;
+  isActive: boolean;
+};
+
+export type UtilityApprovalTransition = {
+  key: string;
+  name: string;
+  fromStepKey: string;
+  toStepKey: string;
+  isActive: boolean;
+};
+
+export type UtilityApprovalFlow = {
+  group: {
+    key: string;
+    name: string;
+    moduleKey: string;
+    description: string;
+    isDefault: boolean;
+    isActive: boolean;
+  } | null;
+  steps: UtilityApprovalStep[];
+  transitions: UtilityApprovalTransition[];
+};
+
 export type UtilityRecord = {
   id: number;
   facilityId: ID;
@@ -70,7 +100,7 @@ export type UtilityRecord = {
   status?: "normal" | "watch" | "high" | "alert";
   remarks?: string;
   monthlyApprovalId?: number;
-  approvalStatus?: "pending" | "submitted" | "approved";
+  approvalStatus?: string;
   approvedBy?: string;
   approvedAt?: string;
   coverageStart?: string;
