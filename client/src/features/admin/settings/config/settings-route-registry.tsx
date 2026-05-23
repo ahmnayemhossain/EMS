@@ -1,4 +1,4 @@
-import { Building2, FileSpreadsheet, Gauge, GitBranch, MailCheck, MessagesSquare, Ruler, ShieldCheck, SlidersHorizontal, UserRound, UsersRound, Wrench } from "lucide-react";
+import { Building2, FileSpreadsheet, Gauge, GitBranch, LayoutDashboard, MailCheck, MessagesSquare, Ruler, ShieldCheck, SlidersHorizontal, UserRound, UsersRound, Wrench } from "lucide-react";
 
 import type { SettingsCardDef, SettingsCardKey } from "@/features/admin/settings/home/settings-types";
 
@@ -17,6 +17,7 @@ export const settingsRouteDefs: SettingsRouteDef[] = [
   page("role_mapping", "compliance", "Role mapping", "Map page-wise status relations to roles.", ShieldCheck, "SettingsRoleMappingPage", () => import("@/features/admin/settings/pages/SettingsRoleMappingPage")),
   page("departments", "system", "Departments", "Standardize departments used across the app.", Building2, "SettingsDepartmentsPage", () => import("@/features/admin/settings/pages/SettingsDepartmentsPage")),
   page("designations", "system", "Designations", "Standardize job titles used for employees.", Wrench, "SettingsDesignationsPage", () => import("@/features/admin/settings/pages/SettingsDesignationsPage")),
+  page("dashboard_widgets", "system", "Dashboard widgets", "Manage reusable widgets that can be added to dashboard containers.", LayoutDashboard, "SettingsDashboardWidgetsPage", () => import("@/features/admin/settings/pages/SettingsDashboardWidgetsPage")),
   page("companies", "operations", "Companies", "Manage company name, short name, local name, address, and status.", Building2, "SettingsCompaniesPage", () => import("@/features/admin/settings/pages/SettingsCompaniesPage")),
   page("utilities_rules", "operations", "Utilities rules", "Admin controls for utilities calculations and conversions.", Gauge, "SettingsUtilitiesRulesPage", () => import("@/features/admin/settings/pages/SettingsUtilitiesRulesPage")),
   page("uom", "operations", "Units (UOM)", "Unified units across utilities and operations.", Ruler, "SettingsUomPage", () => import("@/features/admin/settings/pages/SettingsUomPage")),

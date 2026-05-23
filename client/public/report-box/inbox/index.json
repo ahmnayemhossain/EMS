@@ -1,5 +1,14 @@
 [
   {
+    "id": "rpt_1779548182313_52b99f5a6c89e",
+    "createdAt": "2026-05-23T14:56:22.313Z",
+    "companyId": "fac_garments_a",
+    "subject": "bang",
+    "reportFile": "rpt_1779548182313_52b99f5a6c89e.json",
+    "flagged": false,
+    "status": "new"
+  },
+  {
     "id": "rpt_1778738130352_10a816aabd93e",
     "createdAt": "2026-05-14T05:55:30.352Z",
     "companyId": "fac_garments_a",

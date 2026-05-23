@@ -1,4 +1,4 @@
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from 'lucide-react';
 
 import {
   ContextMenu,
@@ -10,14 +10,18 @@ import {
   ContextMenuSubContent,
   ContextMenuSubTrigger,
   ContextMenuTrigger,
-} from "@/components/ui/primitives/context-menu";
-import type { DashboardWidgetType } from "@/core/app/state/slices/dashboard-builder.types";
+} from '@/components/ui/primitives/context-menu';
+import type { DashboardWidgetType } from '@/core/app/state/slices/dashboard-builder.types';
 
-import { WIDGET_PALETTE } from "../config/widgetPalette";
+import {
+  toWidgetPalette,
+  type DashboardWidgetDefinition,
+} from '../config/widgetDefinitions';
 
 export function ContainerContextMenu({
   title,
   collapsed,
+  widgetDefinitions,
   onToggleCollapsed,
   onAddWidget,
   onRemoveContainer,
@@ -25,11 +29,14 @@ export function ContainerContextMenu({
 }: {
   title: string;
   collapsed: boolean;
+  widgetDefinitions: DashboardWidgetDefinition[];
   onToggleCollapsed: () => void;
   onAddWidget: (type: DashboardWidgetType, defaultSpan: number) => void;
   onRemoveContainer: () => void;
   children: React.ReactNode;
 }) {
+  const widgetPalette = toWidgetPalette(widgetDefinitions);
+
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
@@ -37,7 +44,7 @@ export function ContainerContextMenu({
         <ContextMenuLabel>{title}</ContextMenuLabel>
         <ContextMenuSeparator />
         <ContextMenuItem onSelect={onToggleCollapsed}>
-          {collapsed ? "Expand" : "Collapse"}
+          {collapsed ? 'Expand' : 'Collapse'}
         </ContextMenuItem>
         <ContextMenuSub>
           <ContextMenuSubTrigger>
@@ -45,11 +52,27 @@ export function ContainerContextMenu({
             Add widget
           </ContextMenuSubTrigger>
           <ContextMenuSubContent className="w-[260px]">
-            {WIDGET_PALETTE.map((w) => (
-              <ContextMenuItem key={w.type} onSelect={() => onAddWidget(w.type, w.defaultSpan)}>
-                {w.label}
-              </ContextMenuItem>
-            ))}
+            {widgetPalette.length ? (
+              widgetPalette.map((widget) => (
+                <ContextMenuItem
+                  key={widget.type}
+                  asChild
+                  onSelect={() => onAddWidget(widget.type, widget.defaultSpan)}
+                >
+                  <button
+                    type="button"
+                    className="w-full rounded-xl border border-border/70 bg-card p-3 text-left shadow-xs transition hover:border-border hover:shadow-sm"
+                  >
+                    <div className="text-sm font-semibold">{widget.label}</div>
+                    <div className="text-muted-foreground text-xs mt-1">
+                      Preview widget card
+                    </div>
+                  </button>
+                </ContextMenuItem>
+              ))
+            ) : (
+              <ContextMenuItem disabled>No widget configured</ContextMenuItem>
+            )}
           </ContextMenuSubContent>
         </ContextMenuSub>
         <ContextMenuSeparator />
@@ -61,5 +84,3 @@ export function ContainerContextMenu({
     </ContextMenu>
   );
 }
-
-

@@ -66,15 +66,19 @@ export async function deleteRole(id: string, userId: string) {
   return parseSystemResponse<{ ok: true }>(response, "Role delete failed.");
 }
 
-export type SettingsEntityKind = "departments" | "designations" | "uom" | "sources" | "suppliers";
+export type SettingsEntityKind = "departments" | "designations" | "dashboard_widgets" | "uom" | "sources" | "suppliers";
+
+function settingsEntityPath(kind: SettingsEntityKind) {
+  return `${SYSTEM_API}/${kind.replaceAll("_", "-")}`;
+}
 
 export async function listSettingsEntities(kind: SettingsEntityKind, userId: string) {
-  const response = await fetch(`${SYSTEM_API}/${kind}`, { cache: "no-store", headers: createSystemHeaders(userId) });
+  const response = await fetch(settingsEntityPath(kind), { cache: "no-store", headers: createSystemHeaders(userId) });
   return parseSystemResponse<SettingsEntity[]>(response, "Could not load records.");
 }
 
 export async function createSettingsEntity(kind: SettingsEntityKind, item: SettingsEntity, userId: string) {
-  const response = await fetch(`${SYSTEM_API}/${kind}`, {
+  const response = await fetch(settingsEntityPath(kind), {
     method: "POST",
     headers: createSystemHeaders(userId),
     body: JSON.stringify(item),
@@ -83,7 +87,7 @@ export async function createSettingsEntity(kind: SettingsEntityKind, item: Setti
 }
 
 export async function updateSettingsEntity(kind: SettingsEntityKind, item: SettingsEntity, userId: string) {
-  const response = await fetch(`${SYSTEM_API}/${kind}/${item.id}`, {
+  const response = await fetch(`${settingsEntityPath(kind)}/${item.id}`, {
     method: "PUT",
     headers: createSystemHeaders(userId),
     body: JSON.stringify(item),
@@ -92,7 +96,7 @@ export async function updateSettingsEntity(kind: SettingsEntityKind, item: Setti
 }
 
 export async function deleteSettingsEntity(kind: SettingsEntityKind, id: string, userId: string) {
-  const response = await fetch(`${SYSTEM_API}/${kind}/${id}`, {
+  const response = await fetch(`${settingsEntityPath(kind)}/${id}`, {
     method: "DELETE",
     headers: createSystemHeaders(userId),
   });

@@ -59,6 +59,15 @@ ALTER TABLE departments ADD COLUMN IF NOT EXISTS created_by_user_id BIGINT;
 ALTER TABLE departments ADD COLUMN IF NOT EXISTS updated_by_user_id BIGINT;
 ALTER TABLE designations ADD COLUMN IF NOT EXISTS created_by_user_id BIGINT;
 ALTER TABLE designations ADD COLUMN IF NOT EXISTS updated_by_user_id BIGINT;
+CREATE TABLE IF NOT EXISTS dashboard_widgets (
+  id BIGSERIAL PRIMARY KEY,
+  name TEXT UNIQUE NOT NULL,
+  is_active SMALLINT NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
+  created_by_user_id BIGINT,
+  updated_by_user_id BIGINT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 ALTER TABLE uom DROP COLUMN IF EXISTS code;
 ALTER TABLE uom ADD COLUMN IF NOT EXISTS created_by_user_id BIGINT;
 ALTER TABLE uom ADD COLUMN IF NOT EXISTS updated_by_user_id BIGINT;

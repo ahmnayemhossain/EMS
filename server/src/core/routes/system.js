@@ -76,6 +76,7 @@ systemRouter.use("/companies", companiesRouter);
 systemRouter.use("/factories", companiesRouter);
 systemRouter.use("/departments", createReferenceSettingsRouter("departments"));
 systemRouter.use("/designations", createReferenceSettingsRouter("designations"));
+systemRouter.use("/dashboard-widgets", createReferenceSettingsRouter("dashboard_widgets"));
 systemRouter.use("/uom", createReferenceSettingsRouter("uom"));
 systemRouter.use("/uom-wiring", uomWiringRouter);
 systemRouter.use("/sources", createReferenceSettingsRouter("sources"));

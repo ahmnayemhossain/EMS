@@ -1,4 +1,4 @@
-import type { DashboardGridRect } from "../slices/dashboard-builder.types";
+import type { DashboardGridRect } from '../slices/dashboard-builder.types';
 
 export function removeFromArray(arr: string[], value: string) {
   const index = arr.indexOf(value);
@@ -15,5 +15,5 @@ export function insertIntoArray(arr: string[], index: number, value: string) {
 }
 
 export function defaultLayout(maxY: number): DashboardGridRect {
-  return { x: 1, y: maxY + 1, w: 6, h: 8 };
+  return { x: 1, y: maxY + 1, w: 2, h: 8 };
 }

@@ -1,24 +1,22 @@
-import * as React from "react";
+import * as React from 'react';
 
-import { useIsMobile } from "@/components/ui/primitives/use-mobile";
-import { cn } from "@/components/ui/primitives/utils";
-import { useDashboardBuilder } from "@/core/app/state/slices/dashboard-builder";
-import type { DashboardWidget } from "@/core/app/state/slices/dashboard-builder.types";
+import { useIsMobile } from '@/components/ui/primitives/use-mobile';
+import { useDashboardBuilder } from '@/core/app/state/slices/dashboard-builder';
+import type { DashboardWidget } from '@/core/app/state/slices/dashboard-builder.types';
 
-import { DashboardInteractionProvider } from "../config/dashboardInteraction";
-import { DashboardDragLayer } from "./DashboardDragLayer";
-import { DashboardCanvasOverlay } from "./DashboardCanvasOverlay";
-import { DashboardContainerGrid } from "./DashboardContainerGrid";
-import { DASH_GAP, DASH_ROW_HEIGHT } from "../config/builder.constants";
-import { useDashboardCanvasDrop } from "../misc/useDashboardCanvasDrop";
-import type { DashboardWidgetData } from "../config/widgetRegistry";
+import { DASH_GAP, DASH_ROW_HEIGHT } from '../config/builder.constants';
+import { DashboardInteractionProvider } from '../config/dashboardInteraction';
+import type { DashboardWidgetDefinition } from '../config/widgetDefinitions';
+import { useDashboardCanvasDrop } from '../misc/useDashboardCanvasDrop';
+import { DashboardContainerGrid } from './DashboardContainerGrid';
+import { DashboardDragLayer } from './DashboardDragLayer';
 
 export function DashboardBuilder({
   enabled,
-  data,
+  widgetDefinitions,
 }: {
   enabled: boolean;
-  data: DashboardWidgetData;
+  widgetDefinitions: DashboardWidgetDefinition[];
 }) {
   const isMobile = useIsMobile();
   const {
@@ -35,53 +33,59 @@ export function DashboardBuilder({
     removeWidget,
   } = useDashboardBuilder();
 
-  const canvasRef = React.useRef<HTMLDivElement | null>(null);
+  const dashboardRef = React.useRef<HTMLDivElement | null>(null);
+  const showDesktopGrid = !isMobile;
+  const interactive = enabled && showDesktopGrid;
 
   const resolvedContainers = React.useMemo(() => {
-    return containers.map((c) => ({
-      ...c,
-      widgets: c.widgetIds.map((id) => widgetsById[id]).filter(Boolean) as DashboardWidget[],
+    return containers.map((container) => ({
+      ...container,
+      widgets: container.widgetIds
+        .map((id) => widgetsById[id])
+        .filter(Boolean) as DashboardWidget[],
     }));
   }, [containers, widgetsById]);
 
-  const showCanvas = !isMobile;
-  const interactive = enabled && showCanvas;
-  const overlayRows = React.useMemo(() => {
-    const bottoms = containers.map((c) => {
-      const y = c.layout?.y ?? 1;
-      const h = c.layout?.h ?? 8;
+  const minimumHeight = React.useMemo(() => {
+    const bottomEdges = containers.map((container) => {
+      const y = container.layout?.y ?? 1;
+      const h = container.layout?.h ?? 8;
       return y + h - 1;
     });
-    return Math.max(12, ...bottoms, 12);
+    const rows = Math.max(12, ...bottomEdges, 12);
+    return rows * DASH_ROW_HEIGHT + (rows - 1) * DASH_GAP;
   }, [containers]);
 
-  const [, canvasDropRef] = useDashboardCanvasDrop({ interactive, containers, canvasRef, setContainerLayout });
+  const [, bindCanvasDrop] = useDashboardCanvasDrop({
+    interactive,
+    containers,
+    canvasRef: dashboardRef,
+    setContainerLayout,
+  });
 
   return (
     <DashboardInteractionProvider>
       <DashboardDragLayer />
       <div
         ref={(node) => {
-          canvasRef.current = node;
-          canvasDropRef(node);
+          dashboardRef.current = node;
+          bindCanvasDrop(node);
         }}
-        className={cn("relative", showCanvas ? undefined : "space-y-4")}
+        className={
+          showDesktopGrid ? 'relative grid grid-cols-6 gap-3' : 'space-y-3'
+        }
         style={
-          showCanvas
-            ? {
-                minHeight: overlayRows * DASH_ROW_HEIGHT + (overlayRows - 1) * DASH_GAP,
-              }
+          showDesktopGrid
+            ? { minHeight: minimumHeight, gridAutoRows: `${DASH_ROW_HEIGHT}px` }
             : undefined
         }
       >
-        <DashboardCanvasOverlay rows={overlayRows} active={interactive} />
-
         <DashboardContainerGrid
-          showCanvas={showCanvas}
+          showCanvas={showDesktopGrid}
           interactive={interactive}
           resolvedContainers={resolvedContainers}
-          canvasRef={canvasRef}
-          data={data}
+          canvasRef={dashboardRef}
+          widgetDefinitions={widgetDefinitions}
           toggleContainerCollapsed={toggleContainerCollapsed}
           removeContainer={removeContainer}
           setContainerLayout={setContainerLayout}
@@ -96,4 +100,3 @@ export function DashboardBuilder({
     </DashboardInteractionProvider>
   );
 }
-

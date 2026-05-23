@@ -4,6 +4,7 @@ export const settingsPermissions = [
   "settings:roles:read", "settings:roles:write", "settings:roles:update", "settings:roles:delete",
   "settings:departments:read", "settings:departments:write", "settings:departments:update", "settings:departments:delete",
   "settings:designations:read", "settings:designations:write", "settings:designations:update", "settings:designations:delete",
+  "settings:dashboard_widgets:read", "settings:dashboard_widgets:write", "settings:dashboard_widgets:update", "settings:dashboard_widgets:delete",
   "settings:companies:read", "settings:companies:write", "settings:companies:update", "settings:companies:delete",
   "settings:uom:read", "settings:uom:write", "settings:uom:update", "settings:uom:delete",
   "settings:uom-wiring:read", "settings:uom-wiring:write", "settings:uom-wiring:update", "settings:uom-wiring:delete",
