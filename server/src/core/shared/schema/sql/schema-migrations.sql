@@ -62,12 +62,22 @@ ALTER TABLE designations ADD COLUMN IF NOT EXISTS updated_by_user_id BIGINT;
 CREATE TABLE IF NOT EXISTS dashboard_widgets (
   id BIGSERIAL PRIMARY KEY,
   name TEXT UNIQUE NOT NULL,
+  template_key TEXT NOT NULL,
+  description TEXT,
+  default_span INTEGER NOT NULL DEFAULT 6 CHECK (default_span BETWEEN 1 AND 6),
+  default_rows INTEGER NOT NULL DEFAULT 3 CHECK (default_rows BETWEEN 1 AND 12),
   is_active SMALLINT NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
   created_by_user_id BIGINT,
   updated_by_user_id BIGINT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+ALTER TABLE dashboard_widgets ADD COLUMN IF NOT EXISTS template_key TEXT;
+ALTER TABLE dashboard_widgets ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE dashboard_widgets ADD COLUMN IF NOT EXISTS default_span INTEGER NOT NULL DEFAULT 6;
+ALTER TABLE dashboard_widgets ADD COLUMN IF NOT EXISTS default_rows INTEGER NOT NULL DEFAULT 3;
+UPDATE dashboard_widgets SET template_key = COALESCE(NULLIF(template_key, ''), 'utility_overview');
+ALTER TABLE dashboard_widgets ALTER COLUMN template_key SET NOT NULL;
 ALTER TABLE uom DROP COLUMN IF EXISTS code;
 ALTER TABLE uom ADD COLUMN IF NOT EXISTS created_by_user_id BIGINT;
 ALTER TABLE uom ADD COLUMN IF NOT EXISTS updated_by_user_id BIGINT;

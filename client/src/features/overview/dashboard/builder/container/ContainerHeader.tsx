@@ -38,7 +38,11 @@ export function ContainerHeader({
   title: string;
   widgetDefinitions: DashboardWidgetDefinition[];
   dragHandleRef?: (node: HTMLDivElement | null) => void;
-  onAddWidget: (type: DashboardWidget['type'], defaultSpan: number) => void;
+  onAddWidget: (
+    type: DashboardWidget['type'],
+    defaultSpan: number,
+    defaultRows: number,
+  ) => void;
   onToggleCollapsed: () => void;
   onRename: (title: string) => void;
 }) {
@@ -165,7 +169,11 @@ export function ContainerHeader({
                     key={widget.type}
                     asChild
                     onSelect={() =>
-                      onAddWidget(widget.type, widget.defaultSpan)
+                      onAddWidget(
+                        widget.type,
+                        widget.defaultSpan,
+                        widget.defaultRows,
+                      )
                     }
                   >
                     <button
@@ -174,7 +182,7 @@ export function ContainerHeader({
                     >
                       <div>{widget.label}</div>
                       <div className="text-muted-foreground text-xs mt-1">
-                        Preview widget card
+                        {widget.description}
                       </div>
                     </button>
                   </DropdownMenuItem>

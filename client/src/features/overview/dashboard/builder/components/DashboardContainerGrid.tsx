@@ -6,6 +6,7 @@ import type {
   DashboardWidget,
   DashboardWidgetLocation,
 } from '@/core/app/state/slices/dashboard-builder.types';
+import type { DashboardWidgetData } from '../../services/useDashboardWidgetData';
 import { makeWidgetId } from '../config/builder.constants';
 import type { DashboardWidgetDefinition } from '../config/widgetDefinitions';
 import { ContainerItem } from '../container/ContainerItem';
@@ -16,6 +17,7 @@ export function DashboardContainerGrid({
   resolvedContainers,
   canvasRef,
   widgetDefinitions,
+  widgetData,
   toggleContainerCollapsed,
   removeContainer,
   setContainerLayout,
@@ -36,17 +38,19 @@ export function DashboardContainerGrid({
           enabled={interactive}
           canvasRef={canvasRef}
           widgetDefinitions={widgetDefinitions}
+          widgetData={widgetData}
           onToggleCollapsed={() => toggleContainerCollapsed(container.id)}
           onRemoveContainer={() => removeContainer(container.id)}
           onSetContainerLayout={(layout) =>
             setContainerLayout(container.id, layout)
           }
           onRename={(title) => setContainerTitle(container.id, title)}
-          onAddWidget={(type, defaultSpan) =>
+          onAddWidget={(type, defaultSpan, defaultRows) =>
             addWidgetToContainer(container.id, {
               id: makeWidgetId(),
               type,
               span: defaultSpan,
+              rows: defaultRows,
             })
           }
           onMoveWidget={moveWidget}
@@ -67,13 +71,14 @@ type DashboardContainerGridProps = {
   >;
   canvasRef: React.RefObject<HTMLDivElement | null>;
   widgetDefinitions: DashboardWidgetDefinition[];
+  widgetData: DashboardWidgetData;
   toggleContainerCollapsed: (id: string) => void;
   removeContainer: (id: string) => void;
   setContainerLayout: (id: string, layout: DashboardGridRect) => void;
   setContainerTitle: (id: string, title: string) => void;
   addWidgetToContainer: (
     id: string,
-    widget: { id: string; type: string; span: number },
+    widget: { id: string; type: string; span: number; rows: number },
   ) => void;
   moveWidget: (
     widgetId: string,

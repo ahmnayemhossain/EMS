@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router";
 
 import { Button } from "@/components/ui/primitives/button";
-import { ReferenceSettingsModule } from "@/features/admin/settings/modules/screens/ReferenceSettingsModule";
+import { DashboardWidgetsModule } from "@/features/admin/settings/modules/screens/DashboardWidgetsModule";
 
 export function SettingsDashboardWidgetsPage() {
   const navigate = useNavigate();
@@ -15,12 +15,7 @@ export function SettingsDashboardWidgetsPage() {
           Settings
         </Button>
       </div>
-      <ReferenceSettingsModule
-        kind="dashboard_widgets"
-        title="Dashboard widgets"
-        noun="Dashboard widget"
-        description="Create reusable widget definitions that users can add into dashboard containers."
-      />
+      <DashboardWidgetsModule />
     </div>
   );
 }

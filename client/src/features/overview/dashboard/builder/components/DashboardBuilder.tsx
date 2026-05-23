@@ -8,15 +8,18 @@ import { DASH_GAP, DASH_ROW_HEIGHT } from '../config/builder.constants';
 import { DashboardInteractionProvider } from '../config/dashboardInteraction';
 import type { DashboardWidgetDefinition } from '../config/widgetDefinitions';
 import { useDashboardCanvasDrop } from '../misc/useDashboardCanvasDrop';
+import type { DashboardWidgetData } from '../../services/useDashboardWidgetData';
 import { DashboardContainerGrid } from './DashboardContainerGrid';
 import { DashboardDragLayer } from './DashboardDragLayer';
 
 export function DashboardBuilder({
   enabled,
   widgetDefinitions,
+  widgetData,
 }: {
   enabled: boolean;
   widgetDefinitions: DashboardWidgetDefinition[];
+  widgetData: DashboardWidgetData;
 }) {
   const isMobile = useIsMobile();
   const {
@@ -86,6 +89,7 @@ export function DashboardBuilder({
           resolvedContainers={resolvedContainers}
           canvasRef={dashboardRef}
           widgetDefinitions={widgetDefinitions}
+          widgetData={widgetData}
           toggleContainerCollapsed={toggleContainerCollapsed}
           removeContainer={removeContainer}
           setContainerLayout={setContainerLayout}

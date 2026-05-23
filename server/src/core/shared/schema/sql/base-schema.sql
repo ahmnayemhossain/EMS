@@ -30,6 +30,10 @@ CREATE TABLE IF NOT EXISTS designations (
 CREATE TABLE IF NOT EXISTS dashboard_widgets (
   id BIGSERIAL PRIMARY KEY,
   name TEXT UNIQUE NOT NULL,
+  template_key TEXT NOT NULL,
+  description TEXT,
+  default_span INTEGER NOT NULL DEFAULT 6 CHECK (default_span BETWEEN 1 AND 6),
+  default_rows INTEGER NOT NULL DEFAULT 3 CHECK (default_rows BETWEEN 1 AND 12),
   is_active SMALLINT NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
   created_by_user_id BIGINT,
   updated_by_user_id BIGINT,

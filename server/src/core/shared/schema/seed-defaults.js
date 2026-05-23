@@ -16,6 +16,7 @@ export async function seedDefaults() {
   await insertWiring("source_wiring", "utility_type_id", "sources", "source_id", defaultSourceWiring);
   await seedMeters();
   await seedUtilityConversionRules();
+  await seedDashboardWidgets();
   await seedReportDefinitions();
   await seedEmailNotificationSettings();
   await seedPermissions();
@@ -159,6 +160,60 @@ async function seedMeters() {
     await query(
       `INSERT INTO meters (name, code, location, company_id, utility_type_id, source_id, uom_id, is_active) VALUES ($1,$2,$3,$4,$5,$6,$7,1) ON CONFLICT (company_id, utility_type_id, name) DO NOTHING`,
       [meterName, code || null, location || null, companyId, utilityTypeId, sourceId, uomId],
+    );
+  }
+}
+
+async function seedDashboardWidgets() {
+  const defaults = [
+    [
+      "Utility overview",
+      "utility_overview",
+      "Quick monthly utility totals and coverage state.",
+      6,
+      3,
+    ],
+    [
+      "Utility trend",
+      "utility_trend",
+      "Rolling electricity trend from saved utility records.",
+      6,
+      4,
+    ],
+    [
+      "Utility approval queue",
+      "utility_approval_queue",
+      "Draft, pending, approved, and audited month counts.",
+      6,
+      3,
+    ],
+    [
+      "Company snapshot",
+      "company_snapshot",
+      "Active company count and short-name list.",
+      6,
+      3,
+    ],
+    [
+      "Audit calendar",
+      "audit_calendar",
+      "Current month audit calendar view.",
+      6,
+      4,
+    ],
+  ];
+
+  for (const [name, templateKey, description, defaultSpan, defaultRows] of defaults) {
+    await query(
+      `INSERT INTO dashboard_widgets (name, template_key, description, default_span, default_rows, is_active)
+       VALUES ($1, $2, $3, $4, $5, 1)
+       ON CONFLICT (name) DO UPDATE
+         SET template_key = EXCLUDED.template_key,
+             description = EXCLUDED.description,
+             default_span = EXCLUDED.default_span,
+             default_rows = EXCLUDED.default_rows,
+             is_active = EXCLUDED.is_active`,
+      [name, templateKey, description, defaultSpan, defaultRows],
     );
   }
 }

@@ -5,11 +5,13 @@ import { cn } from '@/components/ui/primitives/utils';
 export function WidgetShell({
   enabled,
   dragHandleRef,
+  onResizePointerDown,
   title,
   children,
 }: {
   enabled: boolean;
   dragHandleRef: (node: HTMLDivElement | null) => void;
+  onResizePointerDown?: (event: React.PointerEvent<HTMLDivElement>) => void;
   title?: string;
   children: React.ReactNode;
 }) {
@@ -39,6 +41,24 @@ export function WidgetShell({
           title={title ? `Drag • ${title}` : 'Drag'}
         >
           <span className="sr-only">Drag widget</span>
+        </div>
+      ) : null}
+
+      {enabled ? (
+        <div
+          role="button"
+          tabIndex={0}
+          aria-label="Resize widget height"
+          onPointerDown={onResizePointerDown}
+          className={cn(
+            'absolute inset-x-3 bottom-1 z-10 h-2 rounded-full',
+            'cursor-ns-resize touch-none transition',
+            'bg-border/0 opacity-0 group-hover:opacity-100',
+            'hover:bg-border/60',
+          )}
+          title={title ? `Resize • ${title}` : 'Resize'}
+        >
+          <span className="sr-only">Resize widget</span>
         </div>
       ) : null}
     </div>

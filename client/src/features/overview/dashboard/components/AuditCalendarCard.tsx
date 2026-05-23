@@ -15,7 +15,6 @@ export function AuditCalendarCard({
     <Card className={cn("shadow-xs min-w-0", className)}>
       <CardContent className="pt-6">
         <div className="text-sm font-semibold">Audit calendar</div>
-        <div className="text-muted-foreground mt-1 text-sm">Placeholder widget</div>
         <div className="mt-4">
           <Calendar mode="single" selected={selectedDate} />
         </div>

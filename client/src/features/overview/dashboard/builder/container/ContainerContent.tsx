@@ -10,6 +10,7 @@ import {
   toWidgetPalette,
   type DashboardWidgetDefinition,
 } from '../config/widgetDefinitions';
+import type { DashboardWidgetData } from '../../services/useDashboardWidgetData';
 import { WidgetItem } from '../widget/WidgetItem';
 import { useContainerWidgetDrop } from './useContainerWidgetDrop';
 
@@ -21,6 +22,7 @@ export function ContainerContent(props: {
   widgets: DashboardWidget[];
   enabled: boolean;
   widgetDefinitions: DashboardWidgetDefinition[];
+  widgetData: DashboardWidgetData;
   onMoveWidget: (
     widgetId: string,
     from: { containerId: string; index: number },
@@ -29,7 +31,11 @@ export function ContainerContent(props: {
   onSpanChange: (widgetId: string, span: number) => void;
   onRowsChange: (widgetId: string, rows: number) => void;
   onRemoveWidget: (widgetId: string) => void;
-  onAddWidget: (type: DashboardWidget['type'], defaultSpan: number) => void;
+  onAddWidget: (
+    type: DashboardWidget['type'],
+    defaultSpan: number,
+    defaultRows: number,
+  ) => void;
 }) {
   const isMobile = useIsMobile();
   const gridRef = React.useRef<HTMLDivElement | null>(null);
@@ -46,7 +52,7 @@ export function ContainerContent(props: {
 
   const bindDropRef =
     widgetDropRef as unknown as React.RefCallback<HTMLDivElement>;
-  const minimumRows = 4;
+  const minimumRows = props.widgets.length ? 1 : 4;
   const minimumHeight =
     minimumRows * WIDGET_ROW_HEIGHT + (minimumRows - 1) * WIDGET_GAP;
 
@@ -57,7 +63,6 @@ export function ContainerContent(props: {
           ref={gridRef}
           className="grid grid-cols-6 gap-3"
           style={{
-            minHeight: minimumHeight,
             gridAutoRows: `${WIDGET_ROW_HEIGHT}px`,
           }}
         >
@@ -74,7 +79,7 @@ export function ContainerContent(props: {
               minSpan={6}
               maxSpan={6}
               minRows={1}
-              maxRows={6}
+              maxRows={12}
               title={
                 props.widgetDefinitions.find(
                   (definition) => definition.id === widget.type,
@@ -85,7 +90,11 @@ export function ContainerContent(props: {
               onRowsChange={(rows) => props.onRowsChange(widget.id, rows)}
               onRemove={() => props.onRemoveWidget(widget.id)}
             >
-              {renderDashboardWidget(widget.type, props.widgetDefinitions)}
+              {renderDashboardWidget(
+                widget.type,
+                props.widgetDefinitions,
+                props.widgetData,
+              )}
             </WidgetItem>
           ))}
         </div>
@@ -113,13 +122,17 @@ export function ContainerContent(props: {
                     key={widget.type}
                     type="button"
                     onClick={() =>
-                      props.onAddWidget(widget.type, widget.defaultSpan)
+                      props.onAddWidget(
+                        widget.type,
+                        widget.defaultSpan,
+                        widget.defaultRows,
+                      )
                     }
                     className="overflow-hidden rounded-xl border border-border/70 bg-card p-3 text-left shadow-xs transition hover:border-border hover:shadow-sm"
                   >
                     <div className="text-sm font-semibold">{widget.label}</div>
                     <div className="text-muted-foreground text-xs mt-1">
-                      Preview widget card
+                      {widget.description}
                     </div>
                   </button>
                 ))}

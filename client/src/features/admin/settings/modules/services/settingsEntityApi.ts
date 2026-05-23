@@ -66,7 +66,7 @@ export async function deleteRole(id: string, userId: string) {
   return parseSystemResponse<{ ok: true }>(response, "Role delete failed.");
 }
 
-export type SettingsEntityKind = "departments" | "designations" | "dashboard_widgets" | "uom" | "sources" | "suppliers";
+export type SettingsEntityKind = "departments" | "designations" | "uom" | "sources" | "suppliers";
 
 function settingsEntityPath(kind: SettingsEntityKind) {
   return `${SYSTEM_API}/${kind.replaceAll("_", "-")}`;

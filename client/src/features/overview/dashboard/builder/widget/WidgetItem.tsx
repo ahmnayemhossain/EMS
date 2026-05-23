@@ -4,6 +4,7 @@ import { cn } from '@/components/ui/primitives/utils';
 
 import { useDashboardInteraction } from '../config/dashboardInteraction';
 import { useWidgetDnd } from './useWidgetDnd';
+import { useWidgetResize } from './useWidgetResize';
 import { clamp } from './widget-helpers';
 import { WidgetContextMenu } from './WidgetContextMenu';
 import { WidgetShell } from './WidgetShell';
@@ -50,11 +51,28 @@ export function WidgetItem(props: {
     canDrag: true,
     onMove: props.onMove,
   });
+  const { isResizing, startResize } = useWidgetResize({
+    enabled: props.enabled,
+    gridRef: props.gridRef,
+    span: clampedSpan,
+    rows: clampedRows,
+    minSpan: props.minSpan ?? 1,
+    maxSpan: props.maxSpan ?? 12,
+    minRows: props.minRows ?? 1,
+    maxRows: props.maxRows ?? 24,
+    onSpanChange: props.onSpanChange,
+    onRowsChange: props.onRowsChange,
+  });
   React.useEffect(() => {
     if (!props.enabled || !isDragging) return;
     interaction.start();
     return () => interaction.end();
   }, [interaction, isDragging, props.enabled]);
+  React.useEffect(() => {
+    if (!props.enabled || !isResizing) return;
+    interaction.start();
+    return () => interaction.end();
+  }, [interaction, isResizing, props.enabled]);
 
   const body = (
     <div
@@ -72,6 +90,7 @@ export function WidgetItem(props: {
         enabled={props.enabled}
         title={props.title}
         dragHandleRef={dragRef}
+        onResizePointerDown={startResize('y')}
       >
         {props.children}
       </WidgetShell>

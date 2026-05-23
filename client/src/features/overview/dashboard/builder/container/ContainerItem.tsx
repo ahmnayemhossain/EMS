@@ -11,6 +11,7 @@ import type {
 
 import { useDashboardInteraction } from '../config/dashboardInteraction';
 import type { DashboardWidgetDefinition } from '../config/widgetDefinitions';
+import type { DashboardWidgetData } from '../../services/useDashboardWidgetData';
 import { clampRect } from './constants';
 import { ContainerContent } from './ContainerContent';
 import { ContainerContextMenu } from './ContainerContextMenu';
@@ -24,11 +25,16 @@ export function ContainerItem(props: {
   enabled: boolean;
   canvasRef: React.RefObject<HTMLDivElement | null>;
   widgetDefinitions: DashboardWidgetDefinition[];
+  widgetData: DashboardWidgetData;
   onSetContainerLayout: (layout: DashboardGridRect) => void;
   onToggleCollapsed: () => void;
   onRename: (title: string) => void;
   onRemoveContainer: () => void;
-  onAddWidget: (type: DashboardWidget['type'], defaultSpan: number) => void;
+  onAddWidget: (
+    type: DashboardWidget['type'],
+    defaultSpan: number,
+    defaultRows: number,
+  ) => void;
   onMoveWidget: (
     widgetId: string,
     from: { containerId: string; index: number },
@@ -72,11 +78,19 @@ export function ContainerItem(props: {
     (sum, widget) => sum + (widget.rows ?? 1),
     0,
   );
-  const desiredHeight = collapsed ? 1 : Math.max(6, totalWidgetRows + 3);
+  const desiredHeight = collapsed
+    ? 1
+    : props.widgets.length
+      ? Math.max(3, totalWidgetRows + 1)
+      : 4;
 
   const handleAddWidget = React.useCallback(
-    (type: DashboardWidget['type'], _defaultSpan: number) => {
-      props.onAddWidget(type, 6);
+    (
+      type: DashboardWidget['type'],
+      defaultSpan: number,
+      defaultRows: number,
+    ) => {
+      props.onAddWidget(type, defaultSpan || 6, defaultRows || 3);
     },
     [props.onAddWidget],
   );
@@ -88,7 +102,7 @@ export function ContainerItem(props: {
         h: desiredHeight,
       });
     }
-  }, [layout, layout.h, desiredHeight, props.onSetContainerLayout]);
+  }, [layout, desiredHeight, props.onSetContainerLayout]);
 
   return (
     <ContainerContextMenu
@@ -132,6 +146,7 @@ export function ContainerItem(props: {
                 widgets={props.widgets}
                 enabled={props.enabled}
                 widgetDefinitions={props.widgetDefinitions}
+                widgetData={props.widgetData}
                 onMoveWidget={props.onMoveWidget}
                 onSpanChange={props.onSpanChange}
                 onRowsChange={props.onRowsChange}

@@ -31,7 +31,11 @@ export function ContainerContextMenu({
   collapsed: boolean;
   widgetDefinitions: DashboardWidgetDefinition[];
   onToggleCollapsed: () => void;
-  onAddWidget: (type: DashboardWidgetType, defaultSpan: number) => void;
+  onAddWidget: (
+    type: DashboardWidgetType,
+    defaultSpan: number,
+    defaultRows: number,
+  ) => void;
   onRemoveContainer: () => void;
   children: React.ReactNode;
 }) {
@@ -57,7 +61,13 @@ export function ContainerContextMenu({
                 <ContextMenuItem
                   key={widget.type}
                   asChild
-                  onSelect={() => onAddWidget(widget.type, widget.defaultSpan)}
+                  onSelect={() =>
+                    onAddWidget(
+                      widget.type,
+                      widget.defaultSpan,
+                      widget.defaultRows,
+                    )
+                  }
                 >
                   <button
                     type="button"
@@ -65,7 +75,7 @@ export function ContainerContextMenu({
                   >
                     <div className="text-sm font-semibold">{widget.label}</div>
                     <div className="text-muted-foreground text-xs mt-1">
-                      Preview widget card
+                      {widget.description}
                     </div>
                   </button>
                 </ContextMenuItem>
