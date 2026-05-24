@@ -56,6 +56,7 @@ export function ensureApprovalGroup(config: ApprovalHierarchyConfig, option: App
     description: option.description,
     isDefault: false,
     isActive: true,
+    stepKeys: [],
     transitionKeys: [],
   };
 

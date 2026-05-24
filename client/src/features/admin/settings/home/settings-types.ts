@@ -7,6 +7,9 @@ export type SettingsCardKey =
   | "dashboard_widgets"
   | "uom" | "sources" | "meters" | "suppliers" | "companies"
   | "reports"
+  | "status_store"
+  | "page_wise_status"
+  | "role_wise_status" | "user_wise_status"
   | "status_relations" | "role_mapping"
   | "utilities_rules"
   | "email" | "complaint_box" | "thresholds" | "approvals";
@@ -19,4 +22,5 @@ export type SettingsCardDef = {
   icon: LucideIcon;
   openAs: "page" | "drawer";
   to?: string;
+  hidden?: boolean;
 };

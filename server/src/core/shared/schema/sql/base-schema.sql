@@ -276,6 +276,14 @@ CREATE TABLE IF NOT EXISTS approval_hierarchy_groups (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS approval_hierarchy_group_steps (
+  group_key TEXT NOT NULL REFERENCES approval_hierarchy_groups(key) ON UPDATE CASCADE ON DELETE CASCADE,
+  step_key TEXT NOT NULL REFERENCES approval_hierarchy_steps(key) ON UPDATE CASCADE ON DELETE CASCADE,
+  position_index INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (group_key, step_key)
+);
+
 CREATE TABLE IF NOT EXISTS approval_hierarchy_group_transitions (
   group_key TEXT NOT NULL REFERENCES approval_hierarchy_groups(key) ON UPDATE CASCADE ON DELETE CASCADE,
   transition_key TEXT NOT NULL REFERENCES approval_hierarchy_transitions(key) ON UPDATE CASCADE ON DELETE CASCADE,
@@ -290,6 +298,14 @@ CREATE TABLE IF NOT EXISTS approval_hierarchy_role_transitions (
   transition_key TEXT NOT NULL REFERENCES approval_hierarchy_transitions(key) ON UPDATE CASCADE ON DELETE CASCADE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   PRIMARY KEY (group_key, role_id, transition_key)
+);
+
+CREATE TABLE IF NOT EXISTS approval_hierarchy_user_transitions (
+  group_key TEXT NOT NULL REFERENCES approval_hierarchy_groups(key) ON UPDATE CASCADE ON DELETE CASCADE,
+  user_id BIGINT NOT NULL REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
+  transition_key TEXT NOT NULL REFERENCES approval_hierarchy_transitions(key) ON UPDATE CASCADE ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (group_key, user_id, transition_key)
 );
 
 CREATE TABLE IF NOT EXISTS role_permissions (
@@ -474,8 +490,10 @@ CREATE INDEX IF NOT EXISTS idx_report_definitions_active ON report_definitions(i
 CREATE INDEX IF NOT EXISTS idx_report_definitions_key ON report_definitions(key);
 CREATE INDEX IF NOT EXISTS idx_email_notification_settings_key ON email_notification_settings(key);
 CREATE INDEX IF NOT EXISTS idx_approval_hierarchy_groups_module ON approval_hierarchy_groups(module_key, is_default, is_active);
+CREATE INDEX IF NOT EXISTS idx_approval_hierarchy_group_steps_group ON approval_hierarchy_group_steps(group_key, position_index);
 CREATE INDEX IF NOT EXISTS idx_approval_hierarchy_transitions_steps ON approval_hierarchy_transitions(from_step_key, to_step_key);
 CREATE INDEX IF NOT EXISTS idx_approval_hierarchy_role_transitions_role ON approval_hierarchy_role_transitions(role_id, group_key);
+CREATE INDEX IF NOT EXISTS idx_approval_hierarchy_user_transitions_user ON approval_hierarchy_user_transitions(user_id, group_key);
 CREATE INDEX IF NOT EXISTS idx_file_assets_entity ON file_assets(module, entity_type, entity_id);
 CREATE INDEX IF NOT EXISTS idx_file_assets_company ON file_assets(company_id);
 CREATE INDEX IF NOT EXISTS idx_utility_records_type ON utility_records(type);

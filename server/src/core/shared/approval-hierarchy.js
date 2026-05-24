@@ -4,8 +4,15 @@ function toFlag(value) {
   return Number(value) === 1;
 }
 
-function toGroupMap(groups, transitions) {
-  const byGroup = new Map(groups.map((group) => [group.key, { ...group, transitionKeys: [] }]));
+function toGroupMap(groups, transitions, steps) {
+  const byGroup = new Map(
+    groups.map((group) => [group.key, { ...group, stepKeys: [], transitionKeys: [] }]),
+  );
+  for (const item of steps) {
+    const group = byGroup.get(item.group_key);
+    if (!group) continue;
+    group.stepKeys.push(item.step_key);
+  }
   for (const item of transitions) {
     const group = byGroup.get(item.group_key);
     if (!group) continue;
@@ -18,6 +25,7 @@ function toGroupMap(groups, transitions) {
     description: group.description || "",
     isDefault: toFlag(group.is_default),
     isActive: toFlag(group.is_active),
+    stepKeys: group.stepKeys,
     transitionKeys: group.transitionKeys,
   }));
 }
@@ -37,13 +45,30 @@ function toRoleMappings(rows) {
   return Array.from(byKey.values());
 }
 
+function toUserMappings(rows) {
+  const byKey = new Map();
+  for (const row of rows) {
+    const key = `${row.group_key}|${row.user_id}`;
+    const existing = byKey.get(key) || {
+      groupKey: row.group_key,
+      userId: String(row.user_id),
+      transitionKeys: [],
+    };
+    existing.transitionKeys.push(row.transition_key);
+    byKey.set(key, existing);
+  }
+  return Array.from(byKey.values());
+}
+
 export async function listApprovalHierarchyConfig(db = { query }) {
-  const [stepsRes, transitionsRes, groupsRes, groupTransitionsRes, roleTransitionsRes, rolesRes] = await Promise.all([
+  const [stepsRes, transitionsRes, groupsRes, groupStepsRes, groupTransitionsRes, roleTransitionsRes, userTransitionsRes, rolesRes] = await Promise.all([
     db.query(`SELECT * FROM approval_hierarchy_steps ORDER BY sort_order ASC, name ASC`),
     db.query(`SELECT * FROM approval_hierarchy_transitions ORDER BY name ASC`),
     db.query(`SELECT * FROM approval_hierarchy_groups ORDER BY module_key ASC, name ASC`),
+    db.query(`SELECT * FROM approval_hierarchy_group_steps ORDER BY group_key ASC, position_index ASC, step_key ASC`),
     db.query(`SELECT * FROM approval_hierarchy_group_transitions ORDER BY group_key ASC, position_index ASC, transition_key ASC`),
     db.query(`SELECT * FROM approval_hierarchy_role_transitions ORDER BY group_key ASC, role_id ASC, transition_key ASC`),
+    db.query(`SELECT * FROM approval_hierarchy_user_transitions ORDER BY group_key ASC, user_id ASC, transition_key ASC`),
     db.query(`SELECT id::text AS id, name FROM roles WHERE is_active = 1 ORDER BY name ASC`),
   ]);
 
@@ -63,8 +88,9 @@ export async function listApprovalHierarchyConfig(db = { query }) {
       toStepKey: row.to_step_key,
       isActive: toFlag(row.is_active),
     })),
-    groups: toGroupMap(groupsRes.rows, groupTransitionsRes.rows),
+    groups: toGroupMap(groupsRes.rows, groupTransitionsRes.rows, groupStepsRes.rows),
     roleMappings: toRoleMappings(roleTransitionsRes.rows),
+    userMappings: toUserMappings(userTransitionsRes.rows),
     roles: rolesRes.rows.map((row) => ({ id: row.id, name: row.name })),
   };
 }
@@ -95,8 +121,9 @@ export async function listUserGroupTransitions({ moduleKey, userId }, db = { que
       `SELECT DISTINCT s.*
          FROM approval_hierarchy_steps s
          JOIN approval_hierarchy_transitions t ON t.from_step_key = s.key OR t.to_step_key = s.key
-         JOIN approval_hierarchy_role_transitions rt ON rt.transition_key = t.key
-        WHERE rt.group_key = $1 AND rt.role_id IN (SELECT role_id FROM user_roles WHERE user_id = $2)
+         LEFT JOIN approval_hierarchy_role_transitions rt ON rt.transition_key = t.key AND rt.group_key = $1
+         LEFT JOIN approval_hierarchy_user_transitions ut ON ut.transition_key = t.key AND ut.group_key = $1 AND ut.user_id = $2
+        WHERE (ut.user_id IS NOT NULL OR rt.role_id IN (SELECT role_id FROM user_roles WHERE user_id = $2))
           AND s.is_active = 1
         ORDER BY s.sort_order ASC, s.name ASC`,
       [group.key, userId],
@@ -104,9 +131,9 @@ export async function listUserGroupTransitions({ moduleKey, userId }, db = { que
     db.query(
       `SELECT DISTINCT t.*
          FROM approval_hierarchy_transitions t
-         JOIN approval_hierarchy_role_transitions rt ON rt.transition_key = t.key
-        WHERE rt.group_key = $1
-          AND rt.role_id IN (SELECT role_id FROM user_roles WHERE user_id = $2)
+         LEFT JOIN approval_hierarchy_role_transitions rt ON rt.transition_key = t.key AND rt.group_key = $1
+         LEFT JOIN approval_hierarchy_user_transitions ut ON ut.transition_key = t.key AND ut.group_key = $1 AND ut.user_id = $2
+        WHERE (ut.user_id IS NOT NULL OR rt.role_id IN (SELECT role_id FROM user_roles WHERE user_id = $2))
           AND t.is_active = 1
         ORDER BY t.name ASC`,
       [group.key, userId],
@@ -147,13 +174,17 @@ export async function getAllowedTransition({ moduleKey, userId, transitionKey, f
   const result = await db.query(
     `SELECT DISTINCT t.*
        FROM approval_hierarchy_transitions t
-       JOIN approval_hierarchy_role_transitions rt
+       LEFT JOIN approval_hierarchy_role_transitions rt
          ON rt.group_key = $1
         AND rt.transition_key = t.key
+       LEFT JOIN approval_hierarchy_user_transitions ut
+         ON ut.group_key = $1
+        AND ut.transition_key = t.key
+        AND ut.user_id = $4
       WHERE t.key = $2
         AND t.from_step_key = $3
         AND t.is_active = 1
-        AND rt.role_id IN (SELECT role_id FROM user_roles WHERE user_id = $4)
+        AND (ut.user_id IS NOT NULL OR rt.role_id IN (SELECT role_id FROM user_roles WHERE user_id = $4))
       LIMIT 1`,
     [group.key, transitionKey, fromStepKey, userId],
   );

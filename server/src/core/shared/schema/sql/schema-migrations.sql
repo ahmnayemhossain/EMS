@@ -322,6 +322,17 @@ ALTER TABLE approval_hierarchy_groups ADD COLUMN IF NOT EXISTS updated_by_user_i
 ALTER TABLE approval_hierarchy_groups ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
 ALTER TABLE approval_hierarchy_groups ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
 
+CREATE TABLE IF NOT EXISTS approval_hierarchy_group_steps (
+  group_key TEXT NOT NULL REFERENCES approval_hierarchy_groups(key) ON UPDATE CASCADE ON DELETE CASCADE,
+  step_key TEXT NOT NULL REFERENCES approval_hierarchy_steps(key) ON UPDATE CASCADE ON DELETE CASCADE,
+  position_index INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (group_key, step_key)
+);
+
+ALTER TABLE approval_hierarchy_group_steps ADD COLUMN IF NOT EXISTS position_index INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE approval_hierarchy_group_steps ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+
 CREATE TABLE IF NOT EXISTS approval_hierarchy_group_transitions (
   group_key TEXT NOT NULL REFERENCES approval_hierarchy_groups(key) ON UPDATE CASCADE ON DELETE CASCADE,
   transition_key TEXT NOT NULL REFERENCES approval_hierarchy_transitions(key) ON UPDATE CASCADE ON DELETE CASCADE,
@@ -341,14 +352,25 @@ CREATE TABLE IF NOT EXISTS approval_hierarchy_role_transitions (
 );
 ALTER TABLE approval_hierarchy_role_transitions ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
 
+CREATE TABLE IF NOT EXISTS approval_hierarchy_user_transitions (
+  group_key TEXT NOT NULL REFERENCES approval_hierarchy_groups(key) ON UPDATE CASCADE ON DELETE CASCADE,
+  user_id BIGINT NOT NULL REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
+  transition_key TEXT NOT NULL REFERENCES approval_hierarchy_transitions(key) ON UPDATE CASCADE ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (group_key, user_id, transition_key)
+);
+ALTER TABLE approval_hierarchy_user_transitions ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+
 ALTER TABLE utility_monthly_approvals ALTER COLUMN approval_status SET DEFAULT 'draft';
 UPDATE utility_monthly_approvals
 SET approval_status = 'draft'
 WHERE approval_status IS NULL OR approval_status = '' OR approval_status = 'pending';
 
 CREATE INDEX IF NOT EXISTS idx_approval_hierarchy_groups_module ON approval_hierarchy_groups(module_key, is_default, is_active);
+CREATE INDEX IF NOT EXISTS idx_approval_hierarchy_group_steps_group ON approval_hierarchy_group_steps(group_key, position_index);
 CREATE INDEX IF NOT EXISTS idx_approval_hierarchy_transitions_steps ON approval_hierarchy_transitions(from_step_key, to_step_key);
 CREATE INDEX IF NOT EXISTS idx_approval_hierarchy_role_transitions_role ON approval_hierarchy_role_transitions(role_id, group_key);
+CREATE INDEX IF NOT EXISTS idx_approval_hierarchy_user_transitions_user ON approval_hierarchy_user_transitions(user_id, group_key);
 
 ALTER TABLE suppliers DROP COLUMN IF EXISTS code;
 ALTER TABLE suppliers ADD COLUMN IF NOT EXISTS created_by_user_id BIGINT;

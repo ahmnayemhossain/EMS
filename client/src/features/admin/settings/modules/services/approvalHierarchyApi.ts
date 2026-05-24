@@ -24,12 +24,19 @@ export type ApprovalHierarchyGroup = {
   description: string;
   isDefault: boolean;
   isActive: boolean;
+  stepKeys: string[];
   transitionKeys: string[];
 };
 
 export type ApprovalHierarchyRoleMapping = {
   groupKey: string;
   roleId: string;
+  transitionKeys: string[];
+};
+
+export type ApprovalHierarchyUserMapping = {
+  groupKey: string;
+  userId: string;
   transitionKeys: string[];
 };
 
@@ -43,6 +50,7 @@ export type ApprovalHierarchyConfig = {
   transitions: ApprovalHierarchyTransition[];
   groups: ApprovalHierarchyGroup[];
   roleMappings: ApprovalHierarchyRoleMapping[];
+  userMappings: ApprovalHierarchyUserMapping[];
   roles: ApprovalHierarchyRole[];
 };
 
@@ -65,6 +73,7 @@ export async function saveApprovalHierarchy(userId: string, config: ApprovalHier
       transitions: config.transitions,
       groups: config.groups,
       roleMappings: config.roleMappings,
+      userMappings: config.userMappings,
     }),
   });
   return parseSystemResponse<ApprovalHierarchyConfig>(response, "Could not save approval hierarchy.");

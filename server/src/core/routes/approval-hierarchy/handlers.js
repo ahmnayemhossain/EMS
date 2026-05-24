@@ -32,6 +32,9 @@ function normalizeGroup(input) {
     description: String(input?.description || "").trim(),
     isDefault: Number(input?.isDefault ? 1 : 0),
     isActive: Number(input?.isActive ?? true ? 1 : 0),
+    stepKeys: Array.isArray(input?.stepKeys)
+      ? input.stepKeys.map((item) => String(item || "").trim().toLowerCase()).filter(Boolean)
+      : [],
     transitionKeys: Array.isArray(input?.transitionKeys)
       ? input.transitionKeys.map((item) => String(item || "").trim().toLowerCase()).filter(Boolean)
       : [],
@@ -48,11 +51,22 @@ function normalizeRoleMapping(input) {
   };
 }
 
+function normalizeUserMapping(input) {
+  return {
+    groupKey: String(input?.groupKey || "").trim().toLowerCase(),
+    userId: Number(input?.userId || 0),
+    transitionKeys: Array.isArray(input?.transitionKeys)
+      ? input.transitionKeys.map((item) => String(item || "").trim().toLowerCase()).filter(Boolean)
+      : [],
+  };
+}
+
 function assertValidPayload(payload) {
   const steps = Array.isArray(payload?.steps) ? payload.steps.map(normalizeStep) : [];
   const transitions = Array.isArray(payload?.transitions) ? payload.transitions.map(normalizeTransition) : [];
   const groups = Array.isArray(payload?.groups) ? payload.groups.map(normalizeGroup) : [];
   const roleMappings = Array.isArray(payload?.roleMappings) ? payload.roleMappings.map(normalizeRoleMapping) : [];
+  const userMappings = Array.isArray(payload?.userMappings) ? payload.userMappings.map(normalizeUserMapping) : [];
 
   const stepKeys = new Set();
   for (const step of steps) {
@@ -78,6 +92,9 @@ function assertValidPayload(payload) {
     if (!group.key || !group.name || !group.moduleKey) throw new Error("Each hierarchy group needs key, name, and module.");
     if (groupKeys.has(group.key)) throw new Error(`Duplicate group key: ${group.key}`);
     groupKeys.add(group.key);
+    for (const stepKey of group.stepKeys) {
+      if (!stepKeys.has(stepKey)) throw new Error(`Group ${group.key} uses missing step ${stepKey}.`);
+    }
     for (const transitionKey of group.transitionKeys) {
       if (!transitionKeys.has(transitionKey)) throw new Error(`Group ${group.key} uses missing transition ${transitionKey}.`);
     }
@@ -95,7 +112,19 @@ function assertValidPayload(payload) {
     }
   }
 
-  return { steps, transitions, groups, roleMappings };
+  for (const mapping of userMappings) {
+    if (!mapping.groupKey || !groupKeys.has(mapping.groupKey)) throw new Error("User mapping group is missing.");
+    if (!Number.isFinite(mapping.userId) || mapping.userId <= 0) throw new Error("User mapping user is invalid.");
+    const group = groups.find((item) => item.key === mapping.groupKey);
+    for (const transitionKey of mapping.transitionKeys) {
+      if (!transitionKeys.has(transitionKey)) throw new Error(`User mapping uses missing transition ${transitionKey}.`);
+      if (!group?.transitionKeys.includes(transitionKey)) {
+        throw new Error(`User mapping transition ${transitionKey} is not part of group ${mapping.groupKey}.`);
+      }
+    }
+  }
+
+  return { steps, transitions, groups, roleMappings, userMappings };
 }
 
 export async function getApprovalHierarchyConfig(_req, res, next) {
@@ -110,15 +139,17 @@ export async function getApprovalHierarchyConfig(_req, res, next) {
 export async function replaceApprovalHierarchyConfig(req, res, next) {
   try {
     await ensureCoreSchema();
-    const { steps, transitions, groups, roleMappings } = assertValidPayload(req.body || {});
+    const { steps, transitions, groups, roleMappings, userMappings } = assertValidPayload(req.body || {});
     const actor = await getRequestActor(req);
     const client = await pool.connect();
 
     try {
       await client.query("BEGIN");
 
+      await client.query("DELETE FROM approval_hierarchy_user_transitions");
       await client.query("DELETE FROM approval_hierarchy_role_transitions");
       await client.query("DELETE FROM approval_hierarchy_group_transitions");
+      await client.query("DELETE FROM approval_hierarchy_group_steps");
       await client.query("DELETE FROM approval_hierarchy_groups");
       await client.query("DELETE FROM approval_hierarchy_transitions");
       await client.query("DELETE FROM approval_hierarchy_steps");
@@ -149,6 +180,14 @@ export async function replaceApprovalHierarchyConfig(req, res, next) {
           [group.key, group.name, group.moduleKey, group.description, group.isDefault, group.isActive, actor.id],
         );
 
+        for (let index = 0; index < group.stepKeys.length; index += 1) {
+          await client.query(
+            `INSERT INTO approval_hierarchy_group_steps (group_key, step_key, position_index)
+             VALUES ($1, $2, $3)`,
+            [group.key, group.stepKeys[index], index + 1],
+          );
+        }
+
         for (let index = 0; index < group.transitionKeys.length; index += 1) {
           await client.query(
             `INSERT INTO approval_hierarchy_group_transitions (group_key, transition_key, position_index)
@@ -164,6 +203,16 @@ export async function replaceApprovalHierarchyConfig(req, res, next) {
             `INSERT INTO approval_hierarchy_role_transitions (group_key, role_id, transition_key)
              VALUES ($1, $2, $3)`,
             [mapping.groupKey, mapping.roleId, transitionKey],
+          );
+        }
+      }
+
+      for (const mapping of userMappings) {
+        for (const transitionKey of mapping.transitionKeys) {
+          await client.query(
+            `INSERT INTO approval_hierarchy_user_transitions (group_key, user_id, transition_key)
+             VALUES ($1, $2, $3)`,
+            [mapping.groupKey, mapping.userId, transitionKey],
           );
         }
       }

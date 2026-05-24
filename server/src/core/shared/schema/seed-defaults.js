@@ -118,6 +118,16 @@ async function seedApprovalHierarchy() {
     ],
   );
 
+  for (let index = 0; index < steps.length; index += 1) {
+    await query(
+      `INSERT INTO approval_hierarchy_group_steps (group_key, step_key, position_index)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (group_key, step_key) DO UPDATE
+         SET position_index = EXCLUDED.position_index`,
+      ["utilities_approval_flow", steps[index][0], index + 1],
+    );
+  }
+
   for (let index = 0; index < transitions.length; index += 1) {
     await query(
       `INSERT INTO approval_hierarchy_group_transitions (group_key, transition_key, position_index)
