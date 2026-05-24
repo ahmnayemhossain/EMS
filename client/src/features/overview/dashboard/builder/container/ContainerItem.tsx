@@ -10,6 +10,7 @@ import type {
 } from '@/core/app/state/slices/dashboard-builder.types';
 
 import { useDashboardInteraction } from '../config/dashboardInteraction';
+import { DASH_GAP, DASH_ROW_HEIGHT } from '../config/builder.constants';
 import type { DashboardWidgetDefinition } from '../config/widgetDefinitions';
 import type { DashboardWidgetData } from '../../services/useDashboardWidgetData';
 import { clampRect } from './constants';
@@ -18,6 +19,10 @@ import { ContainerContextMenu } from './ContainerContextMenu';
 import { ContainerHeader } from './ContainerHeader';
 import { useContainerResize } from './use-container-resize';
 import { useContainerDnd } from './useContainerDnd';
+
+const CONTAINER_HEADER_HEIGHT = 40;
+const WIDGET_ROW_HEIGHT = 48;
+const WIDGET_GAP = 12;
 
 export function ContainerItem(props: {
   container: DashboardContainer;
@@ -78,11 +83,6 @@ export function ContainerItem(props: {
     (sum, widget) => sum + (widget.rows ?? 1),
     0,
   );
-  const desiredHeight = collapsed
-    ? 1
-    : props.widgets.length
-      ? Math.max(3, totalWidgetRows + 1)
-      : 4;
 
   const handleAddWidget = React.useCallback(
     (
@@ -95,14 +95,38 @@ export function ContainerItem(props: {
     [props.onAddWidget],
   );
 
+  const desiredHeight = React.useMemo(() => {
+    if (collapsed) return 1;
+    if (!props.widgets.length) return 4;
+    const widgetPixelHeight =
+      totalWidgetRows * WIDGET_ROW_HEIGHT +
+      Math.max(totalWidgetRows - 1, 0) * WIDGET_GAP;
+    const totalPixelHeight = CONTAINER_HEADER_HEIGHT + widgetPixelHeight;
+    return getRowsForHeight(totalPixelHeight);
+  }, [collapsed, props.widgets.length, totalWidgetRows]);
+
   React.useEffect(() => {
-    if (layout.h !== desiredHeight) {
+    if (
+      desiredHeight > 0 &&
+      layout.h !== desiredHeight &&
+      !isDragging &&
+      !isResizing
+    ) {
       props.onSetContainerLayout({
         ...layout,
         h: desiredHeight,
       });
     }
-  }, [layout, desiredHeight, props.onSetContainerLayout]);
+  }, [
+    desiredHeight,
+    isDragging,
+    isResizing,
+    layout.h,
+    layout.w,
+    layout.x,
+    layout.y,
+    props.onSetContainerLayout,
+  ]);
 
   return (
     <ContainerContextMenu
@@ -183,4 +207,9 @@ export function ContainerItem(props: {
       </div>
     </ContainerContextMenu>
   );
+}
+
+function getRowsForHeight(pixelHeight: number) {
+  const rowBlock = DASH_ROW_HEIGHT + DASH_GAP;
+  return Math.max(1, Math.ceil((pixelHeight + DASH_GAP) / rowBlock));
 }

@@ -57,11 +57,11 @@ export function ContainerContent(props: {
     minimumRows * WIDGET_ROW_HEIGHT + (minimumRows - 1) * WIDGET_GAP;
 
   return (
-    <CardContent ref={bindDropRef} className="p-3 pt-0 pb-4">
+    <CardContent ref={bindDropRef} className="p-3 pt-0">
       {props.widgets.length ? (
         <div
           ref={gridRef}
-          className="grid grid-cols-6 gap-3"
+          className="grid min-w-0 grid-cols-6 gap-3"
           style={{
             gridAutoRows: `${WIDGET_ROW_HEIGHT}px`,
           }}

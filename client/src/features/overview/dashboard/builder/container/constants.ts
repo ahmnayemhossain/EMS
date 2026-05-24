@@ -1,8 +1,13 @@
 import type { DashboardGridRect } from "@/core/app/state/slices/dashboard-builder.types";
 
-export const DASH_COLS = 6;
-export const DASH_GAP = 16;
-export const DASH_ROW_HEIGHT = 72;
+import {
+  DASH_COLS,
+  DASH_GAP,
+  DASH_ROW_HEIGHT,
+} from "../config/builder.constants";
+
+export { DASH_COLS, DASH_GAP, DASH_ROW_HEIGHT };
+
 export const MIN_W = 2;
 export const MIN_H = 3;
 

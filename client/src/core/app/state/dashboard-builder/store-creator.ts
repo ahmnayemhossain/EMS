@@ -20,13 +20,28 @@ export function createDashboardBuilderStore(
   return {
     ...DEFAULT_DASHBOARD_BUILDER_STATE,
     setContainerLayout: (containerId, layout) =>
-      set((state: DashboardBuilderStore) => ({
-        containers: state.containers.map((item) =>
-          item.id === containerId
-            ? { ...item, layout: clampRect(layout) }
-            : item,
-        ),
-      })),
+      set((state: DashboardBuilderStore) => {
+        const nextLayout = clampRect(layout);
+        let changed = false;
+
+        const containers = state.containers.map((item) => {
+          if (item.id !== containerId) return item;
+          const current = item.layout;
+          if (
+            current &&
+            current.x === nextLayout.x &&
+            current.y === nextLayout.y &&
+            current.w === nextLayout.w &&
+            current.h === nextLayout.h
+          ) {
+            return item;
+          }
+          changed = true;
+          return { ...item, layout: nextLayout };
+        });
+
+        return changed ? { containers } : state;
+      }),
     setContainerTitle: (containerId, title) =>
       set((state: DashboardBuilderStore) => ({
         containers: state.containers.map((item) =>
