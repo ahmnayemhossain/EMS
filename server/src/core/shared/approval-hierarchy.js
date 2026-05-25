@@ -60,6 +60,43 @@ function toUserMappings(rows) {
   return Array.from(byKey.values());
 }
 
+function buildTransitionKey(fromStepKey, toStepKey) {
+  return `${fromStepKey}_to_${toStepKey}`;
+}
+
+function buildStepOrderTransitions(steps) {
+  const ordered = steps
+    .map((row) => ({
+      key: row.key,
+      name: row.name,
+      sortOrder: Number(row.sort_order || 0),
+      isInitial: toFlag(row.is_initial),
+      isFinal: toFlag(row.is_final),
+      isActive: toFlag(row.is_active),
+    }))
+    .filter((row) => row.isActive);
+  const transitions = [];
+  for (let index = 0; index < ordered.length - 1; index += 1) {
+    const current = ordered[index];
+    const next = ordered[index + 1];
+    transitions.push({
+      key: buildTransitionKey(current.key, next.key),
+      name: `${current.name} to ${next.name}`,
+      fromStepKey: current.key,
+      toStepKey: next.key,
+      isActive: true,
+    });
+    transitions.push({
+      key: buildTransitionKey(next.key, current.key),
+      name: `${next.name} to ${current.name}`,
+      fromStepKey: next.key,
+      toStepKey: current.key,
+      isActive: true,
+    });
+  }
+  return transitions;
+}
+
 async function hasUserTransitionMapping(groupKey, userId, db = { query }) {
   const result = await db.query(
     `SELECT 1
@@ -153,15 +190,7 @@ export async function listUserGroupTransitions({ moduleKey, userId }, db = { que
     [group.key],
   );
   const transitionsRes = isAdmin
-    ? await db.query(
-        `SELECT DISTINCT t.*, gt.position_index
-           FROM approval_hierarchy_group_transitions gt
-           JOIN approval_hierarchy_transitions t ON t.key = gt.transition_key
-          WHERE gt.group_key = $1
-            AND t.is_active = 1
-          ORDER BY gt.position_index ASC, t.name ASC`,
-        [group.key],
-      )
+    ? null
     : useUserMappings
     ? await db.query(
         `SELECT t.*
@@ -207,13 +236,15 @@ export async function listUserGroupTransitions({ moduleKey, userId }, db = { que
       isFinal: toFlag(row.is_final),
       isActive: toFlag(row.is_active),
     })),
-    transitions: transitionsRes.rows.map((row) => ({
-      key: row.key,
-      name: row.name,
-      fromStepKey: row.from_step_key,
-      toStepKey: row.to_step_key,
-      isActive: toFlag(row.is_active),
-    })),
+    transitions: isAdmin
+      ? buildStepOrderTransitions(stepsRes.rows)
+      : transitionsRes.rows.map((row) => ({
+          key: row.key,
+          name: row.name,
+          fromStepKey: row.from_step_key,
+          toStepKey: row.to_step_key,
+          isActive: toFlag(row.is_active),
+        })),
   };
 }
 
@@ -221,21 +252,25 @@ export async function getAllowedTransition({ moduleKey, userId, transitionKey, f
   const group = await getDefaultApprovalGroup(moduleKey, db);
   if (!group) return null;
   const isAdmin = await isAdminUser(userId, db);
+  if (isAdmin) {
+    const stepsRes = await db.query(
+      `SELECT s.*
+         FROM approval_hierarchy_group_steps gs
+         JOIN approval_hierarchy_steps s ON s.key = gs.step_key
+        WHERE gs.group_key = $1
+          AND s.is_active = 1
+        ORDER BY gs.position_index ASC, s.sort_order ASC, s.name ASC`,
+      [group.key],
+    );
+    return (
+      buildStepOrderTransitions(stepsRes.rows).find(
+        (transition) => transition.key === transitionKey && transition.fromStepKey === fromStepKey,
+      ) || null
+    );
+  }
   const useUserMappings = await hasUserTransitionMapping(group.key, userId, db);
 
-  const result = isAdmin
-    ? await db.query(
-        `SELECT t.*
-           FROM approval_hierarchy_group_transitions gt
-           JOIN approval_hierarchy_transitions t ON t.key = gt.transition_key
-          WHERE gt.group_key = $1
-            AND t.key = $2
-            AND t.from_step_key = $3
-            AND t.is_active = 1
-          LIMIT 1`,
-        [group.key, transitionKey, fromStepKey],
-      )
-    : useUserMappings
+  const result = useUserMappings
     ? await db.query(
         `SELECT t.*
            FROM approval_hierarchy_group_transitions gt

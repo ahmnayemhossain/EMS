@@ -43,26 +43,6 @@ export function splitTransitionsByDirection(
   return { forward, reverse };
 }
 
-export function canUseHighLevelReverse(
-  flow: UtilityApprovalFlow | null | undefined,
-  currentStepKey: string,
-  allowedTransitions: UtilityApprovalTransition[],
-) {
-  const approvedIndex = getStepIndex(flow, "approved");
-  const currentIndex = getStepIndex(flow, currentStepKey);
-  if (approvedIndex < 0 || currentIndex < approvedIndex) {
-    return true;
-  }
-
-  return allowedTransitions.some((transition) => {
-    const transitionFrom = String(transition.fromStepKey || "").trim().toLowerCase();
-    const direction = getTransitionDirection(flow, transitionFrom, transition);
-    if (direction !== "forward") return false;
-    const targetIndex = getStepIndex(flow, transition.toStepKey);
-    return targetIndex >= approvedIndex;
-  });
-}
-
 export function readWorkflowStatusLabel(stepKey: string, flow: UtilityApprovalFlow | null | undefined) {
   const key = String(stepKey || "").trim().toLowerCase();
   if (key === "draft") return "Draft";

@@ -3,10 +3,6 @@ import { query } from "../../../../core/shared/postgres.js";
 import { createHttpError } from "../../../modules/utilities/record.js";
 import { ensureUtilitiesReady } from "../ready.js";
 
-function getStepIndex(flow, stepKey) {
-  return (flow?.steps || []).findIndex((step) => step.key === stepKey);
-}
-
 function normalizeWorkflowStepKey(stepKey, flow) {
   const key = String(stepKey || "").trim().toLowerCase();
   if (!key) return "draft";
@@ -36,29 +32,6 @@ function normalizeWorkflowStepKey(stepKey, flow) {
   }
 
   return key;
-}
-
-function isReverseTransition(flow, currentStepKey, nextStepKey) {
-  const currentIndex = getStepIndex(flow, currentStepKey);
-  const nextIndex = getStepIndex(flow, nextStepKey);
-  return nextIndex >= 0 && currentIndex >= 0 && nextIndex < currentIndex;
-}
-
-function canUseHighLevelReverse(flow, currentStepKey) {
-  const approvedIndex = getStepIndex(flow, "approved");
-  const currentIndex = getStepIndex(flow, currentStepKey);
-  if (approvedIndex < 0 || currentIndex < approvedIndex) {
-    return true;
-  }
-
-  return (flow?.transitions || []).some((transition) => {
-    const transitionFrom = String(transition.fromStepKey || "").trim().toLowerCase();
-    if (isReverseTransition(flow, transitionFrom, transition.toStepKey)) {
-      return false;
-    }
-    const targetIndex = getStepIndex(flow, transition.toStepKey);
-    return targetIndex >= approvedIndex;
-  });
 }
 
 export async function getUtilityWorkflowContext(input) {
@@ -95,12 +68,7 @@ export async function getUtilityWorkflowContext(input) {
   const currentStepTransitions = (workflowAccess?.transitions || []).filter(
     (item) => normalizeWorkflowStepKey(item.fromStepKey, workflowAccess) === currentStepKey,
   );
-  const availableTransitions = currentStepTransitions.filter((transition) => {
-    if (!isReverseTransition(workflowAccess, currentStepKey, transition.toStepKey)) {
-      return true;
-    }
-    return canUseHighLevelReverse(workflowAccess, currentStepKey);
-  });
+  const availableTransitions = currentStepTransitions;
 
   return {
     actorUserId,
@@ -123,13 +91,6 @@ export function resolveUtilityWorkflowTransition(context, transitionKey) {
 
   if (!context.currentStepTransitions.length) {
     throw createHttpError(403, "No approval action is assigned to you for the current status.");
-  }
-
-  const assignedButRestricted = context.currentStepTransitions.find(
-    (item) => String(item.key || "").trim().toLowerCase() === transitionKey,
-  );
-  if (assignedButRestricted) {
-    throw createHttpError(403, "Only approve-level or higher users can reverse this status.");
   }
 
   throw createHttpError(403, "This status change is not assigned to you. Check Role wise status or User wise status.");

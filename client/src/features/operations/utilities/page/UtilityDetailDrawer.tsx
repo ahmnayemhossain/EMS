@@ -15,7 +15,6 @@ import type { UtilityApprovalFlow, UtilityRecord } from "@/core/types/models/ems
 import { formatDate, formatUtilityType } from "@/core/utils/format";
 import { getStepName, getWorkflowStatus } from "@/features/operations/utilities/hooks/approval-flow";
 import {
-  canUseHighLevelReverse,
   getOrderedWorkflowSteps,
   getStepIndex,
   getTransitionDirection,
@@ -63,12 +62,7 @@ export function UtilityDetailDrawer(props: {
     [props.approvalFlow, currentStepKey, actionTransitions],
   );
   const primaryTransition = forwardTransitions[0] || null;
-  const reverseTransition = React.useMemo(() => {
-    if (!canUseHighLevelReverse(props.approvalFlow, currentStepKey, props.approvalFlow?.transitions || [])) {
-      return null;
-    }
-    return reverseTransitions[0] || null;
-  }, [props.approvalFlow, currentStepKey, reverseTransitions]);
+  const reverseTransition = reverseTransitions[0] || null;
   const selectedTransition =
     forwardTransitions.find((transition) => transition.key === selectedTransitionKey) ||
     primaryTransition ||
@@ -90,6 +84,10 @@ export function UtilityDetailDrawer(props: {
   const approvalTrail = React.useMemo(
     () => buildApprovalTrail(props.selected, props.approvalFlow, orderedSteps),
     [props.selected, props.approvalFlow, orderedSteps],
+  );
+  const rejectedSteps = React.useMemo(
+    () => buildRejectedSteps(props.selected, props.approvalFlow),
+    [props.selected, props.approvalFlow],
   );
   const selectedStatusLabel = pendingTransition
     ? readWorkflowStatusLabel(pendingTransition.toStepKey, props.approvalFlow)
@@ -178,9 +176,9 @@ export function UtilityDetailDrawer(props: {
 
             {orderedSteps.length ? (
               <div className="mt-4 rounded-2xl border border-border/60 bg-background/55 p-3 shadow-sm">
-                <div className="space-y-0">
+                <div className="space-y-2">
                   {orderedSteps.map((step, index) => {
-                    const visual = getTimelineVisual(index, currentStepIndex, pendingStepIndex);
+                    const visual = getTimelineVisual(index, currentStepIndex, pendingStepIndex, rejectedSteps.has(step.key));
                     const Icon = visual.icon;
                     const isLast = index === orderedSteps.length - 1;
                     return (
@@ -194,8 +192,9 @@ export function UtilityDetailDrawer(props: {
                         <div className={visual.itemClass}>
                           <div className="min-w-0">
                             <div className={visual.labelClass}>{step.name}</div>
-                            <div className="mt-0.5 text-[11px] leading-4 text-muted-foreground">
-                              {readTrailMeta(step.key, approvalTrail)}
+                            <div className="mt-1 flex items-center gap-2 text-[11px] leading-4 text-muted-foreground">
+                              {renderTrailAvatar(step.key, approvalTrail)}
+                              <span>{readTrailMeta(step.key, approvalTrail)}</span>
                             </div>
                           </div>
                         </div>
@@ -418,11 +417,51 @@ function readTrailMeta(stepKey: string, trail: Map<string, { actedBy?: string; a
   return item?.actedBy || (item?.actedAt ? formatDate(item.actedAt) : "No activity yet");
 }
 
-function getTimelineVisual(index: number, currentIndex: number, pendingIndex: number) {
+function renderTrailAvatar(stepKey: string, trail: Map<string, { actedBy?: string; actedAt?: string }>) {
+  const actedBy = String(trail.get(stepKey)?.actedBy || "").trim();
+  if (!actedBy) return null;
+  const initials = actedBy
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.slice(0, 1).toUpperCase())
+    .join("");
+
+  return (
+    <span className="inline-flex size-5 shrink-0 items-center justify-center rounded-full border border-emerald-400/20 bg-emerald-500/10 text-[9px] font-bold text-emerald-700 dark:text-emerald-300">
+      {initials || "?"}
+    </span>
+  );
+}
+
+function buildRejectedSteps(record: UtilityRecord | null, flow: UtilityApprovalFlow | null) {
+  const rejected = new Set<string>();
+  if (!record) return rejected;
+
+  for (const item of record.approvalHistory || []) {
+    const fromStepKey = String(item.fromStepKey || "").trim().toLowerCase();
+    const toStepKey = String(item.toStepKey || "").trim().toLowerCase();
+    if (!fromStepKey || !toStepKey) continue;
+
+    const fromIndex = getStepIndex(flow, fromStepKey);
+    const toIndex = getStepIndex(flow, toStepKey);
+    if (fromIndex < 0 || toIndex < 0) continue;
+
+    if (toIndex < fromIndex) {
+      rejected.add(fromStepKey);
+    } else {
+      rejected.delete(toStepKey);
+    }
+  }
+
+  return rejected;
+}
+
+function getTimelineVisual(index: number, currentIndex: number, pendingIndex: number, wasRejected: boolean) {
   const hasPreview = pendingIndex >= 0;
   const isPreviewingReverse = hasPreview && currentIndex >= 0 && pendingIndex < currentIndex;
   const isPreviewingForward = hasPreview && currentIndex >= 0 && pendingIndex > currentIndex;
-  const isCanceled = isPreviewingReverse && index > pendingIndex && index <= currentIndex;
+  const isCanceled = (isPreviewingReverse && index > pendingIndex && index <= currentIndex) || (!hasPreview && wasRejected && index > currentIndex);
   const isSelectedTarget = hasPreview && index === pendingIndex;
   const isCompleted =
     !isCanceled &&
@@ -442,7 +481,7 @@ function getTimelineVisual(index: number, currentIndex: number, pendingIndex: nu
       labelClass: "text-sm font-bold text-rose-700 dark:text-rose-300",
       itemClass:
         "rounded-xl border border-rose-400/20 bg-[linear-gradient(180deg,rgba(251,113,133,0.10),rgba(255,255,255,0.02))] px-3 py-2 shadow-[0_10px_24px_rgba(244,63,94,0.10)]",
-      lineClass: "mt-1 min-h-6 w-px flex-1 bg-rose-300/70",
+      lineClass: "mt-2 min-h-7 w-px flex-1 bg-rose-300/70",
     };
   }
   if (isSelectedTarget || isNextAction) {
@@ -451,7 +490,7 @@ function getTimelineVisual(index: number, currentIndex: number, pendingIndex: nu
       iconClass: "flex size-7 animate-pulse items-center justify-center rounded-full bg-sky-500/12 text-sky-700 ring-2 ring-sky-300/45 dark:text-sky-300",
       labelClass: "text-sm font-bold text-sky-700 dark:text-sky-300",
       itemClass: "rounded-xl border border-sky-500/20 bg-sky-500/5 px-3 py-2 shadow-sm",
-      lineClass: "mt-1 min-h-6 w-px flex-1 bg-sky-300/70",
+      lineClass: "mt-2 min-h-7 w-px flex-1 bg-sky-300/70",
     };
   }
   if (isCompleted) {
@@ -462,7 +501,7 @@ function getTimelineVisual(index: number, currentIndex: number, pendingIndex: nu
       labelClass: "text-sm font-bold text-emerald-900 dark:text-emerald-100",
       itemClass:
         "rounded-xl border border-emerald-400/20 bg-[linear-gradient(180deg,rgba(16,185,129,0.10),rgba(255,255,255,0.02))] px-3 py-2 shadow-[0_10px_24px_rgba(16,185,129,0.10)]",
-      lineClass: "mt-1 min-h-6 w-px flex-1 bg-emerald-300/70",
+      lineClass: "mt-2 min-h-7 w-px flex-1 bg-emerald-300/70",
     };
   }
   return {
@@ -470,6 +509,6 @@ function getTimelineVisual(index: number, currentIndex: number, pendingIndex: nu
     iconClass: "flex size-7 items-center justify-center rounded-full bg-muted text-muted-foreground",
     labelClass: "text-sm font-semibold text-muted-foreground",
     itemClass: "rounded-xl border border-border/70 bg-background/70 px-3 py-2 shadow-sm",
-    lineClass: "mt-1 min-h-6 w-px flex-1 bg-border",
+    lineClass: "mt-2 min-h-7 w-px flex-1 bg-border",
   };
 }

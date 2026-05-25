@@ -13,30 +13,34 @@ export const toast = Object.assign(
             "div",
             {
               className:
-                "w-[min(92vw,420px)] rounded-[20px] border border-[color-mix(in_oklab,var(--success-600)_24%,var(--border))] bg-[color-mix(in_oklab,var(--success-50)_72%,var(--background))] p-5 text-center text-foreground shadow-[0_24px_80px_color-mix(in_oklab,black_22%,transparent)] backdrop-blur",
+                "flex w-[min(92vw,360px)] items-start gap-3 rounded-[18px] border border-[color-mix(in_oklab,var(--success-600)_24%,var(--border))] bg-[linear-gradient(180deg,color-mix(in_oklab,var(--success-50)_84%,var(--background))_0%,color-mix(in_oklab,var(--success-50)_64%,var(--background))_100%)] p-4 text-left text-foreground shadow-[0_18px_40px_color-mix(in_oklab,black_16%,transparent)] backdrop-blur",
             },
             React.createElement(
               "div",
-              { className: "grid justify-items-center gap-3" },
+              { className: "contents" },
               React.createElement(
                 "div",
                 {
                   className:
-                    "flex size-12 items-center justify-center rounded-full border border-[color-mix(in_oklab,var(--success-600)_24%,var(--border))] bg-[var(--success-50)] text-[var(--success-700)]",
+                    "flex size-10 shrink-0 items-center justify-center rounded-full border border-[color-mix(in_oklab,var(--success-600)_24%,var(--border))] bg-[linear-gradient(180deg,var(--success-50),color-mix(in_oklab,var(--success-50)_72%,white))] text-[var(--success-700)] shadow-sm",
                 },
-                React.createElement(CheckCircle2, { className: "size-5", strokeWidth: 2 }),
+                React.createElement(CheckCircle2, { className: "size-[18px]", strokeWidth: 2.2 }),
               ),
-              React.createElement("div", { className: "text-[15px] font-semibold" }, title),
-              description
-                ? React.createElement(
-                    "div",
-                    { className: "text-muted-foreground text-sm leading-6" },
-                    description,
-                  )
-                : null,
+              React.createElement(
+                "div",
+                { className: "min-w-0" },
+                React.createElement("div", { className: "text-[14px] font-semibold leading-5" }, title),
+                description
+                  ? React.createElement(
+                      "div",
+                      { className: "text-muted-foreground mt-1 text-[13px] leading-5" },
+                      description,
+                    )
+                  : null,
+              ),
             ),
           ),
-        { duration: 2600 },
+        { duration: 2800 },
       ),
     error: (message: string) => hotToast.error(message),
     message: (message: string) => hotToast(message),
