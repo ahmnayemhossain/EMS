@@ -366,6 +366,17 @@ UPDATE utility_monthly_approvals
 SET approval_status = 'draft'
 WHERE approval_status IS NULL OR approval_status = '' OR approval_status = 'pending';
 
+CREATE TABLE IF NOT EXISTS utility_monthly_approval_history (
+  id BIGSERIAL PRIMARY KEY,
+  monthly_approval_id BIGINT NOT NULL REFERENCES utility_monthly_approvals(id) ON UPDATE CASCADE ON DELETE CASCADE,
+  from_status TEXT NOT NULL,
+  to_status TEXT NOT NULL,
+  actor_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_utility_monthly_approval_history_monthly ON utility_monthly_approval_history(monthly_approval_id, created_at);
+
 CREATE INDEX IF NOT EXISTS idx_approval_hierarchy_groups_module ON approval_hierarchy_groups(module_key, is_default, is_active);
 CREATE INDEX IF NOT EXISTS idx_approval_hierarchy_group_steps_group ON approval_hierarchy_group_steps(group_key, position_index);
 CREATE INDEX IF NOT EXISTS idx_approval_hierarchy_transitions_steps ON approval_hierarchy_transitions(from_step_key, to_step_key);

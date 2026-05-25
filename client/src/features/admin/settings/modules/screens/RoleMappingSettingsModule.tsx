@@ -23,6 +23,12 @@ import {
   ensureApprovalGroup,
   listApprovalPageOptions,
 } from "@/features/admin/settings/modules/screens/approval-pages";
+import {
+  buildApprovalConfigForSave,
+  buildLinearApprovalTransitions,
+  readApprovalStepLabel,
+  resolveApprovalGroup,
+} from "@/features/admin/settings/modules/screens/approval-workflow";
 
 const emptyConfig: ApprovalHierarchyConfig = {
   steps: [],
@@ -63,27 +69,31 @@ export function RoleMappingSettingsModule() {
     void loadAll();
   }, [loadAll]);
 
-  const effectiveConfig = React.useMemo(
-    () => syncSelectedGroupTransitions(config, resolveSelectedGroup(config, selectedGroupKey)),
+  const selectedGroup = React.useMemo(
+    () => resolveApprovalGroup(config, selectedGroupKey),
     [config, selectedGroupKey],
   );
+  const effectiveConfig = React.useMemo(
+    () => buildApprovalConfigForSave(config, selectedGroup),
+    [config, selectedGroup],
+  );
 
-  const selectedGroup =
-    effectiveConfig.groups.find((group) => group.moduleKey === selectedGroupKey) ||
-    effectiveConfig.groups.find((group) => group.key === selectedGroupKey) ||
-    null;
+  const effectiveGroup = React.useMemo(
+    () => resolveApprovalGroup(effectiveConfig, selectedGroupKey),
+    [effectiveConfig, selectedGroupKey],
+  );
 
   const selectedGroupTransitionRows = React.useMemo(
-    () => buildLinearTransitionRows(effectiveConfig, selectedGroup),
-    [effectiveConfig, selectedGroup],
+    () => buildLinearApprovalTransitions(effectiveConfig, effectiveGroup),
+    [effectiveConfig, effectiveGroup],
   );
 
   const selectedRole =
     effectiveConfig.roles.find((role) => role.id === selectedRoleId) || null;
 
   const selectedRoleMapping =
-    selectedGroup && selectedRole
-      ? getRoleMapping(effectiveConfig.roleMappings, selectedGroup.key, selectedRole.id)
+    effectiveGroup && selectedRole
+      ? getRoleMapping(effectiveConfig.roleMappings, effectiveGroup.key, selectedRole.id)
       : null;
 
   const roleRows = React.useMemo(
@@ -141,7 +151,7 @@ export function RoleMappingSettingsModule() {
             <div className="grid gap-1.5">
               <select
                 className={selectClassName}
-                value={selectedGroup?.moduleKey || selectedGroupKey || ""}
+                value={effectiveGroup?.moduleKey || selectedGroupKey || ""}
                 onChange={(event) => handlePageChange(event.target.value)}
               >
                 <option value="">Select page</option>
@@ -162,7 +172,7 @@ export function RoleMappingSettingsModule() {
                     <div className="px-2.5 py-2">From status</div>
                     <div className="px-2.5 py-2">To status</div>
                   </div>
-                  {selectedGroup ? (
+                  {effectiveGroup ? (
                     selectedGroupTransitionRows.length ? (
                       selectedGroupTransitionRows.map((transition, index) => (
                         <div
@@ -174,12 +184,12 @@ export function RoleMappingSettingsModule() {
                           </div>
                           <div className="px-2.5 py-2">
                             <span className="inline-flex rounded-md bg-emerald-500/10 px-2 py-0.5 text-[12px] text-emerald-700 dark:text-emerald-300">
-                              {readStepLabel(transition.fromStepKey, effectiveConfig)}
+                              {readApprovalStepLabel(transition.fromStepKey, effectiveConfig)}
                             </span>
                           </div>
                           <div className="px-2.5 py-2">
                             <span className="inline-flex rounded-md bg-sky-500/10 px-2 py-0.5 text-[12px] text-sky-700 dark:text-sky-300">
-                              {readStepLabel(transition.toStepKey, effectiveConfig)}
+                              {readApprovalStepLabel(transition.toStepKey, effectiveConfig)}
                             </span>
                           </div>
                         </div>
@@ -209,12 +219,12 @@ export function RoleMappingSettingsModule() {
                     <div className="px-2.5 py-2">Name</div>
                     <div className="px-2.5 py-2 text-center">...</div>
                   </div>
-                  {selectedGroup ? (
+                  {effectiveGroup ? (
                     filteredRoleRows.length ? (
                       filteredRoleRows.map((role, index) => {
-                        const mapping = getRoleMapping(
+                      const mapping = getRoleMapping(
                           effectiveConfig.roleMappings,
-                          selectedGroup.key,
+                          effectiveGroup.key,
                           role.id,
                         );
                         return (
@@ -284,7 +294,7 @@ export function RoleMappingSettingsModule() {
           <DialogHeader className="border-b border-sky-500/10 bg-sky-500/[0.05]">
             <DialogTitle>{selectedRole?.name || "Role"} relation access</DialogTitle>
           </DialogHeader>
-          {selectedGroup && selectedRole ? (
+          {effectiveGroup && selectedRole ? (
             <div className="grid gap-2 p-1">
               {selectedGroupTransitionRows.length ? (
                 selectedGroupTransitionRows.map((transition) => {
@@ -302,7 +312,7 @@ export function RoleMappingSettingsModule() {
                         onChange={(event) =>
                           updateRoleTransitionKeys(
                             effectiveConfig.roleMappings,
-                            selectedGroup.key,
+                            effectiveGroup.key,
                             selectedRole.id,
                             transition.key,
                             event.target.checked,
@@ -381,109 +391,7 @@ function readTransitionLabel(
   transition: ApprovalHierarchyTransition,
   config: ApprovalHierarchyConfig,
 ) {
-  return `${readStepLabel(transition.fromStepKey, config)} -> ${readStepLabel(transition.toStepKey, config)}`;
-}
-
-function readStepLabel(stepKey: string, config: ApprovalHierarchyConfig) {
-  return config.steps.find((step) => step.key === stepKey)?.name || stepKey;
-}
-
-function buildLinearTransitionRows(
-  config: ApprovalHierarchyConfig,
-  group: ApprovalHierarchyConfig["groups"][number] | null,
-) {
-  if (!group) {
-    return [];
-  }
-
-  const rows: ApprovalHierarchyTransition[] = [];
-
-  for (let index = 0; index < group.stepKeys.length - 1; index += 1) {
-    const fromStepKey = group.stepKeys[index];
-    const toStepKey = group.stepKeys[index + 1];
-    const forward = config.transitions.find(
-      (transition) =>
-        transition.fromStepKey === fromStepKey && transition.toStepKey === toStepKey,
-    );
-    const reverse = config.transitions.find(
-      (transition) =>
-        transition.fromStepKey === toStepKey && transition.toStepKey === fromStepKey,
-    );
-
-    if (forward) rows.push(forward);
-    if (reverse) rows.push(reverse);
-  }
-
-  return rows;
-}
-
-function syncSelectedGroupTransitions(
-  config: ApprovalHierarchyConfig,
-  group: ApprovalHierarchyConfig["groups"][number] | null,
-) {
-  if (!group) {
-    return config;
-  }
-
-  const ensuredTransitions = [...config.transitions];
-  for (let index = 0; index < group.stepKeys.length - 1; index += 1) {
-    const fromStepKey = group.stepKeys[index];
-    const toStepKey = group.stepKeys[index + 1];
-    ensureTransition(ensuredTransitions, config, fromStepKey, toStepKey);
-    ensureTransition(ensuredTransitions, config, toStepKey, fromStepKey);
-  }
-
-  const nextGroup = {
-    ...group,
-    transitionKeys: buildLinearTransitionRows(
-      { ...config, transitions: ensuredTransitions },
-      { ...group, transitionKeys: ensuredTransitions.map((transition) => transition.key) },
-    ).map((transition) => transition.key),
-  };
-
-  return {
-    ...config,
-    transitions: ensuredTransitions,
-    groups: config.groups.map((item) => (item.key === group.key ? nextGroup : item)),
-  };
-}
-
-function resolveSelectedGroup(
-  config: ApprovalHierarchyConfig,
-  selectedGroupKey: string,
-) {
-  return (
-    config.groups.find((group) => group.moduleKey === selectedGroupKey) ||
-    config.groups.find((group) => group.key === selectedGroupKey) ||
-    null
-  );
-}
-
-function ensureTransition(
-  transitions: ApprovalHierarchyTransition[],
-  config: ApprovalHierarchyConfig,
-  fromStepKey: string,
-  toStepKey: string,
-) {
-  const existing = transitions.find(
-    (transition) =>
-      transition.fromStepKey === fromStepKey && transition.toStepKey === toStepKey,
-  );
-  if (existing) {
-    return existing;
-  }
-
-  const fromName = readStepLabel(fromStepKey, config);
-  const toName = readStepLabel(toStepKey, config);
-  const nextTransition: ApprovalHierarchyTransition = {
-    key: `${fromStepKey}_to_${toStepKey}`,
-    name: `${fromName} to ${toName}`,
-    fromStepKey,
-    toStepKey,
-    isActive: true,
-  };
-  transitions.push(nextTransition);
-  return nextTransition;
+  return `${readApprovalStepLabel(transition.fromStepKey, config)} -> ${readApprovalStepLabel(transition.toStepKey, config)}`;
 }
 
 const selectClassName =

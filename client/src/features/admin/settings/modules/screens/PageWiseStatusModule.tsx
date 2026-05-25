@@ -99,15 +99,6 @@ export function PageWiseStatusModule() {
 
   function removeStatusFromPage(stepKey: string) {
     if (!selectedGroup) return;
-    const blocked = config.transitions.some(
-      (transition) =>
-        selectedGroup.transitionKeys.includes(transition.key) &&
-        (transition.fromStepKey === stepKey || transition.toStepKey === stepKey),
-    );
-    if (blocked) {
-      toast.error("This status is already used in this page’s relations. Remove those relations first.");
-      return;
-    }
     updateGroup({
       ...selectedGroup,
       stepKeys: selectedGroup.stepKeys.filter((item) => item !== stepKey),

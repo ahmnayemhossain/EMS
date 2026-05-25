@@ -2,7 +2,6 @@ import * as React from "react";
 
 import { Button } from "@/components/ui/primitives/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/primitives/dialog";
-import { ActionModal } from "@/components/feedback/ActionModal";
 import type { UtilityUsagePayload } from "@/features/operations/utilities/config/baseline-settings";
 import { listUtilityMeters } from "@/features/operations/utilities/services/api";
 import { buildUtilityPayload } from "@/features/operations/utilities/dialog/build-utility-payload";
@@ -11,6 +10,8 @@ import { CreateDialogContent } from "@/features/operations/utilities/dialog/crea
 import { createStateFromRecord } from "@/features/operations/utilities/dialog/edit-dialog-state";
 import { createEmptyUtilityFormState } from "@/features/operations/utilities/dialog/form-state";
 import { getCreateDialogErrors } from "@/features/operations/utilities/dialog/utility-dialog-errors";
+import { UtilityValidationDialog } from "@/features/operations/utilities/dialog/UtilityValidationDialog";
+import { renderUtilityValidationMessage } from "@/features/operations/utilities/dialog/validation-message";
 import { useUtilityDialogLogic } from "@/features/operations/utilities/dialog/use-utility-dialog-logic";
 import { useSyncedUtilityForm } from "@/features/operations/utilities/dialog/use-synced-utility-form";
 import type { CompanyOption } from "@/core/app/state/slices/company";
@@ -173,15 +174,11 @@ export function EditUtilityDialog(props: {
           </form>
         </DialogContent>
       </Dialog>
-      <ActionModal
+      <UtilityValidationDialog
         open={validationOpen}
         onOpenChange={setValidationOpen}
-        tone="warning"
         title="Unable to update utility record"
-        description={validationMessage || "Please fix the highlighted fields and try again."}
-        confirmLabel="Got it"
-        cancelLabel="Close"
-        onConfirm={async () => {}}
+        description={renderUtilityValidationMessage(validationMessage || "Please fix the highlighted fields and try again.")}
       />
     </>
   );

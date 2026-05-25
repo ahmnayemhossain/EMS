@@ -134,8 +134,9 @@ export async function listUtilityMasterMeters(userId: string, input: { companyId
   return parseJsonResponse<UtilityMasterMeter[]>(response, "Utilities request failed.");
 }
 
-export async function getUtilityApprovalFlow(userId: string) {
-  const response = await fetch(`${UTILITIES_API}/approval-flow`, {
+export async function getUtilityApprovalFlow(userId: string, recordId?: number) {
+  const url = recordId ? `${UTILITIES_API}/${recordId}/approval-flow` : `${UTILITIES_API}/approval-flow`;
+  const response = await fetch(url, {
     cache: "no-store",
     headers: authJsonHeaders(userId),
   });

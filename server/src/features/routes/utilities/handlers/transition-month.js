@@ -1,11 +1,10 @@
-import { getAllowedTransition } from "../../../../core/shared/approval-hierarchy.js";
 import { query } from "../../../../core/shared/postgres.js";
 import { sendUtilityApprovalSubmissionEmail } from "../../../../core/shared/utility-approval-email.js";
 import { rowToRecord } from "../../../modules/utilities/record.js";
 import { createHttpError, toDateString } from "../../../modules/utilities/record.js";
 import { selectUtilitySql } from "../../../modules/utilities/files.js";
-import { ensureUtilitiesReady } from "../ready.js";
 import { getRequestUserDbId } from "../request-context.js";
+import { getUtilityWorkflowContext, resolveUtilityWorkflowTransition } from "./workflow-access.js";
 
 function endOfMonth(value) {
   const [year, month] = toDateString(value).split("-").map(Number);
@@ -27,38 +26,15 @@ export async function transitionUtilityMonth(req, res, next) {
 }
 
 export async function runUtilityMonthTransition(input) {
-    await ensureUtilitiesReady();
     const transitionKey = String(input.transitionKey || "").trim().toLowerCase();
     if (!transitionKey) throw createHttpError(400, "Transition key is required.");
-    const recordRes = await query(
-      `SELECT id, facility_id, type, meter_key, period_month
-         FROM utility_records
-        WHERE id = $1
-          AND EXISTS (SELECT 1 FROM user_companies uc WHERE uc.user_id = $2 AND uc.company_id = utility_records.facility_id)`,
-      [Number(input.recordId), input.userId || -1],
-    );
-    const record = recordRes.rows[0];
-    if (!record) throw createHttpError(404, "Utility record not found.");
-
-    const approvalRes = await query(
-      `SELECT *
-         FROM utility_monthly_approvals
-        WHERE facility_id = $1 AND type = $2 AND meter_key = $3 AND period_month = $4`,
-      [record.facility_id, record.type, record.meter_key, record.period_month],
-    );
-    const approval = approvalRes.rows[0];
-    if (!approval) throw createHttpError(404, "Monthly utility aggregate not found.");
-
-    const currentStepKey = String(approval.approval_status || "draft").trim().toLowerCase() || "draft";
-    const transition = await getAllowedTransition({
-      moduleKey: "utilities",
-      userId: input.userId,
-      transitionKey,
-      fromStepKey: currentStepKey,
-    });
-    if (!transition) throw createHttpError(403, "You do not have access to this approval action.");
-
-    const nextStepKey = String(transition.to_step_key || "").trim().toLowerCase();
+    const context = await getUtilityWorkflowContext(input);
+    const { actorUserId, record, approval, currentStepKey } = context;
+    const transition = resolveUtilityWorkflowTransition(context, transitionKey);
+    const nextStepKey = String(transition.toStepKey || transition.to_step_key || "").trim().toLowerCase();
+    if (!nextStepKey) {
+      throw createHttpError(400, "Target approval status is invalid.");
+    }
     const isReturningToDraft = nextStepKey === "draft";
     if (Number(approval.record_count || 0) <= 0) {
       throw createHttpError(400, "No monthly utility data found for workflow action.");
@@ -80,12 +56,27 @@ export async function runUtilityMonthTransition(input) {
     await query(
       `UPDATE utility_monthly_approvals
           SET approval_status = $2,
-              approved_by_user_id = CASE WHEN $2 = 'approved' THEN $3 ELSE NULL END,
-              approved_at = CASE WHEN $2 = 'approved' THEN NOW() ELSE NULL END,
-              updated_by_user_id = $3,
+              approved_by_user_id = CASE
+                WHEN $2 = 'approved' THEN COALESCE(approved_by_user_id, $3::bigint)
+                WHEN $2 = 'audited' THEN approved_by_user_id
+                ELSE NULL
+              END,
+              approved_at = CASE
+                WHEN $2 = 'approved' THEN COALESCE(approved_at, NOW())
+                WHEN $2 = 'audited' THEN approved_at
+                ELSE NULL
+              END,
+              updated_by_user_id = $3::bigint,
               updated_at = NOW()
         WHERE id = $1`,
-      [approval.id, nextStepKey, input.userId],
+      [approval.id, nextStepKey, actorUserId],
+    );
+
+    await query(
+      `INSERT INTO utility_monthly_approval_history
+        (monthly_approval_id, from_status, to_status, actor_user_id)
+       VALUES ($1, $2, $3, $4::bigint)`,
+      [approval.id, currentStepKey, nextStepKey, actorUserId],
     );
 
     if (nextStepKey === "submitted") {
@@ -94,10 +85,10 @@ export async function runUtilityMonthTransition(input) {
            FROM utility_monthly_approvals uma
            JOIN companies c ON c.id = uma.facility_id
            LEFT JOIN utility_types ut ON ut.key = uma.type
-           LEFT JOIN users u ON u.id = $2
+          LEFT JOIN users u ON u.id = $2
            LEFT JOIN employees e ON e.id = u.employee_id
           WHERE uma.id = $1`,
-        [approval.id, input.userId],
+        [approval.id, actorUserId],
       );
       const detail = detailRes.rows[0];
       try {

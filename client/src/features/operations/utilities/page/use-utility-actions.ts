@@ -51,6 +51,17 @@ function getCoverageWarning(record: UtilityRecord) {
   return `Coverage warning: ${missingDaysCount} day${missingDaysCount === 1 ? "" : "s"} missing (${missingLabel || "check month coverage"}).`;
 }
 
+function formatStatusLabel(stepKey: string) {
+  const key = String(stepKey || "").trim().toLowerCase();
+  if (key === "draft") return "Draft";
+  if (key === "submit" || key === "submitted") return "Submitted";
+  if (key === "check" || key === "checked") return "Checked";
+  if (key === "recommend" || key === "recommended") return "Recommended";
+  if (key === "approve" || key === "approved") return "Approved";
+  if (key === "audit" || key === "audited") return "Audited";
+  return key ? key.slice(0, 1).toUpperCase() + key.slice(1) : "Updated";
+}
+
 async function attachPdf(record: UtilityRecord, attachment: File, userId: string) {
   return uploadUtilityAttachment(record.id, { fileName: attachment.name, mimeType: attachment.type, dataBase64: await fileToBase64(attachment) }, userId);
 }
@@ -142,7 +153,10 @@ export function createUtilityActions(input: { userId: string; selected: UtilityR
         input.setUtilityRows((current) => current.map((row) => mapMonthGroupRows(updated, row)));
         input.setSelected(updated);
         await input.reloadUtilities?.();
-        toast.success("Monthly utility workflow updated");
+        toast.successDetail(
+          "Utility status updated",
+          `Month moved to ${formatStatusLabel(updated.approvalStatus)}.`,
+        );
         return true;
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Failed to update monthly utility workflow.");

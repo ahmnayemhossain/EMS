@@ -8,6 +8,7 @@ function toNumber(value) {
 
 export function rowToRecord(row) {
   const missingRanges = Array.isArray(row.missing_ranges) ? row.missing_ranges : [];
+  const approvalHistory = Array.isArray(row.approval_history) ? row.approval_history : [];
   const approvalStatus = row.approval_status === "pending" ? "draft" : row.approval_status || "draft";
   return {
     id: Number(row.id),
@@ -43,6 +44,8 @@ export function rowToRecord(row) {
     approvalStatus,
     approvedBy: row.approved_by_name || row.approved_by_username || undefined,
     approvedAt: row.approved_at ? new Date(row.approved_at).toISOString() : undefined,
+    monthlyCreatedBy: row.monthly_created_by_name || row.monthly_created_by_username || undefined,
+    monthlyCreatedAt: row.monthly_created_at ? new Date(row.monthly_created_at).toISOString() : undefined,
     coverageStart: row.coverage_start ? toDateString(row.coverage_start) : undefined,
     coverageEnd: row.coverage_end ? toDateString(row.coverage_end) : undefined,
     coverageDays: toNumber(row.covered_days),
@@ -56,6 +59,7 @@ export function rowToRecord(row) {
       approvalStatus === "approved" || ((toNumber(row.missing_days_count) ?? 0) === 0 && (toNumber(row.month_record_count) ?? 0) > 0),
     createdByUserId: row.created_by_user_id ? String(row.created_by_user_id) : undefined,
     updatedByUserId: row.updated_by_user_id ? String(row.updated_by_user_id) : undefined,
+    approvalHistory,
   };
 }
 

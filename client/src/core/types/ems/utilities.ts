@@ -57,6 +57,14 @@ export type UtilityApprovalTransition = {
   isActive: boolean;
 };
 
+export type UtilityApprovalHistoryEntry = {
+  id?: number;
+  fromStepKey?: string;
+  toStepKey: string;
+  actedBy?: string;
+  actedAt?: string;
+};
+
 export type UtilityApprovalFlow = {
   group: {
     key: string;
@@ -68,6 +76,7 @@ export type UtilityApprovalFlow = {
   } | null;
   steps: UtilityApprovalStep[];
   transitions: UtilityApprovalTransition[];
+  currentStepKey?: string;
 };
 
 export type UtilityRecord = {
@@ -103,6 +112,8 @@ export type UtilityRecord = {
   approvalStatus?: string;
   approvedBy?: string;
   approvedAt?: string;
+  monthlyCreatedBy?: string;
+  monthlyCreatedAt?: string;
   coverageStart?: string;
   coverageEnd?: string;
   coverageDays?: number;
@@ -125,5 +136,6 @@ export type UtilityRecord = {
   }>;
   createdByUserId?: ID;
   updatedByUserId?: ID;
+  approvalHistory?: UtilityApprovalHistoryEntry[];
 };
 

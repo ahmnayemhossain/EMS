@@ -41,6 +41,14 @@ function normalizeGroup(input) {
   };
 }
 
+function buildTransitionKey(fromStepKey, toStepKey) {
+  return `${fromStepKey}_to_${toStepKey}`;
+}
+
+function buildTransitionName(stepNameByKey, fromStepKey, toStepKey) {
+  return `${stepNameByKey.get(fromStepKey) || fromStepKey} to ${stepNameByKey.get(toStepKey) || toStepKey}`;
+}
+
 function normalizeRoleMapping(input) {
   return {
     groupKey: String(input?.groupKey || "").trim().toLowerCase(),
@@ -63,68 +71,120 @@ function normalizeUserMapping(input) {
 
 function assertValidPayload(payload) {
   const steps = Array.isArray(payload?.steps) ? payload.steps.map(normalizeStep) : [];
-  const transitions = Array.isArray(payload?.transitions) ? payload.transitions.map(normalizeTransition) : [];
+  const requestedTransitions = Array.isArray(payload?.transitions) ? payload.transitions.map(normalizeTransition) : [];
   const groups = Array.isArray(payload?.groups) ? payload.groups.map(normalizeGroup) : [];
   const roleMappings = Array.isArray(payload?.roleMappings) ? payload.roleMappings.map(normalizeRoleMapping) : [];
   const userMappings = Array.isArray(payload?.userMappings) ? payload.userMappings.map(normalizeUserMapping) : [];
 
   const stepKeys = new Set();
+  const stepNameByKey = new Map();
   for (const step of steps) {
     if (!step.key || !step.name) throw new Error("Each hierarchy step needs key and name.");
     if (stepKeys.has(step.key)) throw new Error(`Duplicate step key: ${step.key}`);
     stepKeys.add(step.key);
+    stepNameByKey.set(step.key, step.name);
   }
 
-  const transitionKeys = new Set();
-  for (const transition of transitions) {
-    if (!transition.key || !transition.name || !transition.fromStepKey || !transition.toStepKey) {
-      throw new Error("Each hierarchy transition needs key, name, from step, and to step.");
+  const requestedTransitionsByKey = new Map();
+  for (const transition of requestedTransitions) {
+    if (!transition.key || !transition.fromStepKey || !transition.toStepKey) {
+      throw new Error("Each hierarchy transition needs key, from step, and to step.");
     }
     if (!stepKeys.has(transition.fromStepKey) || !stepKeys.has(transition.toStepKey)) {
       throw new Error(`Transition ${transition.key} points to a missing step.`);
     }
-    if (transitionKeys.has(transition.key)) throw new Error(`Duplicate transition key: ${transition.key}`);
-    transitionKeys.add(transition.key);
+    if (requestedTransitionsByKey.has(transition.key)) throw new Error(`Duplicate transition key: ${transition.key}`);
+    requestedTransitionsByKey.set(transition.key, transition);
   }
 
   const groupKeys = new Set();
-  for (const group of groups) {
+  const derivedGroups = groups.map((group) => {
     if (!group.key || !group.name || !group.moduleKey) throw new Error("Each hierarchy group needs key, name, and module.");
     if (groupKeys.has(group.key)) throw new Error(`Duplicate group key: ${group.key}`);
     groupKeys.add(group.key);
     for (const stepKey of group.stepKeys) {
       if (!stepKeys.has(stepKey)) throw new Error(`Group ${group.key} uses missing step ${stepKey}.`);
     }
-    for (const transitionKey of group.transitionKeys) {
-      if (!transitionKeys.has(transitionKey)) throw new Error(`Group ${group.key} uses missing transition ${transitionKey}.`);
+    const transitionKeys = [];
+    for (let index = 0; index < group.stepKeys.length - 1; index += 1) {
+      const fromStepKey = group.stepKeys[index];
+      const toStepKey = group.stepKeys[index + 1];
+      transitionKeys.push(buildTransitionKey(fromStepKey, toStepKey));
+      transitionKeys.push(buildTransitionKey(toStepKey, fromStepKey));
+    }
+    return {
+      ...group,
+      transitionKeys,
+    };
+  });
+
+  const transitionsByKey = new Map();
+  for (const group of derivedGroups) {
+    for (let index = 0; index < group.stepKeys.length - 1; index += 1) {
+      const fromStepKey = group.stepKeys[index];
+      const toStepKey = group.stepKeys[index + 1];
+      for (const [fromKey, toKey] of [
+        [fromStepKey, toStepKey],
+        [toStepKey, fromStepKey],
+      ]) {
+        const key = buildTransitionKey(fromKey, toKey);
+        if (transitionsByKey.has(key)) continue;
+        const requested = requestedTransitionsByKey.get(key);
+        transitionsByKey.set(key, {
+          key,
+          name: requested?.name || buildTransitionName(stepNameByKey, fromKey, toKey),
+          fromStepKey: fromKey,
+          toStepKey: toKey,
+          isActive: requested?.isActive ?? 1,
+        });
+      }
     }
   }
 
-  for (const mapping of roleMappings) {
+  const transitions = Array.from(transitionsByKey.values());
+  const transitionKeys = new Set(transitions.map((transition) => transition.key));
+
+  const sanitizedRoleMappings = roleMappings.map((mapping) => {
+    const group = derivedGroups.find((item) => item.key === mapping.groupKey);
+    const allowedTransitionKeys = new Set(group?.transitionKeys || []);
+    return {
+      ...mapping,
+      transitionKeys: mapping.transitionKeys.filter((transitionKey) => allowedTransitionKeys.has(transitionKey)),
+    };
+  });
+
+  for (const mapping of sanitizedRoleMappings) {
     if (!mapping.groupKey || !groupKeys.has(mapping.groupKey)) throw new Error("Role mapping group is missing.");
     if (!Number.isFinite(mapping.roleId) || mapping.roleId <= 0) throw new Error("Role mapping role is invalid.");
-    const group = groups.find((item) => item.key === mapping.groupKey);
     for (const transitionKey of mapping.transitionKeys) {
       if (!transitionKeys.has(transitionKey)) throw new Error(`Role mapping uses missing transition ${transitionKey}.`);
-      if (!group?.transitionKeys.includes(transitionKey)) {
-        throw new Error(`Role mapping transition ${transitionKey} is not part of group ${mapping.groupKey}.`);
-      }
     }
   }
 
-  for (const mapping of userMappings) {
+  const sanitizedUserMappings = userMappings.map((mapping) => {
+    const group = derivedGroups.find((item) => item.key === mapping.groupKey);
+    const allowedTransitionKeys = new Set(group?.transitionKeys || []);
+    return {
+      ...mapping,
+      transitionKeys: mapping.transitionKeys.filter((transitionKey) => allowedTransitionKeys.has(transitionKey)),
+    };
+  });
+
+  for (const mapping of sanitizedUserMappings) {
     if (!mapping.groupKey || !groupKeys.has(mapping.groupKey)) throw new Error("User mapping group is missing.");
     if (!Number.isFinite(mapping.userId) || mapping.userId <= 0) throw new Error("User mapping user is invalid.");
-    const group = groups.find((item) => item.key === mapping.groupKey);
     for (const transitionKey of mapping.transitionKeys) {
       if (!transitionKeys.has(transitionKey)) throw new Error(`User mapping uses missing transition ${transitionKey}.`);
-      if (!group?.transitionKeys.includes(transitionKey)) {
-        throw new Error(`User mapping transition ${transitionKey} is not part of group ${mapping.groupKey}.`);
-      }
     }
   }
 
-  return { steps, transitions, groups, roleMappings, userMappings };
+  return {
+    steps,
+    transitions,
+    groups: derivedGroups,
+    roleMappings: sanitizedRoleMappings.filter((mapping) => mapping.transitionKeys.length),
+    userMappings: sanitizedUserMappings.filter((mapping) => mapping.transitionKeys.length),
+  };
 }
 
 export async function getApprovalHierarchyConfig(_req, res, next) {

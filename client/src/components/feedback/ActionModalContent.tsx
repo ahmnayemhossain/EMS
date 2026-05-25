@@ -7,6 +7,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/primitives/alert-dialog";
+import * as React from "react";
 import { buttonVariants } from "@/components/ui/primitives/button";
 import { cn } from "@/components/ui/primitives/utils";
 
@@ -22,7 +23,7 @@ export function ActionModalContent({
   onConfirm,
 }: {
   title: string;
-  description?: string;
+  description?: React.ReactNode;
   confirmLabel: string;
   cancelLabel: string;
   tone: ActionModalTone;

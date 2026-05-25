@@ -25,6 +25,7 @@ utilitiesRouter.get("/meters", requirePermission("utilities:read"), listUtilityM
 utilitiesRouter.get("/master-data", requirePermission("utilities:read"), listUtilityMasterData);
 utilitiesRouter.get("/conversion-rules", requirePermission("utilities:read"), getUtilityConversionRules);
 utilitiesRouter.get("/approval-flow", requirePermission("utilities:read"), getUtilityApprovalFlow);
+utilitiesRouter.get("/:id/approval-flow", requirePermission("utilities:read"), getUtilityApprovalFlow);
 utilitiesRouter.get("/", requirePermission("utilities:read"), listUtilityRecords);
 utilitiesRouter.get("/:id", requirePermission("utilities:read"), getUtilityRecord);
 utilitiesRouter.post("/", requirePermission("utilities:write"), createUtilityRecord);

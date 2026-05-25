@@ -419,6 +419,15 @@ CREATE TABLE IF NOT EXISTS utility_monthly_approvals (
   UNIQUE (facility_id, type, meter_key, period_month)
 );
 
+CREATE TABLE IF NOT EXISTS utility_monthly_approval_history (
+  id BIGSERIAL PRIMARY KEY,
+  monthly_approval_id BIGINT NOT NULL REFERENCES utility_monthly_approvals(id) ON UPDATE CASCADE ON DELETE CASCADE,
+  from_status TEXT NOT NULL,
+  to_status TEXT NOT NULL,
+  actor_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 ALTER TABLE utility_records ADD COLUMN IF NOT EXISTS meter_id BIGINT REFERENCES meters(id) ON UPDATE CASCADE ON DELETE SET NULL;
 ALTER TABLE utility_records ADD COLUMN IF NOT EXISTS meter_key TEXT;
 ALTER TABLE utility_records ADD COLUMN IF NOT EXISTS period_month DATE;
@@ -502,6 +511,7 @@ CREATE INDEX IF NOT EXISTS idx_utility_records_period_start ON utility_records(p
 CREATE INDEX IF NOT EXISTS idx_utility_records_month_key ON utility_records(facility_id, type, meter_key, period_month);
 CREATE INDEX IF NOT EXISTS idx_utility_monthly_approvals_company_month ON utility_monthly_approvals(facility_id, period_month);
 CREATE INDEX IF NOT EXISTS idx_utility_monthly_approvals_status ON utility_monthly_approvals(approval_status);
+CREATE INDEX IF NOT EXISTS idx_utility_monthly_approval_history_monthly ON utility_monthly_approval_history(monthly_approval_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_sds_records_revision_date ON sds_records(revision_date);
 CREATE INDEX IF NOT EXISTS idx_chemicals_facility_id ON chemicals(facility_id);
 CREATE INDEX IF NOT EXISTS idx_chemicals_sds_id ON chemicals(sds_id);

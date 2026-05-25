@@ -79,6 +79,13 @@ function buildCoverage(rows, periodMonth) {
 }
 
 export async function syncUtilityMonthlyApproval(input) {
+  const actorUserId =
+    input.userId == null || input.userId === ""
+      ? null
+      : Number(input.userId);
+  if (actorUserId != null && (!Number.isFinite(actorUserId) || actorUserId <= 0)) {
+    throw createHttpError(400, "Invalid utility approval user context.");
+  }
   const result = await query(
     `SELECT id, facility_id, type, meter_id, meter_key, meter_name, source_id, period_month, period_start, period_end, value, diesel_liters, uom
        FROM utility_records
@@ -103,7 +110,7 @@ export async function syncUtilityMonthlyApproval(input) {
     `INSERT INTO utility_monthly_approvals
       (facility_id, type, meter_id, meter_key, meter_name, source_id, period_month, coverage_start, coverage_end, covered_days, month_days, missing_ranges, missing_days_count, record_count, total_value, total_diesel_liters, uom, approval_status, approved_by_user_id, approved_at, created_by_user_id, updated_by_user_id, created_at, updated_at)
      VALUES
-      ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb,$13,$14,$15,$16,$17,'pending',NULL,NULL,$18,$18,NOW(),NOW())
+      ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb,$13,$14,$15,$16,$17,'pending',NULL,NULL,$18::bigint,$18::bigint,NOW(),NOW())
      ON CONFLICT (facility_id, type, meter_key, period_month) DO UPDATE SET
       meter_id = EXCLUDED.meter_id,
       meter_name = EXCLUDED.meter_name,
@@ -167,7 +174,7 @@ export async function syncUtilityMonthlyApproval(input) {
       coverage.totalValue,
       coverage.totalDieselLiters,
       coverage.uom,
-      input.userId || null,
+      actorUserId,
     ],
   );
 
@@ -192,12 +199,16 @@ export async function syncAllUtilityMonthlyApprovals() {
 }
 
 export async function approveUtilityMonthByRecordId(input) {
+  const actorUserId = Number(input.userId || 0);
+  if (!Number.isFinite(actorUserId) || actorUserId <= 0) {
+    throw createHttpError(401, "Invalid user context.");
+  }
   const recordRes = await query(
     `SELECT id, facility_id, type, meter_key, period_month
        FROM utility_records
       WHERE id = $1
         AND EXISTS (SELECT 1 FROM user_companies uc WHERE uc.user_id = $2 AND uc.company_id = utility_records.facility_id)`,
-    [input.recordId, input.userId || -1],
+    [input.recordId, actorUserId],
   );
   const record = recordRes.rows[0];
   if (!record) throw createHttpError(404, "Utility record not found.");
@@ -217,24 +228,28 @@ export async function approveUtilityMonthByRecordId(input) {
   await query(
     `UPDATE utility_monthly_approvals
         SET approval_status = 'approved',
-            approved_by_user_id = $2,
+            approved_by_user_id = $2::bigint,
             approved_at = NOW(),
-            updated_by_user_id = $2,
+            updated_by_user_id = $2::bigint,
             updated_at = NOW()
       WHERE id = $1`,
-    [approval.id, input.userId],
+    [approval.id, actorUserId],
   );
 
   return record;
 }
 
 export async function submitUtilityMonthByRecordId(input) {
+  const actorUserId = Number(input.userId || 0);
+  if (!Number.isFinite(actorUserId) || actorUserId <= 0) {
+    throw createHttpError(401, "Invalid user context.");
+  }
   const recordRes = await query(
     `SELECT id, facility_id, type, meter_key, period_month
        FROM utility_records
       WHERE id = $1
         AND EXISTS (SELECT 1 FROM user_companies uc WHERE uc.user_id = $2 AND uc.company_id = utility_records.facility_id)`,
-    [input.recordId, input.userId || -1],
+    [input.recordId, actorUserId],
   );
   const record = recordRes.rows[0];
   if (!record) throw createHttpError(404, "Utility record not found.");
@@ -263,10 +278,10 @@ export async function submitUtilityMonthByRecordId(input) {
   await query(
     `UPDATE utility_monthly_approvals
         SET approval_status = 'submitted',
-            updated_by_user_id = $2,
+            updated_by_user_id = $2::bigint,
             updated_at = NOW()
       WHERE id = $1`,
-    [approval.id, input.userId],
+    [approval.id, actorUserId],
   );
 
   return approval;

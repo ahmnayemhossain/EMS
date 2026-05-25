@@ -60,6 +60,31 @@ function toUserMappings(rows) {
   return Array.from(byKey.values());
 }
 
+async function hasUserTransitionMapping(groupKey, userId, db = { query }) {
+  const result = await db.query(
+    `SELECT 1
+       FROM approval_hierarchy_user_transitions
+      WHERE group_key = $1 AND user_id = $2
+      LIMIT 1`,
+    [groupKey, userId],
+  );
+  return result.rowCount > 0;
+}
+
+async function isAdminUser(userId, db = { query }) {
+  const result = await db.query(
+    `SELECT 1
+       FROM user_roles ur
+       JOIN roles r ON r.id = ur.role_id
+      WHERE ur.user_id = $1
+        AND r.is_active = 1
+        AND lower(trim(r.name)) = 'admin'
+      LIMIT 1`,
+    [userId],
+  );
+  return result.rowCount > 0;
+}
+
 export async function listApprovalHierarchyConfig(db = { query }) {
   const [stepsRes, transitionsRes, groupsRes, groupStepsRes, groupTransitionsRes, roleTransitionsRes, userTransitionsRes, rolesRes] = await Promise.all([
     db.query(`SELECT * FROM approval_hierarchy_steps ORDER BY sort_order ASC, name ASC`),
@@ -116,29 +141,54 @@ export async function listUserGroupTransitions({ moduleKey, userId }, db = { que
     };
   }
 
-  const [stepsRes, transitionsRes] = await Promise.all([
-    db.query(
-      `SELECT DISTINCT s.*
-         FROM approval_hierarchy_steps s
-         JOIN approval_hierarchy_transitions t ON t.from_step_key = s.key OR t.to_step_key = s.key
-         LEFT JOIN approval_hierarchy_role_transitions rt ON rt.transition_key = t.key AND rt.group_key = $1
-         LEFT JOIN approval_hierarchy_user_transitions ut ON ut.transition_key = t.key AND ut.group_key = $1 AND ut.user_id = $2
-        WHERE (ut.user_id IS NOT NULL OR rt.role_id IN (SELECT role_id FROM user_roles WHERE user_id = $2))
-          AND s.is_active = 1
-        ORDER BY s.sort_order ASC, s.name ASC`,
-      [group.key, userId],
-    ),
-    db.query(
-      `SELECT DISTINCT t.*
-         FROM approval_hierarchy_transitions t
-         LEFT JOIN approval_hierarchy_role_transitions rt ON rt.transition_key = t.key AND rt.group_key = $1
-         LEFT JOIN approval_hierarchy_user_transitions ut ON ut.transition_key = t.key AND ut.group_key = $1 AND ut.user_id = $2
-        WHERE (ut.user_id IS NOT NULL OR rt.role_id IN (SELECT role_id FROM user_roles WHERE user_id = $2))
-          AND t.is_active = 1
-        ORDER BY t.name ASC`,
-      [group.key, userId],
-    ),
-  ]);
+  const isAdmin = await isAdminUser(userId, db);
+  const useUserMappings = await hasUserTransitionMapping(group.key, userId, db);
+  const stepsRes = await db.query(
+    `SELECT s.*
+       FROM approval_hierarchy_group_steps gs
+       JOIN approval_hierarchy_steps s ON s.key = gs.step_key
+      WHERE gs.group_key = $1
+        AND s.is_active = 1
+      ORDER BY gs.position_index ASC, s.sort_order ASC, s.name ASC`,
+    [group.key],
+  );
+  const transitionsRes = isAdmin
+    ? await db.query(
+        `SELECT DISTINCT t.*, gt.position_index
+           FROM approval_hierarchy_group_transitions gt
+           JOIN approval_hierarchy_transitions t ON t.key = gt.transition_key
+          WHERE gt.group_key = $1
+            AND t.is_active = 1
+          ORDER BY gt.position_index ASC, t.name ASC`,
+        [group.key],
+      )
+    : useUserMappings
+    ? await db.query(
+        `SELECT t.*
+           FROM approval_hierarchy_group_transitions gt
+           JOIN approval_hierarchy_transitions t ON t.key = gt.transition_key
+           JOIN approval_hierarchy_user_transitions ut
+             ON ut.group_key = gt.group_key
+            AND ut.transition_key = gt.transition_key
+          WHERE gt.group_key = $1
+            AND ut.user_id = $2
+            AND t.is_active = 1
+          ORDER BY gt.position_index ASC, t.name ASC`,
+        [group.key, userId],
+      )
+    : await db.query(
+        `SELECT DISTINCT t.*, gt.position_index
+           FROM approval_hierarchy_group_transitions gt
+           JOIN approval_hierarchy_transitions t ON t.key = gt.transition_key
+           JOIN approval_hierarchy_role_transitions rt
+             ON rt.group_key = gt.group_key
+            AND rt.transition_key = gt.transition_key
+          WHERE gt.group_key = $1
+            AND rt.role_id IN (SELECT role_id FROM user_roles WHERE user_id = $2)
+            AND t.is_active = 1
+          ORDER BY gt.position_index ASC, t.name ASC`,
+        [group.key, userId],
+      );
 
   return {
     group: {
@@ -170,24 +220,56 @@ export async function listUserGroupTransitions({ moduleKey, userId }, db = { que
 export async function getAllowedTransition({ moduleKey, userId, transitionKey, fromStepKey }, db = { query }) {
   const group = await getDefaultApprovalGroup(moduleKey, db);
   if (!group) return null;
+  const isAdmin = await isAdminUser(userId, db);
+  const useUserMappings = await hasUserTransitionMapping(group.key, userId, db);
 
-  const result = await db.query(
-    `SELECT DISTINCT t.*
-       FROM approval_hierarchy_transitions t
-       LEFT JOIN approval_hierarchy_role_transitions rt
-         ON rt.group_key = $1
-        AND rt.transition_key = t.key
-       LEFT JOIN approval_hierarchy_user_transitions ut
-         ON ut.group_key = $1
-        AND ut.transition_key = t.key
-        AND ut.user_id = $4
-      WHERE t.key = $2
-        AND t.from_step_key = $3
-        AND t.is_active = 1
-        AND (ut.user_id IS NOT NULL OR rt.role_id IN (SELECT role_id FROM user_roles WHERE user_id = $4))
-      LIMIT 1`,
-    [group.key, transitionKey, fromStepKey, userId],
-  );
+  const result = isAdmin
+    ? await db.query(
+        `SELECT t.*
+           FROM approval_hierarchy_group_transitions gt
+           JOIN approval_hierarchy_transitions t ON t.key = gt.transition_key
+          WHERE gt.group_key = $1
+            AND t.key = $2
+            AND t.from_step_key = $3
+            AND t.is_active = 1
+          LIMIT 1`,
+        [group.key, transitionKey, fromStepKey],
+      )
+    : useUserMappings
+    ? await db.query(
+        `SELECT t.*
+           FROM approval_hierarchy_group_transitions gt
+           JOIN approval_hierarchy_transitions t ON t.key = gt.transition_key
+           JOIN approval_hierarchy_user_transitions ut
+             ON ut.group_key = gt.group_key
+            AND ut.transition_key = gt.transition_key
+          WHERE gt.group_key = $1
+            AND ut.user_id = $4
+            AND t.key = $2
+            AND t.from_step_key = $3
+            AND t.is_active = 1
+          LIMIT 1`,
+        [group.key, transitionKey, fromStepKey, userId],
+      )
+    : await db.query(
+        `SELECT DISTINCT t.*
+           FROM approval_hierarchy_group_transitions gt
+           JOIN approval_hierarchy_transitions t ON t.key = gt.transition_key
+           JOIN approval_hierarchy_role_transitions rt
+             ON rt.group_key = gt.group_key
+            AND rt.transition_key = gt.transition_key
+          WHERE gt.group_key = $1
+            AND rt.role_id IN (SELECT role_id FROM user_roles WHERE user_id = $4)
+            AND t.key = $2
+            AND t.from_step_key = $3
+            AND t.is_active = 1
+          LIMIT 1`,
+        [group.key, transitionKey, fromStepKey, userId],
+      );
 
   return result.rows[0] || null;
+}
+
+export async function getUserWorkflowAccess({ moduleKey, userId }, db = { query }) {
+  return listUserGroupTransitions({ moduleKey, userId }, db);
 }

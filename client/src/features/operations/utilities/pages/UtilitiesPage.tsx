@@ -37,6 +37,7 @@ export function UtilitiesPage() {
   const [editOpen, setEditOpen] = React.useState(false);
   const [deleteOpen, setDeleteOpen] = React.useState(false);
   const [approvalFlow, setApprovalFlow] = React.useState<UtilityApprovalFlow | null>(null);
+  const [selectedApprovalFlow, setSelectedApprovalFlow] = React.useState<UtilityApprovalFlow | null>(null);
   const { utilityRows, setUtilityRows, uomOptions, sourceOptions, loading, reloadUtilities } = useUtilitiesLoader(userId, { facilityId });
   const { rows, total, highVarianceCount, missingBillsCount, readyToSubmitCount, readyForApprovalCount, monthSummaries, missingMonthLabels } = useUtilitiesRows({ active, facilityId, search, extraRows: utilityRows, companies });
   const trendData = React.useMemo(() => Array.from(rows.reduce((map, row) => map.set(row.periodStart.slice(0, 7), (map.get(row.periodStart.slice(0, 7)) ?? 0) + row.value), new Map<string, number>()), ([label, value]) => ({ label, value })).sort((a, b) => a.label.localeCompare(b.label)), [rows]);
@@ -75,6 +76,26 @@ export function UtilitiesPage() {
     };
   }, [userId]);
 
+  React.useEffect(() => {
+    let activeRequest = true;
+    if (!selected) {
+      setSelectedApprovalFlow(null);
+      return () => {
+        activeRequest = false;
+      };
+    }
+    void getUtilityApprovalFlow(userId, selected.id)
+      .then((flow) => {
+        if (activeRequest) setSelectedApprovalFlow(flow);
+      })
+      .catch((error) => {
+        if (activeRequest) toast.error(error instanceof Error ? error.message : "Could not load utilities approval actions.");
+      });
+    return () => {
+      activeRequest = false;
+    };
+  }, [userId, selected]);
+
   return (
     <div className="space-y-6">
       <CreateUtilityDialog
@@ -100,7 +121,7 @@ export function UtilitiesPage() {
         selected={selected}
         companies={companies}
         getCompanyName={getCompanyName}
-        approvalFlow={approvalFlow}
+        approvalFlow={selectedApprovalFlow || approvalFlow}
         canDelete={canDelete}
         onSelect={setSelected}
         onEdit={() => setEditOpen(true)}
