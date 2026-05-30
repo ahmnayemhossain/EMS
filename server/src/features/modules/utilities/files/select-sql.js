@@ -35,7 +35,8 @@ export const selectUtilitySql = `
         'fromStepKey', uah.from_status,
         'toStepKey', uah.to_status,
         'actedBy', COALESCE(he.name, hu.username),
-        'actedAt', uah.created_at
+        'actedAt', uah.created_at,
+        'note', uah.note
       )
       ORDER BY uah.created_at ASC
     ) AS events

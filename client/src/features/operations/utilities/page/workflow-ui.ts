@@ -3,14 +3,42 @@ import { getStepName } from "@/features/operations/utilities/hooks/approval-flow
 
 export type WorkflowDirection = "forward" | "reverse";
 
+const STEP_KEY_ALIASES: Record<string, string[]> = {
+  draft: ["draft", "prepared", "pending"],
+  submit: ["submit", "submitted"],
+  check: ["check", "checked"],
+  recommend: ["recommend", "recommended"],
+  approve: ["approve", "approved"],
+  audit: ["audit", "audited"],
+};
+
 export function getOrderedWorkflowSteps(flow: UtilityApprovalFlow | null | undefined) {
   return (flow?.steps || [])
     .filter((step) => step.isActive)
     .sort((left, right) => left.sortOrder - right.sortOrder);
 }
 
+export function normalizeWorkflowStepKey(flow: UtilityApprovalFlow | null | undefined, stepKey?: string) {
+  const rawKey = String(stepKey || "draft").trim().toLowerCase() || "draft";
+  const steps = getOrderedWorkflowSteps(flow);
+  if (steps.some((step) => step.key === rawKey)) {
+    return rawKey;
+  }
+
+  for (const aliases of Object.values(STEP_KEY_ALIASES)) {
+    if (!aliases.includes(rawKey)) continue;
+    const matchedStep = steps.find((step) => aliases.includes(step.key));
+    if (matchedStep) {
+      return matchedStep.key;
+    }
+  }
+
+  return rawKey;
+}
+
 export function getStepIndex(flow: UtilityApprovalFlow | null | undefined, stepKey: string) {
-  return getOrderedWorkflowSteps(flow).findIndex((step) => step.key === stepKey);
+  const normalizedStepKey = normalizeWorkflowStepKey(flow, stepKey);
+  return getOrderedWorkflowSteps(flow).findIndex((step) => step.key === normalizedStepKey);
 }
 
 export function getTransitionDirection(
@@ -44,7 +72,7 @@ export function splitTransitionsByDirection(
 }
 
 export function readWorkflowStatusLabel(stepKey: string, flow: UtilityApprovalFlow | null | undefined) {
-  const key = String(stepKey || "").trim().toLowerCase();
+  const key = normalizeWorkflowStepKey(flow, stepKey);
   if (key === "draft") return "Draft";
   if (key === "submitted" || key === "submit") return "Submit";
   if (key === "checked" || key === "check") return "Check";

@@ -44,10 +44,8 @@ async function seedApprovalHierarchy() {
   const steps = [
     ["draft", "Draft", 1, 1, 0],
     ["submitted", "Submitted", 2, 0, 0],
-    ["checked", "Checked", 3, 0, 0],
-    ["recommended", "Recommended", 4, 0, 0],
-    ["approved", "Approved", 5, 0, 0],
-    ["audited", "Audited", 6, 0, 1],
+    ["approved", "Approved", 3, 0, 0],
+    ["audited", "Audited", 4, 0, 1],
   ];
 
   for (const [key, name, sortOrder, isInitial, isFinal] of steps) {
@@ -67,25 +65,10 @@ async function seedApprovalHierarchy() {
   const transitions = [
     ["draft_to_submitted", "Draft to submit", "draft", "submitted"],
     ["submitted_to_draft", "Submit to draft", "submitted", "draft"],
-    ["draft_to_checked", "Draft to check", "draft", "checked"],
-    ["checked_to_draft", "Check to draft", "checked", "draft"],
-    ["submitted_to_checked", "Submit to check", "submitted", "checked"],
-    ["checked_to_submitted", "Check to submit", "checked", "submitted"],
-    ["submitted_to_recommended", "Submit to recommend", "submitted", "recommended"],
-    ["recommended_to_submitted", "Recommend to submit", "recommended", "submitted"],
-    ["draft_to_recommended", "Draft to recommend", "draft", "recommended"],
-    ["recommended_to_draft", "Recommend to draft", "recommended", "draft"],
-    ["checked_to_recommended", "Check to recommend", "checked", "recommended"],
-    ["recommended_to_checked", "Recommend to check", "recommended", "checked"],
     ["submitted_to_approved", "Submit to approve", "submitted", "approved"],
     ["approved_to_submitted", "Approve to submit", "approved", "submitted"],
-    ["draft_to_approved", "Draft to approve", "draft", "approved"],
-    ["approved_to_draft", "Approve to draft", "approved", "draft"],
-    ["checked_to_approved", "Check to approve", "checked", "approved"],
-    ["approved_to_checked", "Approve to check", "approved", "checked"],
-    ["recommended_to_approved", "Recommend to approve", "recommended", "approved"],
-    ["approved_to_recommended", "Approve to recommend", "approved", "recommended"],
     ["approved_to_audited", "Approve to audit", "approved", "audited"],
+    ["audited_to_approved", "Audit to approve", "audited", "approved"],
   ];
 
   for (const [key, name, fromStepKey, toStepKey] of transitions) {
@@ -128,6 +111,13 @@ async function seedApprovalHierarchy() {
     );
   }
 
+  await query(
+    `DELETE FROM approval_hierarchy_group_steps
+      WHERE group_key = $1
+        AND step_key <> ALL($2::text[])`,
+    ["utilities_approval_flow", steps.map(([key]) => key)],
+  );
+
   for (let index = 0; index < transitions.length; index += 1) {
     await query(
       `INSERT INTO approval_hierarchy_group_transitions (group_key, transition_key, position_index)
@@ -137,6 +127,37 @@ async function seedApprovalHierarchy() {
       ["utilities_approval_flow", transitions[index][0], index + 1],
     );
   }
+
+  await query(
+    `DELETE FROM approval_hierarchy_group_transitions
+      WHERE group_key = $1
+        AND transition_key <> ALL($2::text[])`,
+    ["utilities_approval_flow", transitions.map(([key]) => key)],
+  );
+  await query(
+    `DELETE FROM approval_hierarchy_role_transitions
+      WHERE group_key = $1
+        AND transition_key <> ALL($2::text[])`,
+    ["utilities_approval_flow", transitions.map(([key]) => key)],
+  );
+  await query(
+    `DELETE FROM approval_hierarchy_user_transitions
+      WHERE group_key = $1
+        AND transition_key <> ALL($2::text[])`,
+    ["utilities_approval_flow", transitions.map(([key]) => key)],
+  );
+
+  await query(
+    `UPDATE utility_monthly_approvals
+        SET approval_status = CASE
+          WHEN approval_status IN ('pending', 'draft') THEN 'draft'
+          WHEN approval_status IN ('submitted', 'checked', 'recommended') THEN 'submitted'
+          WHEN approval_status = 'approved' THEN 'approved'
+          WHEN approval_status = 'audited' THEN 'audited'
+          ELSE approval_status
+        END
+      WHERE approval_status IN ('pending', 'draft', 'submitted', 'checked', 'recommended', 'approved', 'audited')`,
+  );
 
   const adminRoleId = await getIdByName("roles", "Admin");
   if (adminRoleId) {

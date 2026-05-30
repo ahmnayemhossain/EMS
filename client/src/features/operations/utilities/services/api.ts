@@ -79,11 +79,11 @@ export async function submitUtilityMonth(id: number, userId: string) {
   return parseJsonResponse<UtilityRecord>(response, "Utilities request failed.");
 }
 
-export async function transitionUtilityMonth(id: number, transitionKey: string, userId: string) {
+export async function transitionUtilityMonth(id: number, transitionKey: string, userId: string, note?: string) {
   const response = await fetch(`${UTILITIES_API}/${id}/transition-month`, {
     method: "POST",
     headers: authJsonHeaders(userId),
-    body: JSON.stringify({ transitionKey }),
+    body: JSON.stringify({ transitionKey, note }),
   });
 
   return parseJsonResponse<UtilityRecord>(response, "Utilities request failed.");

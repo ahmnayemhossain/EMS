@@ -126,7 +126,7 @@ export function UtilitiesPage() {
         onSelect={setSelected}
         onEdit={() => setEditOpen(true)}
         onDelete={() => setDeleteOpen(true)}
-        onTransitionMonth={(transitionKey) => void actions.transitionSelectedMonth(transitionKey)}
+        onTransitionMonth={(transitionKey, note) => void actions.transitionSelectedMonth(transitionKey, note)}
       />
       <EditUtilityDialog open={editOpen} onOpenChange={setEditOpen} userId={userId} companies={companies} uomOptions={uomOptions} sourceOptions={sourceOptions} record={selected} existingRecords={utilityRows} onSave={async (payload) => { await actions.updateUsage(payload); }} />
       <ActionModal open={deleteOpen} onOpenChange={setDeleteOpen} tone="destructive" title="Delete this utility record?" description="This action removes the usage record from the server. This cannot be undone." confirmLabel="Delete" onConfirm={async () => { await actions.deleteSelected(); }} />

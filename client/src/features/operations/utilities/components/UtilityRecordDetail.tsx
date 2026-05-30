@@ -4,7 +4,7 @@ import { Droplets, FileText, Gauge } from "lucide-react";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
 import type { UtilityApprovalFlow, UtilityRecord } from "@/core/types/models/ems";
 import { formatDate, formatNumber, formatUtilityType } from "@/core/utils/format";
-import { formatMissingRanges, getStepName, getWorkflowStatus } from "@/features/operations/utilities/hooks/approval-flow";
+import { formatMissingRanges, getWorkflowStatus } from "@/features/operations/utilities/hooks/approval-flow";
 
 export function UtilityRecordDetail({
   record,
@@ -48,11 +48,6 @@ export function UtilityRecordDetail({
             ? `Approved by ${record.approvedBy}`
             : workflow.detail
         }
-      />
-      <DetailListRow
-        label="Current step"
-        value={getStepName(approvalFlow, record.approvalStatus)}
-        subvalue={record.approvedAt ? `Updated ${formatDate(record.approvedAt)}` : ""}
       />
       <DetailListRow
         label="Coverage"

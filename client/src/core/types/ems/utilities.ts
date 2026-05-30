@@ -63,6 +63,7 @@ export type UtilityApprovalHistoryEntry = {
   toStepKey: string;
   actedBy?: string;
   actedAt?: string;
+  note?: string;
 };
 
 export type UtilityApprovalFlow = {

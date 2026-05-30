@@ -8,13 +8,35 @@ function toTitleCase(value: string) {
     .join(" ");
 }
 
+function normalizeDisplayStepKey(flow: UtilityApprovalFlow | null | undefined, stepKey?: string) {
+  const rawKey = String(stepKey || "draft").trim().toLowerCase() || "draft";
+  const steps = flow?.steps || [];
+  if (steps.some((step) => step.key === rawKey)) {
+    return rawKey;
+  }
+  const aliases: Record<string, string[]> = {
+    draft: ["draft", "prepared", "pending"],
+    submit: ["submit", "submitted"],
+    check: ["check", "checked"],
+    recommend: ["recommend", "recommended"],
+    approve: ["approve", "approved"],
+    audit: ["audit", "audited"],
+  };
+  for (const aliasList of Object.values(aliases)) {
+    if (!aliasList.includes(rawKey)) continue;
+    const matchedStep = steps.find((step) => aliasList.includes(step.key));
+    if (matchedStep) return matchedStep.key;
+  }
+  return rawKey;
+}
+
 export function getStepName(flow: UtilityApprovalFlow | null | undefined, stepKey?: string) {
-  const key = String(stepKey || "draft").trim().toLowerCase() || "draft";
+  const key = normalizeDisplayStepKey(flow, stepKey);
   return flow?.steps.find((step) => step.key === key)?.name || toTitleCase(key);
 }
 
 export function getWorkflowStatus(row: UtilityRecord, flow?: UtilityApprovalFlow | null) {
-  const currentStep = String(row.approvalStatus || "draft").trim().toLowerCase() || "draft";
+  const currentStep = normalizeDisplayStepKey(flow, row.approvalStatus || "draft");
 
   if (Number(row.missingDaysCount || 0) > 0) {
     return {

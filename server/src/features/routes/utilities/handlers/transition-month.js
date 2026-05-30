@@ -18,6 +18,7 @@ export async function transitionUtilityMonth(req, res, next) {
       recordId: Number(req.params.id),
       userId: await getRequestUserDbId(req),
       transitionKey: String(req.body?.transitionKey || "").trim().toLowerCase(),
+      note: String(req.body?.note || "").trim(),
     });
     res.json(updated);
   } catch (error) {
@@ -25,15 +26,29 @@ export async function transitionUtilityMonth(req, res, next) {
   }
 }
 
+function getWorkflowStepIndex(flow, stepKey) {
+  const steps = (flow?.steps || [])
+    .filter((step) => step.isActive)
+    .sort((left, right) => Number(left.sortOrder || 0) - Number(right.sortOrder || 0));
+  return steps.findIndex((step) => String(step.key || "").trim().toLowerCase() === String(stepKey || "").trim().toLowerCase());
+}
+
 export async function runUtilityMonthTransition(input) {
     const transitionKey = String(input.transitionKey || "").trim().toLowerCase();
+    const note = String(input.note || "").trim();
     if (!transitionKey) throw createHttpError(400, "Transition key is required.");
     const context = await getUtilityWorkflowContext(input);
-    const { actorUserId, record, approval, currentStepKey } = context;
+    const { actorUserId, record, approval, currentStepKey, workflowAccess } = context;
     const transition = resolveUtilityWorkflowTransition(context, transitionKey);
     const nextStepKey = String(transition.toStepKey || transition.to_step_key || "").trim().toLowerCase();
     if (!nextStepKey) {
       throw createHttpError(400, "Target approval status is invalid.");
+    }
+    const currentStepIndex = getWorkflowStepIndex(workflowAccess, currentStepKey);
+    const nextStepIndex = getWorkflowStepIndex(workflowAccess, nextStepKey);
+    const isReverse = currentStepIndex >= 0 && nextStepIndex >= 0 && nextStepIndex < currentStepIndex;
+    if (isReverse && !note) {
+      throw createHttpError(400, "Reject note is required.");
     }
     const isReturningToDraft = nextStepKey === "draft";
     if (Number(approval.record_count || 0) <= 0) {
@@ -74,9 +89,9 @@ export async function runUtilityMonthTransition(input) {
 
     await query(
       `INSERT INTO utility_monthly_approval_history
-        (monthly_approval_id, from_status, to_status, actor_user_id)
-       VALUES ($1, $2, $3, $4::bigint)`,
-      [approval.id, currentStepKey, nextStepKey, actorUserId],
+        (monthly_approval_id, from_status, to_status, actor_user_id, note)
+       VALUES ($1, $2, $3, $4::bigint, NULLIF($5, ''))`,
+      [approval.id, currentStepKey, nextStepKey, actorUserId, note],
     );
 
     if (nextStepKey === "submitted") {

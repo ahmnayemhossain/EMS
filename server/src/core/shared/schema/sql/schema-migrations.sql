@@ -372,8 +372,10 @@ CREATE TABLE IF NOT EXISTS utility_monthly_approval_history (
   from_status TEXT NOT NULL,
   to_status TEXT NOT NULL,
   actor_user_id BIGINT REFERENCES users(id) ON UPDATE CASCADE ON DELETE SET NULL,
+  note TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+ALTER TABLE utility_monthly_approval_history ADD COLUMN IF NOT EXISTS note TEXT;
 
 CREATE INDEX IF NOT EXISTS idx_utility_monthly_approval_history_monthly ON utility_monthly_approval_history(monthly_approval_id, created_at);
 

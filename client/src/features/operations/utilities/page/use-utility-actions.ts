@@ -80,6 +80,9 @@ function mapMonthGroupRows(updated: UtilityRecord, row: UtilityRecord) {
     approvalStatus: updated.approvalStatus,
     approvedBy: updated.approvedBy,
     approvedAt: updated.approvedAt,
+    approvalHistory: updated.approvalHistory,
+    monthlyCreatedBy: updated.monthlyCreatedBy,
+    monthlyCreatedAt: updated.monthlyCreatedAt,
     monthComplete: updated.monthComplete,
     missingRanges: updated.missingRanges,
     missingDaysCount: updated.missingDaysCount,
@@ -146,10 +149,10 @@ export function createUtilityActions(input: { userId: string; selected: UtilityR
       }
     },
 
-    async transitionSelectedMonth(transitionKey: string) {
+    async transitionSelectedMonth(transitionKey: string, note?: string) {
       if (!input.selected) return false;
       try {
-        const updated = await transitionUtilityMonth(input.selected.id, transitionKey, input.userId);
+        const updated = await transitionUtilityMonth(input.selected.id, transitionKey, input.userId, note);
         input.setUtilityRows((current) => current.map((row) => mapMonthGroupRows(updated, row)));
         input.setSelected(updated);
         await input.reloadUtilities?.();

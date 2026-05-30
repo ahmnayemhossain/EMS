@@ -1,6 +1,5 @@
 import cors from 'cors';
 import express from 'express';
-import rateLimit from 'express-rate-limit';
 import './env.js';
 
 import { apiRouter } from './core/routes/api.js';
@@ -13,20 +12,10 @@ import {
 
 const app = express();
 
-// Rate limiting configuration
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-  message: { error: 'Too many requests, please try again later.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
 const PORT = Number(process.env.PORT || 4000);
 const HOST = process.env.HOST || '127.0.0.1';
 const ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173';
 
-app.use(apiLimiter); // Apply rate limiting to all API routes
 app.use(
   cors({
     origin: ORIGIN.split(',').map((s) => s.trim()),

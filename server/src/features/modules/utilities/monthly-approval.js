@@ -110,7 +110,7 @@ export async function syncUtilityMonthlyApproval(input) {
     `INSERT INTO utility_monthly_approvals
       (facility_id, type, meter_id, meter_key, meter_name, source_id, period_month, coverage_start, coverage_end, covered_days, month_days, missing_ranges, missing_days_count, record_count, total_value, total_diesel_liters, uom, approval_status, approved_by_user_id, approved_at, created_by_user_id, updated_by_user_id, created_at, updated_at)
      VALUES
-      ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb,$13,$14,$15,$16,$17,'pending',NULL,NULL,$18::bigint,$18::bigint,NOW(),NOW())
+      ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb,$13,$14,$15,$16,$17,'draft',NULL,NULL,$18::bigint,$18::bigint,NOW(),NOW())
      ON CONFLICT (facility_id, type, meter_key, period_month) DO UPDATE SET
       meter_id = EXCLUDED.meter_id,
       meter_name = EXCLUDED.meter_name,
@@ -135,7 +135,7 @@ export async function syncUtilityMonthlyApproval(input) {
         ELSE 'draft'
       END,
       approved_by_user_id = CASE
-        WHEN utility_monthly_approvals.approval_status = 'approved'
+        WHEN utility_monthly_approvals.approval_status IN ('approved', 'audited')
          AND utility_monthly_approvals.coverage_start IS NOT DISTINCT FROM EXCLUDED.coverage_start
          AND utility_monthly_approvals.coverage_end IS NOT DISTINCT FROM EXCLUDED.coverage_end
          AND utility_monthly_approvals.record_count = EXCLUDED.record_count
@@ -145,7 +145,7 @@ export async function syncUtilityMonthlyApproval(input) {
         ELSE NULL
       END,
       approved_at = CASE
-        WHEN utility_monthly_approvals.approval_status = 'approved'
+        WHEN utility_monthly_approvals.approval_status IN ('approved', 'audited')
          AND utility_monthly_approvals.coverage_start IS NOT DISTINCT FROM EXCLUDED.coverage_start
          AND utility_monthly_approvals.coverage_end IS NOT DISTINCT FROM EXCLUDED.coverage_end
          AND utility_monthly_approvals.record_count = EXCLUDED.record_count
