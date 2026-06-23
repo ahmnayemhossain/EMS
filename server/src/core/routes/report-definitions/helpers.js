@@ -4,6 +4,29 @@ function normalizeText(value) {
   return String(value ?? "").trim();
 }
 
+function stripSqlComments(sql) {
+  const raw = String(sql || "");
+  const withoutBlocks = raw.replace(/\/\*[\s\S]*?\*\//g, " ");
+  return withoutBlocks.replace(/--.*$/gm, " ");
+}
+
+function isSelectQuery(sql) {
+  const trimmed = stripSqlComments(sql).trim();
+  if (!trimmed) return false;
+  const first = trimmed.split(/\s+/)[0]?.toLowerCase();
+  return first === "select" || first === "with";
+}
+
+function assertSqlTextSafe(sqlText) {
+  const text = stripSqlComments(sqlText).trim();
+  if (!isSelectQuery(text)) throw createHttpError(400, "Only SELECT queries are allowed.");
+  if (text.includes(";")) throw createHttpError(400, "Multiple SQL statements are not allowed.");
+
+  const lowered = text.toLowerCase();
+  const banned = /\b(insert|update|delete|drop|alter|create|truncate|grant|revoke|copy|call|do|execute|set)\b/;
+  if (banned.test(lowered)) throw createHttpError(400, "Unsafe SQL keywords detected.");
+}
+
 export function normalizeReportDefinitionInput(input) {
   const key = normalizeText(input?.key);
   const name = normalizeText(input?.name);
@@ -17,6 +40,7 @@ export function normalizeReportDefinitionInput(input) {
   if (!/^[a-z][a-z0-9_]{2,80}$/i.test(key)) throw createHttpError(400, "Invalid report key.");
   if (!name) throw createHttpError(400, "Report name is required.");
   if (!sqlText) throw createHttpError(400, "SQL query is required.");
+  assertSqlTextSafe(sqlText);
 
   const parsedVariables = Array.isArray(variables) ? variables : [];
 
@@ -38,6 +62,6 @@ export function assertVariablesValid(variables) {
     if (!name) throw createHttpError(400, "Variable name is required.");
     if (!/^[a-z][a-z0-9_]{0,40}$/i.test(name)) throw createHttpError(400, `Invalid variable name: ${name}`);
     const type = String(v?.type ?? "text").trim();
-    if (!["text", "date", "number", "company"].includes(type)) throw createHttpError(400, `Invalid variable type: ${type}`);
+    if (!["text", "date", "month", "number", "company"].includes(type)) throw createHttpError(400, `Invalid variable type: ${type}`);
   }
 }

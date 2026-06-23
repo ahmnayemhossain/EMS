@@ -261,6 +261,23 @@ async function seedMeters() {
 }
 
 async function seedReportDefinitions() {
+  const deprecatedKeys = [
+    "utilities_consumption_records",
+    "utilities_approved_data_report",
+    "utilities_noise_data_report",
+    "chemicals_register",
+    "sds_register",
+    "waste_log",
+    "wastewater_lab_log",
+    "audits_log",
+    "documents_register",
+  ];
+
+  await query(
+    `DELETE FROM report_definitions WHERE key = ANY($1::text[])`,
+    [deprecatedKeys],
+  );
+
   const utilitiesMasterSql = `
     SELECT
       c.name AS company,
@@ -274,7 +291,7 @@ async function seedReportDefinitions() {
       u.name AS unit,
       CASE WHEN ut.key IN ('electricity', 'steam') AND (LOWER(COALESCE(s.name, '')) LIKE '%generator%' OR LOWER(COALESCE(s.name, '')) LIKE '%boiler%') THEN 'Yes' ELSE 'No' END AS fuel_linked,
       CASE WHEN LOWER(COALESCE(s.name, '')) LIKE '%generator%' THEN 'Diesel' WHEN LOWER(COALESCE(s.name, '')) LIKE '%boiler%' THEN 'Gas' ELSE '' END AS fuel_type,
-      CASE WHEN LOWER(COALESCE(s.name, '')) LIKE '%generator%' THEN 'Liter' WHEN LOWER(COALESCE(s.name, '')) LIKE '%boiler%' THEN 'm?' ELSE '' END AS fuel_unit,
+      CASE WHEN LOWER(COALESCE(s.name, '')) LIKE '%generator%' THEN 'Liter' WHEN LOWER(COALESCE(s.name, '')) LIKE '%boiler%' THEN 'm3' ELSE '' END AS fuel_unit,
       ''::text AS rate,
       'BDT'::text AS currency,
       ''::text AS remarks,
@@ -321,6 +338,8 @@ async function seedReportDefinitions() {
       variables,
     ],
   );
+
+  return;
 
   const utilitiesRecordsSql = `
     SELECT

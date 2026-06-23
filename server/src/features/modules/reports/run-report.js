@@ -6,6 +6,7 @@ import { createHttpError } from "../utilities/record.js";
 import { getCompanyDbIdOrThrow, getRequestUserDbId } from "../../routes/utilities/request-context.js";
 
 const PLACEHOLDER_RE = /{{\s*([a-zA-Z0-9_]+)\s*}}/g;
+const ACTIVE_REPORT_KEYS = ["utilities_master_data"];
 
 function stripSqlComments(sql) {
   const raw = String(sql || "");
@@ -44,7 +45,12 @@ function buildQuery(sqlText, values) {
 export async function listActiveReportDefinitions() {
   await ensureCoreSchema();
   const result = await query(
-    `SELECT id, key, name, description, requires_company, variables FROM report_definitions WHERE is_active = 1 ORDER BY name ASC`,
+    `SELECT id, key, name, description, requires_company, variables
+       FROM report_definitions
+      WHERE is_active = 1
+        AND key = ANY($1::text[])
+      ORDER BY name ASC`,
+    [ACTIVE_REPORT_KEYS],
   );
   return result.rows.map((row) => ({
     id: String(row.id),
@@ -60,6 +66,7 @@ export async function runReportByKey(input) {
   await ensureCoreSchema();
   const key = String(input?.key || "").trim();
   if (!key) throw createHttpError(400, "Report key is required.");
+  if (!ACTIVE_REPORT_KEYS.includes(key)) throw createHttpError(404, "Report not found.");
 
   const userDbId = await getRequestUserDbId(input.req);
 
