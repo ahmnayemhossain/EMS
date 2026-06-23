@@ -5,13 +5,31 @@
   "type": "module",
   "scripts": {
     "dev": "node --watch src/index.js",
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "db:setup": "npm run prisma:migrate:deploy && npm run prisma:seed",
+    "db:baseline": "npm run prisma:migrate:baseline && npm run prisma:seed",
+    "prisma:pull": "prisma db pull",
+    "prisma:validate": "prisma validate",
+    "prisma:generate": "prisma generate",
+    "prisma:studio": "prisma studio",
+    "prisma:seed": "prisma db seed",
+    "prisma:migrate:dev": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:migrate:status": "prisma migrate status",
+    "prisma:migrate:reset": "prisma migrate reset --force",
+    "prisma:migrate:baseline": "prisma migrate resolve --applied 0001_initial_schema"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
     "cors": "2.8.5",
     "express": "4.22.1",
     "express-rate-limit": "^7.1.5",
     "pg": "^8.20.0",
     "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "dotenv": "^17.4.2",
+    "prisma": "^7.8.0"
   }
 }

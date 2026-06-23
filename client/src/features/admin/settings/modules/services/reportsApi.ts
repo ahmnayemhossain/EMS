@@ -5,7 +5,7 @@ const REPORT_DEFS_API = "/api/system/report-definitions";
 export type ReportVariableDef = {
   name: string;
   label?: string;
-  type?: "text" | "date" | "number" | "company";
+  type?: "text" | "date" | "month" | "number" | "company";
   required?: boolean;
   defaultValue?: unknown;
 };

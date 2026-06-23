@@ -3,16 +3,18 @@ import type { WastewaterRecord } from "@/core/types/models/ems";
 import { formatDate } from "@/core/utils/format";
 import type { DataColumn } from "@/components/table/DataTable";
 
-export function getWastewaterColumns(): Array<DataColumn<WastewaterRecord>> {
+export function getWastewaterColumns(
+  getCompanyName: (facilityId: string) => string,
+): Array<DataColumn<WastewaterRecord>> {
   return [
     {
       id: "sampleDate",
       header: "Sample",
       cell: (r) => (
-        <div className="min-w-0">
+          <div className="min-w-0">
           <div className="truncate font-medium capitalize">{r.point}</div>
           <div className="text-muted-foreground mt-1 text-xs">
-            {formatDate(r.sampleDate)} • {r.point}
+            {getCompanyName(r.facilityId)} - {formatDate(r.sampleDate)}
           </div>
         </div>
       ),

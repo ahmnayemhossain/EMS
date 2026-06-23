@@ -7,6 +7,7 @@ import { HeaderCard } from "@/features/public/report-box/HeaderCard";
 import { ImagePreviewDialog } from "@/features/public/report-box/ImagePreviewDialog";
 import { MessageList } from "@/features/public/report-box/MessageList";
 import { formatClock, formatReportNumber, getCompanyBnName, getCompanyIdFromCode } from "@/features/public/report-box/helpers";
+import { usePublicCompanies } from "@/features/public/report-box/usePublicCompanies";
 import { usePublicReportBoxEffects, useBottomScroll, syncAtBottom } from "@/features/public/report-box/usePublicReportBoxEffects";
 import { usePublicReportBoxMessages } from "@/features/public/report-box/usePublicReportBoxMessages";
 import { usePublicReportBoxRefs } from "@/features/public/report-box/usePublicReportBoxRefs";
@@ -15,9 +16,10 @@ import { usePublicReportBoxVoice } from "@/features/public/report-box/usePublicR
 
 export function PublicReportBoxPage() {
   const code = useParams().code;
-  const companyId = getCompanyIdFromCode(code);
+  const companies = usePublicCompanies();
+  const companyId = getCompanyIdFromCode(code, companies);
   const companyValid = Boolean(companyId);
-  const companyNameBn = getCompanyBnName(companyId);
+  const companyNameBn = getCompanyBnName(companyId, companies);
   const state = usePublicReportBoxState();
   const refs = usePublicReportBoxRefs();
   const remaining = Math.max(0, 10 - state.sentCount);

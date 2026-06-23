@@ -446,6 +446,8 @@ export default defineConfig({
       "/api/reports": "http://localhost:4000",
       "/api/chemicals": "http://localhost:4000",
       "/api/sds": "http://localhost:4000",
+      "/api/waste": "http://localhost:4000",
+      "/api/wastewater": "http://localhost:4000",
       "/cdn": "http://localhost:4000",
     },
   },

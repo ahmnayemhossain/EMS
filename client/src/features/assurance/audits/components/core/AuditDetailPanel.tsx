@@ -1,7 +1,6 @@
 import { Separator } from "@/components/ui/primitives/separator";
 import { DetailPanel } from "@/components/layout/primitives/DetailPanel";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
-import { getFacilityName } from "@/core/data/catalog/mock";
 import type { AuditRecord } from "@/core/types/models/audit";
 
 import { formatAuditDate } from "../../config/audit.helpers";
@@ -24,7 +23,7 @@ export function AuditDetailPanel({
       title={audit ? audit.name : "Audit"}
       description={
         audit
-          ? `${getFacilityName(audit.facilityId)}${audit.customerName ? ` • ${audit.customerName}` : ""} • ${formatAuditDate(audit.date)}`
+          ? `${audit.companyName || audit.facilityId}${audit.customerName ? ` • ${audit.customerName}` : ""} • ${formatAuditDate(audit.date)}`
           : undefined
       }
     >
@@ -53,8 +52,8 @@ export function AuditDetailPanel({
           <AuditFindingsCard audit={audit} />
           <AuditDetailActions audit={audit} />
           <Separator />
-          <div className="text-muted-foreground text-xs">
-            Templates can be refined to match your exact certificate requirements.
+          <div className="text-xs text-muted-foreground">
+            Auditor: {audit.auditor}
           </div>
         </div>
       ) : null}

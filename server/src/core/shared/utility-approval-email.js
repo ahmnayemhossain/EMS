@@ -5,7 +5,7 @@ export const UTILITY_APPROVAL_EMAIL_KEY = "utility_approval_submission";
 
 function buildVariables(input) {
   return {
-    appName: "Fortis Group EMS",
+    appName: "EMS",
     companyName: input.companyName || "",
     utilityType: input.utilityType || "",
     meterName: input.meterName || "",

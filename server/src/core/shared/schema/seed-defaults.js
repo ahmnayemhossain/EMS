@@ -16,7 +16,6 @@ export async function seedDefaults() {
   await insertWiring("source_wiring", "utility_type_id", "sources", "source_id", defaultSourceWiring);
   await seedMeters();
   await seedUtilityConversionRules();
-  await seedDashboardWidgets();
   await seedReportDefinitions();
   await seedEmailNotificationSettings();
   await seedPermissions();
@@ -38,6 +37,7 @@ async function seedPermissions() {
 async function seedRoles() {
   for (const [name, scope, description] of defaultRoles) await query(`INSERT INTO roles (name, scope, description) VALUES ($1, $2, $3) ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name, scope = EXCLUDED.scope, description = EXCLUDED.description`, [name, scope, description]);
   await assignAdminPermissions(defaultPermissions);
+  await seedUtilitiesRolePermissions();
 }
 
 async function seedApprovalHierarchy() {
@@ -170,6 +170,71 @@ async function seedApprovalHierarchy() {
       );
     }
   }
+
+  await seedUtilitiesRoleTransitions();
+}
+
+async function seedUtilitiesRolePermissions() {
+  const rolePermissions = {
+    "Utilities Preparer": [
+      "companies:read",
+      "utilities:read",
+      "utilities:write",
+      "utilities:update",
+      "reports:read",
+    ],
+    "Utilities Approver": [
+      "companies:read",
+      "utilities:read",
+      "reports:read",
+    ],
+    "Utilities Auditor": [
+      "companies:read",
+      "utilities:read",
+      "reports:read",
+      "reports:export",
+    ],
+  };
+
+  for (const [roleName, permissionKeys] of Object.entries(rolePermissions)) {
+    const roleId = await getIdByName("roles", roleName);
+    if (!roleId) continue;
+    await query("DELETE FROM role_permissions WHERE role_id = $1", [roleId]);
+    for (const permissionKey of permissionKeys) {
+      await query(
+        `INSERT INTO role_permissions (role_id, permission_id)
+         SELECT $1, id FROM permissions WHERE key = $2
+         ON CONFLICT (role_id, permission_id) DO NOTHING`,
+        [roleId, permissionKey],
+      );
+    }
+  }
+}
+
+async function seedUtilitiesRoleTransitions() {
+  const roleTransitions = {
+    "Utilities Preparer": ["draft_to_submitted", "submitted_to_draft"],
+    "Utilities Approver": ["submitted_to_approved", "approved_to_submitted"],
+    "Utilities Auditor": ["approved_to_audited", "audited_to_approved"],
+  };
+
+  for (const [roleName, transitionKeys] of Object.entries(roleTransitions)) {
+    const roleId = await getIdByName("roles", roleName);
+    if (!roleId) continue;
+    await query(
+      `DELETE FROM approval_hierarchy_role_transitions
+        WHERE group_key = $1 AND role_id = $2`,
+      ["utilities_approval_flow", roleId],
+    );
+    for (const transitionKey of transitionKeys) {
+      await query(
+        `INSERT INTO approval_hierarchy_role_transitions (group_key, role_id, transition_key)
+         VALUES ($1, $2, $3)
+         ON CONFLICT (group_key, role_id, transition_key) DO NOTHING`,
+        ["utilities_approval_flow", roleId, transitionKey],
+      );
+    }
+  }
 }
 
 async function seedEmployees() {
@@ -191,60 +256,6 @@ async function seedMeters() {
     await query(
       `INSERT INTO meters (name, code, location, company_id, utility_type_id, source_id, uom_id, is_active) VALUES ($1,$2,$3,$4,$5,$6,$7,1) ON CONFLICT (company_id, utility_type_id, name) DO NOTHING`,
       [meterName, code || null, location || null, companyId, utilityTypeId, sourceId, uomId],
-    );
-  }
-}
-
-async function seedDashboardWidgets() {
-  const defaults = [
-    [
-      "Utility overview",
-      "utility_overview",
-      "Quick monthly utility totals and coverage state.",
-      6,
-      3,
-    ],
-    [
-      "Utility trend",
-      "utility_trend",
-      "Rolling electricity trend from saved utility records.",
-      6,
-      4,
-    ],
-    [
-      "Utility approval queue",
-      "utility_approval_queue",
-      "Draft, pending, approved, and audited month counts.",
-      6,
-      3,
-    ],
-    [
-      "Company snapshot",
-      "company_snapshot",
-      "Active company count and short-name list.",
-      6,
-      3,
-    ],
-    [
-      "Audit calendar",
-      "audit_calendar",
-      "Current month audit calendar view.",
-      6,
-      4,
-    ],
-  ];
-
-  for (const [name, templateKey, description, defaultSpan, defaultRows] of defaults) {
-    await query(
-      `INSERT INTO dashboard_widgets (name, template_key, description, default_span, default_rows, is_active)
-       VALUES ($1, $2, $3, $4, $5, 1)
-       ON CONFLICT (name) DO UPDATE
-         SET template_key = EXCLUDED.template_key,
-             description = EXCLUDED.description,
-             default_span = EXCLUDED.default_span,
-             default_rows = EXCLUDED.default_rows,
-             is_active = EXCLUDED.is_active`,
-      [name, templateKey, description, defaultSpan, defaultRows],
     );
   }
 }
@@ -408,14 +419,14 @@ async function seedReportDefinitions() {
     WHERE uma.facility_id = {{companyDbId}}
       AND uma.period_month >= {{fromMonth}}
       AND uma.period_month <= {{toMonth}}
-      AND uma.approval_status = 'approved'
+      AND uma.approval_status IN ('approved', 'audited')
     ORDER BY uma.period_month DESC, ut.name ASC, uma.meter_name ASC
   `.trim();
 
   const monthVariables = JSON.stringify([
     { name: "companyId", label: "Company", type: "company", required: true },
-    { name: "fromMonth", label: "From month", type: "date", required: true },
-    { name: "toMonth", label: "To month", type: "date", required: true },
+    { name: "fromMonth", label: "From month", type: "month", required: true },
+    { name: "toMonth", label: "To month", type: "month", required: true },
   ]);
 
   await query(
@@ -433,7 +444,7 @@ async function seedReportDefinitions() {
     [
       "utilities_approved_data_report",
       "Approved Utility Summary",
-      "Approved monthly utility totals with approver details for the selected company.",
+      "Approved and audited monthly utility totals with approver details for the selected company.",
       approvedUtilitiesSql,
       monthVariables,
     ],
@@ -476,7 +487,7 @@ async function seedReportDefinitions() {
     WHERE uma.facility_id = {{companyDbId}}
       AND uma.period_month >= {{fromMonth}}
       AND uma.period_month <= {{toMonth}}
-      AND uma.approval_status <> 'approved'
+      AND uma.approval_status NOT IN ('approved', 'audited')
     ORDER BY uma.period_month DESC, ut.name ASC, uma.meter_name ASC
   `.trim();
 
@@ -494,10 +505,278 @@ async function seedReportDefinitions() {
     `,
     [
       "utilities_noise_data_report",
-      "Pending Utility Exceptions",
-      "Unapproved monthly utility data, including missing-day gaps and submission exceptions.",
+      "Unapproved Utility Exceptions",
+      "Draft and submitted monthly utility data, including missing-day gaps and submission exceptions.",
       utilityNoiseSql,
       monthVariables,
+    ],
+  );
+
+  const chemicalsRegisterSql = `
+    SELECT
+      co.name AS company,
+      c.name AS chemical_name,
+      COALESCE(c.trade_name, '-') AS trade_name,
+      c.supplier AS supplier,
+      c.storage_area AS storage_area,
+      c.stock_kg AS stock_kg,
+      COALESCE(c.min_stock_kg, 0) AS minimum_stock_kg,
+      COALESCE(c.expiry_date::text, '-') AS expiry_date,
+      c.approval_status AS approval_status,
+      COALESCE(sr.chemical_name, '-') AS linked_sds,
+      COALESCE(c.linked_waste_stream, '-') AS linked_waste_stream,
+      COALESCE(ce.name, cu.username) AS prepared_by,
+      c.created_at AS prepared_at
+    FROM chemicals c
+    JOIN companies co ON co.id = c.facility_id
+    LEFT JOIN sds_records sr ON sr.id = c.sds_id
+    LEFT JOIN users cu ON cu.id = c.created_by_user_id
+    LEFT JOIN employees ce ON ce.id = cu.employee_id
+    WHERE c.facility_id = {{companyDbId}}
+    ORDER BY c.name ASC
+  `.trim();
+
+  await query(
+    `
+      INSERT INTO report_definitions (key, name, description, requires_company, sql_text, variables, is_active)
+      VALUES ($1, $2, $3, 1, $4, $5::jsonb, 1)
+      ON CONFLICT (key) DO UPDATE
+        SET name = EXCLUDED.name,
+            description = EXCLUDED.description,
+            requires_company = EXCLUDED.requires_company,
+            sql_text = EXCLUDED.sql_text,
+            variables = EXCLUDED.variables,
+            is_active = EXCLUDED.is_active
+    `,
+    [
+      "chemicals_register",
+      "Chemical Register",
+      "Company-wise chemical inventory with stock, SDS linkage, and storage details.",
+      chemicalsRegisterSql,
+      variables,
+    ],
+  );
+
+  const sdsRegisterSql = `
+    SELECT
+      sr.id::text AS sds_id,
+      sr.chemical_name AS chemical_name,
+      sr.supplier AS supplier,
+      sr.language AS language,
+      sr.revision_date AS revision_date,
+      sr.file_name AS file_name,
+      sr.is_active AS is_active,
+      COALESCE(ce.name, cu.username) AS prepared_by,
+      sr.created_at AS prepared_at
+    FROM sds_records sr
+    LEFT JOIN users cu ON cu.id = sr.created_by_user_id
+    LEFT JOIN employees ce ON ce.id = cu.employee_id
+    WHERE sr.revision_date >= {{fromDate}}
+      AND sr.revision_date <= {{toDate}}
+    ORDER BY sr.revision_date DESC, sr.chemical_name ASC
+  `.trim();
+
+  const sdsVariables = JSON.stringify([
+    { name: "fromDate", label: "From date", type: "date", required: true },
+    { name: "toDate", label: "To date", type: "date", required: true },
+  ]);
+
+  await query(
+    `
+      INSERT INTO report_definitions (key, name, description, requires_company, sql_text, variables, is_active)
+      VALUES ($1, $2, $3, 0, $4, $5::jsonb, 1)
+      ON CONFLICT (key) DO UPDATE
+        SET name = EXCLUDED.name,
+            description = EXCLUDED.description,
+            requires_company = EXCLUDED.requires_company,
+            sql_text = EXCLUDED.sql_text,
+            variables = EXCLUDED.variables,
+            is_active = EXCLUDED.is_active
+    `,
+    [
+      "sds_register",
+      "SDS Register",
+      "SDS master list with revision dates and document availability.",
+      sdsRegisterSql,
+      sdsVariables,
+    ],
+  );
+
+  const wasteLogSql = `
+    SELECT
+      co.name AS company,
+      wr.log_date AS log_date,
+      wr.stream AS waste_stream,
+      wr.waste_type AS waste_type,
+      wr.qty_kg AS quantity_kg,
+      wr.storage_location AS storage_location,
+      COALESCE(wr.vendor, '-') AS vendor,
+      wr.disposal_status AS disposal_status,
+      COALESCE(wr.manifest_no, '-') AS manifest_no,
+      COALESCE(wr.due_by::text, '-') AS due_by,
+      COALESCE(wr.notes, '-') AS notes,
+      COALESCE(ce.name, cu.username) AS prepared_by,
+      wr.created_at AS prepared_at
+    FROM waste_records wr
+    JOIN companies co ON co.id = wr.facility_id
+    LEFT JOIN users cu ON cu.id = wr.created_by_user_id
+    LEFT JOIN employees ce ON ce.id = cu.employee_id
+    WHERE wr.facility_id = {{companyDbId}}
+      AND wr.log_date >= {{fromDate}}
+      AND wr.log_date <= {{toDate}}
+    ORDER BY wr.log_date DESC, wr.id DESC
+  `.trim();
+
+  await query(
+    `
+      INSERT INTO report_definitions (key, name, description, requires_company, sql_text, variables, is_active)
+      VALUES ($1, $2, $3, 1, $4, $5::jsonb, 1)
+      ON CONFLICT (key) DO UPDATE
+        SET name = EXCLUDED.name,
+            description = EXCLUDED.description,
+            requires_company = EXCLUDED.requires_company,
+            sql_text = EXCLUDED.sql_text,
+            variables = EXCLUDED.variables,
+            is_active = EXCLUDED.is_active
+    `,
+    [
+      "waste_log",
+      "Waste Log",
+      "Waste generation, storage, and disposal records for the selected company and date range.",
+      wasteLogSql,
+      recordVariables,
+    ],
+  );
+
+  const wastewaterLabSql = `
+    SELECT
+      co.name AS company,
+      wlr.sample_date AS sample_date,
+      wlr.sample_point AS sample_point,
+      wlr.ph AS ph,
+      wlr.cod AS cod,
+      wlr.bod AS bod,
+      wlr.tss AS tss,
+      COALESCE(wlr.do_value, 0) AS do_value,
+      COALESCE(wlr.lab_report_name, '-') AS lab_report_name,
+      COALESCE(wlr.notes, '-') AS notes,
+      COALESCE(ce.name, cu.username) AS prepared_by,
+      wlr.created_at AS prepared_at
+    FROM wastewater_lab_records wlr
+    JOIN companies co ON co.id = wlr.facility_id
+    LEFT JOIN users cu ON cu.id = wlr.created_by_user_id
+    LEFT JOIN employees ce ON ce.id = cu.employee_id
+    WHERE wlr.facility_id = {{companyDbId}}
+      AND wlr.sample_date >= {{fromDate}}
+      AND wlr.sample_date <= {{toDate}}
+    ORDER BY wlr.sample_date DESC, wlr.id DESC
+  `.trim();
+
+  await query(
+    `
+      INSERT INTO report_definitions (key, name, description, requires_company, sql_text, variables, is_active)
+      VALUES ($1, $2, $3, 1, $4, $5::jsonb, 1)
+      ON CONFLICT (key) DO UPDATE
+        SET name = EXCLUDED.name,
+            description = EXCLUDED.description,
+            requires_company = EXCLUDED.requires_company,
+            sql_text = EXCLUDED.sql_text,
+            variables = EXCLUDED.variables,
+            is_active = EXCLUDED.is_active
+    `,
+    [
+      "wastewater_lab_log",
+      "Wastewater Lab Log",
+      "Wastewater and ETP sample results for the selected company and date range.",
+      wastewaterLabSql,
+      recordVariables,
+    ],
+  );
+
+  const auditsLogSql = `
+    SELECT
+      co.name AS company,
+      ar.name AS audit_name,
+      COALESCE(ar.customer_name, '-') AS customer_name,
+      ar.audit_date AS audit_date,
+      COALESCE(ar.next_audit_date::text, '-') AS next_audit_date,
+      ar.auditor AS auditor,
+      ar.template_id AS template_id,
+      ar.progress AS progress,
+      ar.overall_score AS overall_score,
+      COALESCE((ar.findings_count->>'minor')::int, 0) AS minor_findings,
+      COALESCE((ar.findings_count->>'major')::int, 0) AS major_findings,
+      COALESCE((ar.findings_count->>'critical')::int, 0) AS critical_findings,
+      ar.created_at AS created_at
+    FROM audit_records ar
+    JOIN companies co ON co.id = ar.facility_id
+    WHERE ar.facility_id = {{companyDbId}}
+      AND ar.audit_date >= {{fromDate}}
+      AND ar.audit_date <= {{toDate}}
+    ORDER BY ar.audit_date DESC, ar.id DESC
+  `.trim();
+
+  await query(
+    `
+      INSERT INTO report_definitions (key, name, description, requires_company, sql_text, variables, is_active)
+      VALUES ($1, $2, $3, 1, $4, $5::jsonb, 1)
+      ON CONFLICT (key) DO UPDATE
+        SET name = EXCLUDED.name,
+            description = EXCLUDED.description,
+            requires_company = EXCLUDED.requires_company,
+            sql_text = EXCLUDED.sql_text,
+            variables = EXCLUDED.variables,
+            is_active = EXCLUDED.is_active
+    `,
+    [
+      "audits_log",
+      "Audit Log",
+      "Audit schedule, score, and findings summary for the selected company and date range.",
+      auditsLogSql,
+      recordVariables,
+    ],
+  );
+
+  const documentsRegisterSql = `
+    SELECT
+      co.name AS company,
+      dr.title AS title,
+      dr.category AS category,
+      dr.owner_department AS owner_department,
+      COALESCE(dr.expires_on::text, '-') AS expires_on,
+      dr.status AS status,
+      dr.file_name AS file_name,
+      COALESCE(dr.notes, '-') AS notes,
+      COALESCE(ce.name, cu.username) AS prepared_by,
+      dr.created_at AS created_at
+    FROM document_records dr
+    JOIN companies co ON co.id = dr.facility_id
+    LEFT JOIN users cu ON cu.id = dr.created_by_user_id
+    LEFT JOIN employees ce ON ce.id = cu.employee_id
+    WHERE dr.facility_id = {{companyDbId}}
+      AND dr.created_at::date >= {{fromDate}}
+      AND dr.created_at::date <= {{toDate}}
+    ORDER BY dr.created_at DESC, dr.id DESC
+  `.trim();
+
+  await query(
+    `
+      INSERT INTO report_definitions (key, name, description, requires_company, sql_text, variables, is_active)
+      VALUES ($1, $2, $3, 1, $4, $5::jsonb, 1)
+      ON CONFLICT (key) DO UPDATE
+        SET name = EXCLUDED.name,
+            description = EXCLUDED.description,
+            requires_company = EXCLUDED.requires_company,
+            sql_text = EXCLUDED.sql_text,
+            variables = EXCLUDED.variables,
+            is_active = EXCLUDED.is_active
+    `,
+    [
+      "documents_register",
+      "Document Register",
+      "Company-wise document register with expiry and ownership details.",
+      documentsRegisterSql,
+      recordVariables,
     ],
   );
 
@@ -511,10 +790,10 @@ async function seedReportDefinitions() {
     `,
     [
       "utility_approval_submission",
-      "Fortis Group EMS",
+      "EMS",
       "",
       "Utility approval required: {{companyName}} {{utilityType}} {{billMonth}}",
-      "<!doctype html><html><body style=\"margin:0;padding:24px;background:#f5f7fb;font-family:Arial,sans-serif;color:#0f172a;\"><div style=\"max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;\"><div style=\"padding:20px 24px;background:#0f172a;color:#ffffff;\"><div style=\"font-size:18px;font-weight:700;\">Fortis Group EMS</div><div style=\"font-size:13px;opacity:0.8;margin-top:4px;\">Utility approval request</div></div><div style=\"padding:24px;\"><h2 style=\"margin:0 0 12px;font-size:20px;\">Utility data submitted for approval</h2><table style=\"width:100%;border-collapse:collapse;font-size:14px;\"><tr><td style=\"padding:8px 0;color:#64748b;\">Company</td><td style=\"padding:8px 0;font-weight:600;\">{{companyName}}</td></tr><tr><td style=\"padding:8px 0;color:#64748b;\">Utility type</td><td style=\"padding:8px 0;\">{{utilityType}}</td></tr><tr><td style=\"padding:8px 0;color:#64748b;\">Meter</td><td style=\"padding:8px 0;\">{{meterName}}</td></tr><tr><td style=\"padding:8px 0;color:#64748b;\">Bill month</td><td style=\"padding:8px 0;\">{{billMonth}}</td></tr><tr><td style=\"padding:8px 0;color:#64748b;\">Entry count</td><td style=\"padding:8px 0;\">{{recordCount}}</td></tr><tr><td style=\"padding:8px 0;color:#64748b;\">Total</td><td style=\"padding:8px 0;\">{{totalValue}} {{unit}}</td></tr><tr><td style=\"padding:8px 0;color:#64748b;\">Submitted by</td><td style=\"padding:8px 0;\">{{submittedBy}}</td></tr><tr><td style=\"padding:8px 0;color:#64748b;\">Submitted at</td><td style=\"padding:8px 0;\">{{submittedAt}}</td></tr></table></div></div></body></html>",
+      "<!doctype html><html><body style=\"margin:0;padding:24px;background:#f5f7fb;font-family:Arial,sans-serif;color:#0f172a;\"><div style=\"max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;\"><div style=\"padding:20px 24px;background:#0f172a;color:#ffffff;\"><div style=\"font-size:18px;font-weight:700;\">EMS</div><div style=\"font-size:13px;opacity:0.8;margin-top:4px;\">Utility approval request</div></div><div style=\"padding:24px;\"><h2 style=\"margin:0 0 12px;font-size:20px;\">Utility data submitted for approval</h2><table style=\"width:100%;border-collapse:collapse;font-size:14px;\"><tr><td style=\"padding:8px 0;color:#64748b;\">Company</td><td style=\"padding:8px 0;font-weight:600;\">{{companyName}}</td></tr><tr><td style=\"padding:8px 0;color:#64748b;\">Utility type</td><td style=\"padding:8px 0;\">{{utilityType}}</td></tr><tr><td style=\"padding:8px 0;color:#64748b;\">Meter</td><td style=\"padding:8px 0;\">{{meterName}}</td></tr><tr><td style=\"padding:8px 0;color:#64748b;\">Bill month</td><td style=\"padding:8px 0;\">{{billMonth}}</td></tr><tr><td style=\"padding:8px 0;color:#64748b;\">Entry count</td><td style=\"padding:8px 0;\">{{recordCount}}</td></tr><tr><td style=\"padding:8px 0;color:#64748b;\">Total</td><td style=\"padding:8px 0;\">{{totalValue}} {{unit}}</td></tr><tr><td style=\"padding:8px 0;color:#64748b;\">Submitted by</td><td style=\"padding:8px 0;\">{{submittedBy}}</td></tr><tr><td style=\"padding:8px 0;color:#64748b;\">Submitted at</td><td style=\"padding:8px 0;\">{{submittedAt}}</td></tr></table></div></div></body></html>",
     ],
   );
 }
@@ -543,10 +822,10 @@ async function seedEmailNotificationSettings() {
     `,
     [
       "login_log",
-      "Fortis Group EMS",
+      "EMS",
       "",
       "Login alert: {{userName}}",
-      "<!doctype html><html><body style=\"margin:0;padding:24px;background:#f5f7fb;font-family:Arial,sans-serif;color:#0f172a;\"><div style=\"max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;\"><div style=\"padding:20px 24px;background:#0f172a;color:#ffffff;\"><div style=\"font-size:18px;font-weight:700;\">Fortis Group EMS</div><div style=\"font-size:13px;opacity:0.8;margin-top:4px;\">Login notification</div></div><div style=\"padding:24px;\"><h2 style=\"margin:0 0 12px;font-size:20px;\">New sign-in detected</h2><p style=\"margin:0 0 16px;font-size:14px;line-height:1.6;\">A user has signed in to <strong>{{appName}}</strong>.</p><table style=\"width:100%;border-collapse:collapse;font-size:14px;\"><tr><td style=\"padding:8px 0;color:#64748b;\">Name</td><td style=\"padding:8px 0;font-weight:600;\">{{userName}}</td></tr><tr><td style=\"padding:8px 0;color:#64748b;\">Username</td><td style=\"padding:8px 0;\">{{username}}</td></tr><tr><td style=\"padding:8px 0;color:#64748b;\">Employee ID</td><td style=\"padding:8px 0;\">{{employeeId}}</td></tr><tr><td style=\"padding:8px 0;color:#64748b;\">Email</td><td style=\"padding:8px 0;\">{{userEmail}}</td></tr><tr><td style=\"padding:8px 0;color:#64748b;\">Login time</td><td style=\"padding:8px 0;\">{{loginAt}}</td></tr><tr><td style=\"padding:8px 0;color:#64748b;\">IP address</td><td style=\"padding:8px 0;\">{{ipAddress}}</td></tr></table></div></div></body></html>",
+      "<!doctype html><html><body style=\"margin:0;padding:24px;background:#f5f7fb;font-family:Arial,sans-serif;color:#0f172a;\"><div style=\"max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;\"><div style=\"padding:20px 24px;background:#0f172a;color:#ffffff;\"><div style=\"font-size:18px;font-weight:700;\">EMS</div><div style=\"font-size:13px;opacity:0.8;margin-top:4px;\">Login notification</div></div><div style=\"padding:24px;\"><h2 style=\"margin:0 0 12px;font-size:20px;\">New sign-in detected</h2><p style=\"margin:0 0 16px;font-size:14px;line-height:1.6;\">A user has signed in to <strong>{{appName}}</strong>.</p><table style=\"width:100%;border-collapse:collapse;font-size:14px;\"><tr><td style=\"padding:8px 0;color:#64748b;\">Name</td><td style=\"padding:8px 0;font-weight:600;\">{{userName}}</td></tr><tr><td style=\"padding:8px 0;color:#64748b;\">Username</td><td style=\"padding:8px 0;\">{{username}}</td></tr><tr><td style=\"padding:8px 0;color:#64748b;\">Employee ID</td><td style=\"padding:8px 0;\">{{employeeId}}</td></tr><tr><td style=\"padding:8px 0;color:#64748b;\">Email</td><td style=\"padding:8px 0;\">{{userEmail}}</td></tr><tr><td style=\"padding:8px 0;color:#64748b;\">Login time</td><td style=\"padding:8px 0;\">{{loginAt}}</td></tr><tr><td style=\"padding:8px 0;color:#64748b;\">IP address</td><td style=\"padding:8px 0;\">{{ipAddress}}</td></tr></table></div></div></body></html>",
     ],
   );
 }

@@ -2,7 +2,8 @@ import * as React from "react";
 
 import { DetailPanel } from "@/components/layout/primitives/DetailPanel";
 import { Dialog, DialogContent } from "@/components/ui/primitives/dialog";
-import { getFacilityName } from "@/core/data/catalog/mock";
+import { useSelectedCompany } from "@/core/app/state/slices/company";
+import { getCompanyName } from "@/core/companies/directory";
 import type { ReportBoxReport } from "@/core/types/models/ems";
 import { formatReportNumber } from "@/features/people/complaint-box/config/utils";
 import { ComplaintDrawerBody } from "@/features/people/complaint-box/drawer/ComplaintDrawerBody";
@@ -39,6 +40,7 @@ export function ComplaintDrawer({
   addMessage: (id: string, msg: { kind: "text"; text: string; author?: string }) => void;
 }) {
   const [imagePreview, setImagePreview] = React.useState<{ src: string; alt: string } | null>(null);
+  const { companies } = useSelectedCompany();
 
   return (
     <>
@@ -48,7 +50,7 @@ export function ComplaintDrawer({
         title={complaint ? formatReportNumber(complaint.id) : "Complaint"}
         description={
           complaint
-            ? `${formatReportNumber(complaint.id)} • ${complaint.facilityId ? getFacilityName(complaint.facilityId) : "Unknown company"} • ${new Date(complaint.createdAt).toLocaleString()}`
+            ? `${formatReportNumber(complaint.id)} • ${getCompanyName(complaint.facilityId, companies)} • ${new Date(complaint.createdAt).toLocaleString()}`
             : undefined
         }
       >

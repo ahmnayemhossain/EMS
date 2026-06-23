@@ -1,11 +1,11 @@
 import type { AppConfig } from "@/core/platform/platform.types";
 
 export const appConfig: AppConfig = {
-  id: "fortis-ems",
-  name: "Fortis Group EMS",
+  id: "ems",
+  name: "EMS",
   version: "1.0.0",
   showVersionBadge: false,
-  description: "Compliance, operations, reporting, and workforce workflows in one workspace.",
+  description: "Compliance, operations, reporting, and workforce workflows in one system.",
   shell: {
     defaultSidebarOpen: false,
     sidebarVariant: "floating",

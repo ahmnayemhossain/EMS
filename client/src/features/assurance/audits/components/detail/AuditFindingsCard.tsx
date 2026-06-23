@@ -24,18 +24,18 @@ export function AuditFindingsCard({ audit }: { audit: AuditRecord }) {
                 <div className="min-w-0">
                   <div className="truncate text-sm font-medium">{finding.title}</div>
                   {finding.description ? (
-                    <div className="text-muted-foreground mt-1 line-clamp-2 text-xs">
+                    <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">
                       {finding.description}
                     </div>
                   ) : null}
-                  <div className="text-muted-foreground mt-1 text-xs">
+                  <div className="mt-1 text-xs text-muted-foreground">
                     {finding.area} • {finding.status}
                     {person ? ` • ${person}` : ""}
                     {finding.responsibleTeam ? ` • ${finding.responsibleTeam}` : ""}
                     {timeline ? ` • ${timeline}` : ""}
                   </div>
                   {finding.action ? (
-                    <div className="text-muted-foreground mt-1 text-xs">Action: {finding.action}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">Action: {finding.action}</div>
                   ) : null}
                 </div>
                 <StatusBadge
@@ -54,7 +54,7 @@ export function AuditFindingsCard({ audit }: { audit: AuditRecord }) {
           );
         })}
         {!audit.findings.length ? (
-          <div className="text-muted-foreground text-sm">No findings recorded.</div>
+          <div className="text-sm text-muted-foreground">No findings recorded.</div>
         ) : null}
       </div>
     </div>

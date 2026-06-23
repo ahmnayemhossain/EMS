@@ -1,5 +1,4 @@
 import type { Notification } from "@/core/types/models/ems";
-import { notifications as seedNotifications } from "@/core/data/catalog/mock";
 import { create } from "zustand";
 import { shallow } from "zustand/shallow";
 
@@ -15,8 +14,8 @@ type NotificationsStore = {
 };
 
 const useNotificationsStore = create<NotificationsStore>((set) => ({
-  items: seedNotifications.map((n) => ({ ...n, flagged: false })),
-  unreadCount: seedNotifications.filter((n) => !n.read).length,
+  items: [],
+  unreadCount: 0,
   markAllRead: () =>
     set((state) => {
       const nextItems = state.items.map((n) => ({ ...n, read: true }));

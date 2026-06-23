@@ -35,7 +35,7 @@ export function RouteErrorPage() {
           {meta}
           <div className="flex flex-wrap gap-2">
             <Button asChild>
-              <Link to="/dashboard">Go to dashboard</Link>
+              <Link to="/utilities">Go to utilities</Link>
             </Button>
             <Button asChild variant="outline">
               <Link to="/">Go to home</Link>

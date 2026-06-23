@@ -1,8 +1,9 @@
-import { AvatarStack } from "@/components/layout/primitives/AvatarStack";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
+import { AvatarStack } from "@/components/layout/primitives/AvatarStack";
 import { cn } from "@/components/ui/primitives/utils";
-import { getFacilityName } from "@/core/data/catalog/mock";
+import { useSelectedCompany } from "@/core/app/state/slices/company";
+import { getCompanyName } from "@/core/companies/directory";
 import type { ReportBoxReport } from "@/core/types/models/ems";
 import { formatReportNumber, getWorkingUsersForComplaint } from "@/features/people/complaint-box/config/utils";
 
@@ -13,6 +14,8 @@ export function ComplaintList({
   rows: ReportBoxReport[];
   onOpenComplaint: (report: ReportBoxReport) => void;
 }) {
+  const { companies } = useSelectedCompany();
+
   if (!rows.length) {
     return (
       <EmptyState
@@ -38,7 +41,7 @@ export function ComplaintList({
             <div className="min-w-0">
               <div className="truncate text-sm font-semibold">
                 {formatReportNumber(report.id)} <span className="text-muted-foreground font-normal">•</span>{" "}
-                {report.facilityId ? getFacilityName(report.facilityId) : "Unknown company"}
+                {getCompanyName(report.facilityId, companies)}
               </div>
               <div className="text-muted-foreground mt-1 line-clamp-2 text-xs">{report.subject}</div>
             </div>

@@ -1,13 +1,12 @@
+import type { CompanyOption } from "@/core/app/state/slices/company";
+import { getCompanyCode } from "@/core/companies/directory";
 import type { ReportBoxAttachment, ReportBoxReport } from "@/core/types/models/ems";
 
-import { facilities } from "@/core/data/catalog/mock";
-
-export function getPublicReportBoxUrl(selectedCompanyId: string) {
+export function getPublicReportBoxUrl(selectedCompanyId: string, companies: CompanyOption[]) {
   if (typeof window === "undefined") return "";
   const { origin, pathname, hash } = window.location;
-  const companyCode =
-    facilities.find((f) => f.id === selectedCompanyId)?.code?.toLowerCase() ||
-    "hfl";
+  const companyCode = getCompanyCode(selectedCompanyId, companies).toLowerCase();
+  if (!companyCode) return "";
   const base = hash.startsWith("#/")
     ? `${origin}${pathname}#/rb/${companyCode}`
     : `${origin}/rb/${companyCode}`;
@@ -30,26 +29,25 @@ export function stripEmsNotePrefix(text?: string) {
   return text.replace(/^EMS note:\s*/i, "").trim();
 }
 
-export function getWorkingUsersForComplaint(r: ReportBoxReport) {
+export function getWorkingUsersForComplaint(report: ReportBoxReport) {
   const labels = new Set<string>();
   const list: Array<{ id: string; label: string }> = [];
 
   function push(label?: string) {
-    const v = (label || "").trim();
-    if (!v) return;
-    const key = v.toLowerCase();
+    const value = (label || "").trim();
+    if (!value) return;
+    const key = value.toLowerCase();
     if (labels.has(key)) return;
     labels.add(key);
-    list.push({ id: key, label: v });
+    list.push({ id: key, label: value });
   }
 
-  if (r.status === "handled") push(r.handledBy);
-  push(r.assignedTo);
-  for (const m of r.messages) {
-    if (!m.author) continue;
-    push(m.author);
+  if (report.status === "handled") push(report.handledBy);
+  push(report.assignedTo);
+  for (const message of report.messages) {
+    if (!message.author) continue;
+    push(message.author);
   }
 
   return list;
 }
-

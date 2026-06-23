@@ -1,15 +1,16 @@
 import * as React from "react";
 
 import { Input } from "@/components/ui/primitives/input";
-import type { Facility, Incident } from "@/core/types/models/ems";
+import type { CompanyOption } from "@/core/app/state/slices/company";
+import type { Incident } from "@/core/types/models/ems";
 import { IncidentSelectField } from "@/features/people/incidents/components/IncidentSelectField";
 
 export function IncidentForm({
-  facilities,
+  companies,
   draft,
   onDraftChange,
 }: {
-  facilities: Facility[];
+  companies: CompanyOption[];
   draft: {
     facilityId?: string;
     date: string;
@@ -27,14 +28,14 @@ export function IncidentForm({
 }) {
   return (
     <div className="grid gap-3">
-      <IncidentSelectField label="Company" value={draft.facilityId || ""} placeholder="Select company" options={facilities.map((facility) => ({ value: facility.id, label: facility.name }))} onChange={(value) => onDraftChange({ ...draft, facilityId: value })} />
+      <IncidentSelectField label="Company" value={draft.facilityId || ""} placeholder="Select company" options={companies.map((company) => ({ value: company.id, label: company.name }))} onChange={(value) => onDraftChange({ ...draft, facilityId: value })} />
       <div className="grid gap-2">
         <div className="text-muted-foreground text-xs">Date</div>
-        <Input type="date" value={draft.date} onChange={(e) => onDraftChange({ ...draft, date: e.target.value })} />
+        <Input type="date" value={draft.date} onChange={(event) => onDraftChange({ ...draft, date: event.target.value })} />
       </div>
       <div className="grid gap-2">
         <div className="text-muted-foreground text-xs">Title</div>
-        <Input value={draft.title} onChange={(e) => onDraftChange({ ...draft, title: e.target.value })} placeholder="Short description" />
+        <Input value={draft.title} onChange={(event) => onDraftChange({ ...draft, title: event.target.value })} placeholder="Short description" />
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <IncidentSelectField label="Type" value={draft.type} options={[{ value: "spill", label: "spill" }, { value: "chemical_exposure", label: "chemical exposure" }, { value: "wastewater_exceedance", label: "wastewater exceedance" }, { value: "fire", label: "fire" }, { value: "near_miss", label: "near miss" }]} onChange={(value) => onDraftChange({ ...draft, type: value as Incident["type"] })} />
@@ -43,4 +44,3 @@ export function IncidentForm({
     </div>
   );
 }
-

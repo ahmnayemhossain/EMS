@@ -1,5 +1,4 @@
 export const legacyPermissionAliases = {
-  "dashboard:view": "dashboard:read",
   "audit-calendar:view": "audit-calendar:read",
   "audit-calendar:manage": "audit-calendar:update",
   "factories:view": "companies:read",

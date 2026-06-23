@@ -6,27 +6,26 @@ import { PageKpiGrid } from "@/components/layout/primitives/PageKpiGrid";
 import type { StatusTone } from "@/components/feedback/StatusBadge";
 
 export function WastewaterKpis({
-  inflow,
-  outflow,
+  totalSamples,
+  outletSamples,
   latestPh,
   latestCod,
   latestBod,
   exceedanceCount,
 }: {
-  inflow: string;
-  outflow: string;
+  totalSamples: number;
+  outletSamples: number;
   latestPh: React.ReactNode;
   latestCod: React.ReactNode;
   latestBod: React.ReactNode;
   exceedanceCount: number;
 }) {
-  const exceedanceTone: StatusTone =
-    exceedanceCount > 0 ? "critical" : "compliant";
+  const exceedanceTone: StatusTone = exceedanceCount > 0 ? "critical" : "compliant";
 
   return (
     <PageKpiGrid>
-      <KPIStatCard title="Inflow" value={inflow} helper="Add inflow meter later" icon={Droplets} />
-      <KPIStatCard title="Outflow" value={outflow} helper="Add outflow meter later" icon={Droplets} />
+      <KPIStatCard title="Samples logged" value={totalSamples} helper="Inlet and outlet" icon={Droplets} />
+      <KPIStatCard title="Outlet samples" value={outletSamples} helper="Current visible records" icon={Droplets} />
       <KPIStatCard title="Latest pH" value={latestPh} />
       <KPIStatCard title="Latest COD" value={latestCod} helper="Outlet sample" />
       <KPIStatCard title="Latest BOD" value={latestBod} helper="Outlet sample" />
@@ -39,5 +38,3 @@ export function WastewaterKpis({
     </PageKpiGrid>
   );
 }
-
-

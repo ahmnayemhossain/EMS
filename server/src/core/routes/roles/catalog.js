@@ -1,7 +1,6 @@
 export const permissionCatalog = [
-  ["Dashboard", "dashboard:read", "Read"], ["Dashboard", "dashboard:customize", "Customize"],
   ["Audit calendar", "audit-calendar:read", "Read"], ["Audit calendar", "audit-calendar:write", "Write"], ["Audit calendar", "audit-calendar:update", "Update"], ["Audit calendar", "audit-calendar:delete", "Delete"],
-  ["Company dashboard", "companies:read", "Read"], ["Utilities", "utilities:read", "Read"], ["Utilities", "utilities:write", "Write"], ["Utilities", "utilities:update", "Update"], ["Utilities", "utilities:delete", "Delete"],
+  ["Companies", "companies:read", "Read"], ["Utilities", "utilities:read", "Read"], ["Utilities", "utilities:write", "Write"], ["Utilities", "utilities:update", "Update"], ["Utilities", "utilities:delete", "Delete"],
   ["Chemicals", "chemicals:read", "Read"], ["Chemicals", "chemicals:write", "Write"], ["Chemicals", "chemicals:update", "Update"], ["Chemicals", "chemicals:delete", "Delete"],
   ["SDS / MSDS", "sds:read", "Read"], ["SDS / MSDS", "sds:write", "Write"], ["SDS / MSDS", "sds:update", "Update"], ["SDS / MSDS", "sds:delete", "Delete"],
   ["Waste", "waste:read", "Read"], ["Waste", "waste:write", "Write"], ["Waste", "waste:update", "Update"], ["Waste", "waste:delete", "Delete"],
@@ -20,7 +19,6 @@ export const permissionCatalog = [
   ["Settings - Roles", "settings:roles:read", "Read"], ["Settings - Roles", "settings:roles:write", "Write"], ["Settings - Roles", "settings:roles:update", "Update"], ["Settings - Roles", "settings:roles:delete", "Delete"],
   ["Settings - Departments", "settings:departments:read", "Read"], ["Settings - Departments", "settings:departments:write", "Write"], ["Settings - Departments", "settings:departments:update", "Update"], ["Settings - Departments", "settings:departments:delete", "Delete"],
   ["Settings - Designations", "settings:designations:read", "Read"], ["Settings - Designations", "settings:designations:write", "Write"], ["Settings - Designations", "settings:designations:update", "Update"], ["Settings - Designations", "settings:designations:delete", "Delete"],
-  ["Settings - Dashboard Widgets", "settings:dashboard_widgets:read", "Read"], ["Settings - Dashboard Widgets", "settings:dashboard_widgets:write", "Write"], ["Settings - Dashboard Widgets", "settings:dashboard_widgets:update", "Update"], ["Settings - Dashboard Widgets", "settings:dashboard_widgets:delete", "Delete"],
   ["Settings - Companies", "settings:companies:read", "Read"], ["Settings - Companies", "settings:companies:write", "Write"], ["Settings - Companies", "settings:companies:update", "Update"], ["Settings - Companies", "settings:companies:delete", "Delete"],
   ["Settings - UOM", "settings:uom:read", "Read"], ["Settings - UOM", "settings:uom:write", "Write"], ["Settings - UOM", "settings:uom:update", "Update"], ["Settings - UOM", "settings:uom:delete", "Delete"],
   ["Settings - UOM Wiring", "settings:uom-wiring:read", "Read"], ["Settings - UOM Wiring", "settings:uom-wiring:write", "Write"], ["Settings - UOM Wiring", "settings:uom-wiring:update", "Update"], ["Settings - UOM Wiring", "settings:uom-wiring:delete", "Delete"],

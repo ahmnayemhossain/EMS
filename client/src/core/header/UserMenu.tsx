@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/primitives/dropdown-menu";
 import { useAuth } from "@/core/app/state/slices/auth";
 import { useCurrentUser } from "@/core/app/state/slices/user";
-import { formatUserLabel } from "@/core/data/catalog/users";
+import { formatUserLabel } from "@/core/users/format-user-label";
 
 export function UserMenu() {
   const currentUser = useCurrentUser();

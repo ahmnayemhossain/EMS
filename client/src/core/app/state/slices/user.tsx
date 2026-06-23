@@ -1,4 +1,3 @@
-import { defaultUserId, emsUsers } from "@/core/data/catalog/users";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { shallow } from "zustand/shallow";
@@ -18,10 +17,9 @@ type UserStore = UserContextValue;
 const useUserStore = create<UserStore>()(
   persist(
     (set) => ({
-      userId: defaultUserId,
+      userId: "",
       setUserId: (id: string) => {
-        const ok = emsUsers.some((u) => u.id === id);
-        set({ userId: ok ? id : defaultUserId });
+        set({ userId: String(id || "").trim() });
       },
     }),
     {
@@ -30,8 +28,7 @@ const useUserStore = create<UserStore>()(
       partialize: (state) => ({ userId: state.userId }),
       merge: (persisted, current) => {
         const merged = { ...current, ...(persisted as Partial<UserStore>) };
-        const ok = emsUsers.some((u) => u.id === merged.userId);
-        return { ...merged, userId: ok ? merged.userId : defaultUserId };
+        return { ...merged, userId: String(merged.userId || "").trim() };
       },
     },
   ),
@@ -58,5 +55,9 @@ export function useCurrentUser() {
   }
 
   const { userId } = useUser();
-  return emsUsers.find((u) => u.id === userId) ?? emsUsers[0];
+  return {
+    id: userId || "current-user",
+    name: "Current user",
+    employeeId: userId || "-",
+  };
 }

@@ -1,25 +1,19 @@
-import { pool } from "../../../../core/shared/postgres.js";
+import { withTransaction } from "../../../../core/shared/postgres.js";
 import { ensureCoreSchema } from "../../../../core/shared/schema.js";
 
 export async function deleteSdsRecord(req, res, next) {
   try {
     await ensureCoreSchema();
-    const client = await pool.connect();
-    try {
-      await client.query("BEGIN");
+    const deleted = await withTransaction(async (client) => {
       const existing = await client.query("SELECT id FROM sds_records WHERE id = $1", [req.params.id]);
-      if (!existing.rowCount) return res.status(404).json({ error: "not_found" });
+      if (!existing.rowCount) return false;
       await client.query("DELETE FROM sds_records WHERE id = $1", [req.params.id]);
-      await client.query("COMMIT");
-      res.json({ ok: true });
-    } catch (error) {
-      await client.query("ROLLBACK");
-      throw error;
-    } finally {
-      client.release();
-    }
+      return true;
+    });
+
+    if (!deleted) return res.status(404).json({ error: "not_found" });
+    res.json({ ok: true });
   } catch (error) {
     next(error);
   }
 }
-

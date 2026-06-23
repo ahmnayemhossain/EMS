@@ -1,8 +1,5 @@
-import * as React from "react";
-
 import type { DataColumn } from "@/components/table/DataTable";
 import { StatusBadge } from "@/components/feedback/StatusBadge";
-import { getFacilityName } from "@/core/data/catalog/mock";
 import type { WasteRecord, WasteType } from "@/core/types/models/ems";
 import { formatDate, formatNumber } from "@/core/utils/format";
 
@@ -12,16 +9,16 @@ function toneForWasteType(type: WasteType) {
   return "compliant";
 }
 
-export function getWasteColumns(): Array<DataColumn<WasteRecord>> {
+export function getWasteColumns(getCompanyName: (facilityId: string) => string): Array<DataColumn<WasteRecord>> {
   return [
     {
       id: "stream",
       header: "Waste stream",
       cell: (w) => (
-        <div className="min-w-0">
+          <div className="min-w-0">
           <div className="truncate font-medium">{w.stream}</div>
           <div className="text-muted-foreground mt-1 text-xs">
-            {getFacilityName(w.facilityId)} • {w.storageLocation}
+            {getCompanyName(w.facilityId)} - {w.storageLocation}
           </div>
         </div>
       ),
@@ -65,7 +62,7 @@ export function getWasteColumns(): Array<DataColumn<WasteRecord>> {
       cell: (w) => (
         <div className="flex justify-end">
           <StatusBadge tone={w.dueBy ? "warning" : "neutral"}>
-            {w.dueBy ? formatDate(w.dueBy) : "—"}
+            {w.dueBy ? formatDate(w.dueBy) : "-"}
           </StatusBadge>
         </div>
       ),

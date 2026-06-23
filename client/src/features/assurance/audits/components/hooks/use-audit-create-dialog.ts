@@ -1,12 +1,12 @@
 import * as React from "react";
 
 import { auditTemplates } from "@/core/data/catalog/audit-templates";
-import { facilities } from "@/core/data/catalog/mock";
-import { AUDITORS } from "../../config/audit.constants";
+import { useCurrentUser } from "@/core/app/state/slices/user";
 import { computeChecklistStats, defaultStatusesForTemplate } from "../../config/audit.helpers";
 import type { FindingDraft } from "../core/auditCreate.types";
 
-export function useAuditCreateDialog(open: boolean) {
+export function useAuditCreateDialog(open: boolean, defaultCompanyId?: string) {
+  const currentUser = useCurrentUser();
   const [name, setName] = React.useState("");
   const [facilityId, setFacilityId] = React.useState<string>("");
   const [templateId, setTemplateId] = React.useState<string>(auditTemplates[0]?.id ?? "tmpl_iso14001_ems");
@@ -19,14 +19,14 @@ export function useAuditCreateDialog(open: boolean) {
   React.useEffect(() => {
     if (!open) return;
     setName("");
-    setFacilityId(facilities[0]?.id ?? "");
+    setFacilityId(defaultCompanyId ?? "");
     setTemplateId(auditTemplates[0]?.id ?? "tmpl_iso14001_ems");
-    setAuditor(String(AUDITORS[0] ?? ""));
+    setAuditor(currentUser?.name ?? "");
     setCustomerName("");
     setDate("");
     setNextAuditDate("");
     setFindingsDrafts([]);
-  }, [open]);
+  }, [open, defaultCompanyId, currentUser]);
 
   const stats = React.useMemo(() => computeChecklistStats(templateId, defaultStatusesForTemplate(templateId)), [templateId]);
   return { name, setName, facilityId, setFacilityId, templateId, setTemplateId, auditor, setAuditor, customerName, setCustomerName, date, setDate, nextAuditDate, setNextAuditDate, findingsDrafts, setFindingsDrafts, stats };

@@ -1,38 +1,41 @@
 import * as React from "react";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/primitives/tabs";
-import { DataTable } from "@/components/table/DataTable";
 import { DateRangePickerPlaceholder } from "@/components/forms/DateRangePickerPlaceholder";
 import { FilterBar } from "@/components/forms/FilterBar";
 import { SearchInput } from "@/components/forms/SearchInput";
 import { SelectFilter } from "@/components/forms/SelectFilter";
-import { facilities, trainingRecords } from "@/core/data/catalog/mock";
+import { DataTable } from "@/components/table/DataTable";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/primitives/tabs";
+import { useSelectedCompany } from "@/core/app/state/slices/company";
+import type { TrainingRecord } from "@/core/types/models/ems";
 
 import { getTrainingColumns } from "./columns";
 import { TrainingTeamsGrid } from "./TrainingTeamsGrid";
 
 export function TrainingPage() {
+  const { companies } = useSelectedCompany();
   const [view, setView] = React.useState<"records" | "teams">("records");
   const [search, setSearch] = React.useState("");
   const [facilityId, setFacilityId] = React.useState<string | undefined>();
   const [audience, setAudience] = React.useState<string | undefined>();
+  const [trainingRecords] = React.useState<TrainingRecord[]>([]);
 
-  const columns = React.useMemo(() => getTrainingColumns(), []);
+  const columns = React.useMemo(() => getTrainingColumns(companies), [companies]);
 
   const audienceOptions = React.useMemo(() => {
-    const set = new Set(trainingRecords.map((t) => t.audience));
-    return Array.from(set)
+    const values = new Set(trainingRecords.map((record) => record.audience));
+    return Array.from(values)
       .sort()
-      .map((a) => ({ value: a, label: a }));
-  }, []);
+      .map((label) => ({ value: label, label }));
+  }, [trainingRecords]);
 
   const rows = trainingRecords
-    .filter((t) => (facilityId ? t.facilityId === facilityId : true))
-    .filter((t) => (audience ? t.audience === audience : true))
-    .filter((t) => {
-      const q = search.trim().toLowerCase();
-      if (!q) return true;
-      return t.title.toLowerCase().includes(q) || t.audience.toLowerCase().includes(q);
+    .filter((record) => (facilityId ? record.facilityId === facilityId : true))
+    .filter((record) => (audience ? record.audience === audience : true))
+    .filter((record) => {
+      const normalizedQuery = search.trim().toLowerCase();
+      if (!normalizedQuery) return true;
+      return record.title.toLowerCase().includes(normalizedQuery) || record.audience.toLowerCase().includes(normalizedQuery);
     });
 
   return (
@@ -47,7 +50,7 @@ export function TrainingPage() {
               value={facilityId}
               onChange={setFacilityId}
               placeholder="Company"
-              items={facilities.map((f) => ({ value: f.id, label: f.name }))}
+              items={companies.map((company) => ({ value: company.id, label: company.name }))}
             />
             <SelectFilter value={audience} onChange={setAudience} placeholder="Team" items={audienceOptions} />
             <DateRangePickerPlaceholder label="Next due" />
@@ -60,14 +63,14 @@ export function TrainingPage() {
         }}
       />
 
-      <Tabs value={view} onValueChange={(v) => setView(v as typeof view)}>
+      <Tabs value={view} onValueChange={(value) => setView(value as typeof view)}>
         <TabsList className="bg-muted/30 grid h-auto w-full grid-cols-2 gap-1 rounded-xl border p-1 sm:w-auto">
           <TabsTrigger value="records">Records</TabsTrigger>
           <TabsTrigger value="teams">Teams</TabsTrigger>
         </TabsList>
 
         <TabsContent value="records" className="mt-4 space-y-4">
-          <DataTable rows={rows} columns={columns} rowKey={(r) => r.id} />
+          <DataTable rows={rows} columns={columns} rowKey={(row) => row.id} />
         </TabsContent>
 
         <TabsContent value="teams" className="mt-4">

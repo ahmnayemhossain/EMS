@@ -14,6 +14,8 @@ type SdsEditDialogProps = {
   selected?: SDSRecord;
   editMeta: { chemicalName: string; supplier: string; language: string; revisionDate: string; notes: string };
   setEditMeta: (updater: (previous: SdsEditDialogProps["editMeta"]) => SdsEditDialogProps["editMeta"]) => void;
+  editFile: File | null;
+  setEditFile: (file: File | null) => void;
   editTab: string;
   setEditTab: (value: string) => void;
   editDraftBySectionId: Record<string, string>;
@@ -23,6 +25,99 @@ type SdsEditDialogProps = {
 };
 
 export function SdsEditDialog(props: SdsEditDialogProps) {
-  return <CreateActionDialog title="Edit SDS record" submitLabel="Save" open={props.open} onOpenChange={props.onOpenChange} hideTrigger contentClassName="sm:max-w-2xl max-h-[80vh] overflow-y-auto" onCreate={props.onSave}><div className="grid gap-3 sm:grid-cols-2"><div className="grid gap-1.5 sm:col-span-2"><div className="text-muted-foreground text-xs">Chemical name</div><Input value={props.editMeta.chemicalName} onChange={(event) => props.setEditMeta((prev) => ({ ...prev, chemicalName: event.target.value }))} placeholder="Chemical name" /></div><div className="grid gap-1.5"><div className="text-muted-foreground text-xs">Supplier</div><Input value={props.editMeta.supplier} onChange={(event) => props.setEditMeta((prev) => ({ ...prev, supplier: event.target.value }))} placeholder="Supplier" /></div><div className="grid gap-1.5"><div className="text-muted-foreground text-xs">Language</div><SelectFilter value={props.editMeta.language || undefined} onChange={(value) => props.setEditMeta((prev) => ({ ...prev, language: value }))} placeholder="Select language" items={[{ value: "English", label: "English" }, { value: "Bangla", label: "Bangla" }]} /></div><div className="grid gap-1.5"><div className="text-muted-foreground text-xs">Revision date</div><Input type="date" value={props.editMeta.revisionDate} onChange={(event) => props.setEditMeta((prev) => ({ ...prev, revisionDate: event.target.value }))} /></div><div className="grid gap-1.5 sm:col-span-2"><div className="text-muted-foreground text-xs">File</div><div className="text-muted-foreground rounded-xl border border-dashed p-4 text-sm">Replace SDS PDF (placeholder)</div></div></div><Separator className="my-1" /><Tabs value={props.editTab} onValueChange={props.setEditTab} className="w-full"><TabsList className="bg-muted/30 grid h-auto w-full grid-cols-2 gap-1 rounded-xl border p-1 sm:grid-cols-4">{SDS_SECTION_TABS.map((tab) => <TabsTrigger key={tab.id} value={tab.id} className="gap-2"><span className="text-xs font-semibold">{tab.label}</span></TabsTrigger>)}</TabsList>{SDS_SECTION_TABS.map((tab) => <TabsContent key={tab.id} value={tab.id} className="mt-3 m-0"><div className="grid gap-3">{tab.sectionIds.map((sectionId) => <div key={sectionId} className="grid gap-1.5"><div className="text-muted-foreground text-xs">Section {sectionId}: {props.sectionTitleById[sectionId] ?? `Section ${sectionId}`}</div><Textarea value={props.editDraftBySectionId[sectionId] ?? ""} onChange={(event) => props.setEditDraftBySectionId((prev) => ({ ...prev, [sectionId]: event.target.value }))} rows={4} placeholder="Type section details..." /></div>)}</div></TabsContent>)}</Tabs></CreateActionDialog>;
+  return (
+    <CreateActionDialog
+      title="Edit SDS record"
+      submitLabel="Save"
+      open={props.open}
+      onOpenChange={props.onOpenChange}
+      hideTrigger
+      contentClassName="sm:max-w-2xl max-h-[80vh] overflow-y-auto"
+      onCreate={props.onSave}
+    >
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-1.5 sm:col-span-2">
+          <div className="text-muted-foreground text-xs">Chemical name</div>
+          <Input
+            value={props.editMeta.chemicalName}
+            onChange={(event) => props.setEditMeta((prev) => ({ ...prev, chemicalName: event.target.value }))}
+            placeholder="Chemical name"
+          />
+        </div>
+        <div className="grid gap-1.5">
+          <div className="text-muted-foreground text-xs">Supplier</div>
+          <Input
+            value={props.editMeta.supplier}
+            onChange={(event) => props.setEditMeta((prev) => ({ ...prev, supplier: event.target.value }))}
+            placeholder="Supplier"
+          />
+        </div>
+        <div className="grid gap-1.5">
+          <div className="text-muted-foreground text-xs">Language</div>
+          <SelectFilter
+            value={props.editMeta.language || undefined}
+            onChange={(value) => props.setEditMeta((prev) => ({ ...prev, language: value }))}
+            placeholder="Select language"
+            items={[{ value: "English", label: "English" }, { value: "Bangla", label: "Bangla" }]}
+          />
+        </div>
+        <div className="grid gap-1.5">
+          <div className="text-muted-foreground text-xs">Revision date</div>
+          <Input
+            type="date"
+            value={props.editMeta.revisionDate}
+            onChange={(event) => props.setEditMeta((prev) => ({ ...prev, revisionDate: event.target.value }))}
+          />
+        </div>
+        <div className="grid gap-1.5 sm:col-span-2">
+          <div className="text-muted-foreground text-xs">Replace PDF</div>
+          <Input type="file" accept="application/pdf" onChange={(event) => props.setEditFile(event.target.files?.[0] ?? null)} />
+          {props.editFile ? (
+            <div className="text-muted-foreground text-xs">{props.editFile.name}</div>
+          ) : props.selected?.fileName ? (
+            <div className="text-muted-foreground text-xs">Current file: {props.selected.fileName}</div>
+          ) : null}
+        </div>
+        <div className="grid gap-1.5 sm:col-span-2">
+          <div className="text-muted-foreground text-xs">Notes</div>
+          <Textarea
+            value={props.editMeta.notes}
+            onChange={(event) => props.setEditMeta((prev) => ({ ...prev, notes: event.target.value }))}
+            placeholder="Optional notes"
+          />
+        </div>
+      </div>
+      <Separator className="my-1" />
+      <Tabs value={props.editTab} onValueChange={props.setEditTab} className="w-full">
+        <TabsList className="bg-muted/30 grid h-auto w-full grid-cols-2 gap-1 rounded-xl border p-1 sm:grid-cols-4">
+          {SDS_SECTION_TABS.map((tab) => (
+            <TabsTrigger key={tab.id} value={tab.id} className="gap-2">
+              <span className="text-xs font-semibold">{tab.label}</span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        {SDS_SECTION_TABS.map((tab) => (
+          <TabsContent key={tab.id} value={tab.id} className="mt-3 m-0">
+            <div className="grid gap-3">
+              {tab.sectionIds.map((sectionId) => (
+                <div key={sectionId} className="grid gap-1.5">
+                  <div className="text-muted-foreground text-xs">
+                    Section {sectionId}: {props.sectionTitleById[sectionId] ?? `Section ${sectionId}`}
+                  </div>
+                  <Textarea
+                    value={props.editDraftBySectionId[sectionId] ?? ""}
+                    onChange={(event) =>
+                      props.setEditDraftBySectionId((prev) => ({ ...prev, [sectionId]: event.target.value }))
+                    }
+                    rows={4}
+                    placeholder="Type section details..."
+                  />
+                </div>
+              ))}
+            </div>
+          </TabsContent>
+        ))}
+      </Tabs>
+    </CreateActionDialog>
+  );
 }
-

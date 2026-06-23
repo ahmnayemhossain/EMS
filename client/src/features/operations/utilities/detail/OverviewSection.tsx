@@ -4,14 +4,17 @@ import type { UtilityRecord } from "@/core/types/models/ems";
 import { DetailCard } from "@/features/operations/utilities/detail/DetailCard";
 
 export function OverviewSection({ record, companyName }: { record: UtilityRecord; companyName: string }) {
+  const approvalStatus = String(record.approvalStatus || "draft").trim().toLowerCase();
   const approvalTone =
-    record.approvalStatus === "approved"
-      ? "compliant"
-      : record.approvalStatus === "submitted"
-        ? "info"
-        : Number(record.missingDaysCount || 0) > 0
-          ? "warning"
-          : "info";
+    approvalStatus === "audited"
+      ? "info"
+      : approvalStatus === "approved"
+        ? "compliant"
+        : approvalStatus === "submitted"
+          ? "info"
+          : Number(record.missingDaysCount || 0) > 0
+            ? "warning"
+            : "info";
 
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -34,11 +37,13 @@ export function OverviewSection({ record, companyName }: { record: UtilityRecord
         <div className="text-muted-foreground text-xs">Month approval</div>
         <div className="mt-1">
           <StatusBadge tone={approvalTone}>
-            {record.approvalStatus === "approved"
-              ? "approved"
-              : record.approvalStatus === "submitted"
-                ? "submitted"
-                : "pending"}
+            {approvalStatus === "audited"
+              ? "audited"
+              : approvalStatus === "approved"
+                ? "approved"
+                : approvalStatus === "submitted"
+                  ? "submitted"
+                  : "draft"}
           </StatusBadge>
         </div>
         <div className="text-muted-foreground mt-1 text-xs">
@@ -57,7 +62,7 @@ export function OverviewSection({ record, companyName }: { record: UtilityRecord
         </div>
         <div className="text-muted-foreground mt-1 text-xs">
           {Number(record.missingDaysCount || 0) > 0
-            ? `${record.missingDaysCount} day(s) missing before approval`
+            ? `${record.missingDaysCount} day(s) missing before submission`
             : "Full month covered"}
         </div>
       </DetailCard>

@@ -1,11 +1,11 @@
-import { getFacilityName } from "@/core/data/catalog/mock";
+import { getCompanyName } from "@/core/companies/directory";
 import type { ReportBoxRecord } from "@/core/types/models/ems";
 import { formatReportNumber, getAttachmentSrc, stripEmsNotePrefix } from "@/features/people/complaint-box/config/utils";
 
 export function buildRecordHtml(record: ReportBoxRecord) {
   const report = record.snapshot;
   const title = report.subject?.trim() || formatReportNumber(report.id);
-  const companyName = report.facilityId ? getFacilityName(report.facilityId) : "Unknown company";
+  const companyName = getCompanyName(report.facilityId);
   const createdAt = new Date(report.createdAt).toLocaleString();
   const recordedAt = new Date(record.recordedAt).toLocaleString();
   const messagesHtml = report.messages.map(buildMessageHtml).join("");

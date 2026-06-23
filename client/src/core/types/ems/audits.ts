@@ -23,6 +23,7 @@ export type Finding = {
 export type Audit = {
   id: ID;
   facilityId: ID;
+  companyName?: string;
   name: string; // e.g. "ISO 14001 Internal Audit"
   customerName?: string;
   date: string; // ISO date

@@ -4,7 +4,6 @@ export type SettingsTab = "system" | "operations" | "compliance" | "communicatio
 
 export type SettingsCardKey =
   | "employees" | "users" | "roles" | "departments" | "designations"
-  | "dashboard_widgets"
   | "uom" | "sources" | "meters" | "suppliers" | "companies"
   | "reports"
   | "status_store"

@@ -1,50 +1,76 @@
 import * as React from "react";
 
-import { auditRecords as seedAuditRecords } from "@/core/data/catalog/audit-records";
-import { Tabs, TabsContent } from "@/components/ui/primitives/tabs";
+import { toast } from "@/core/app/lib/toast";
+import { useSelectedCompany } from "@/core/app/state/slices/company";
+import { useUser } from "@/core/app/state/slices/user";
 import type { AuditRecord } from "@/core/types/models/audit";
 
 import { AuditCreateDialog } from "../components/core/AuditCreateDialog";
-import { AuditModuleTabs, type AuditsModuleTab } from "../components/core/AuditModuleTabs";
 import { AuditsOverviewTab } from "../components/core/AuditsOverviewTab";
-import { CertificationTab } from "../tabs/CertificationTab";
-import { LegalLicencesTab } from "../tabs/LegalLicencesTab";
-import { TestingTab } from "../tabs/TestingTab";
+import { createAuditRecordApi, listAuditRecords } from "../services/api";
 
 export function AuditsPage() {
-  const [records, setRecords] = React.useState<AuditRecord[]>(() => seedAuditRecords);
-  const [moduleTab, setModuleTab] = React.useState<AuditsModuleTab>("audits");
+  const { userId } = useUser();
+  const { companies, selectedCompanyId } = useSelectedCompany();
+  const [records, setRecords] = React.useState<AuditRecord[]>([]);
+  const [loading, setLoading] = React.useState(true);
   const [createOpen, setCreateOpen] = React.useState(false);
+
+  const loadRecords = React.useCallback(async () => {
+    if (!userId) return;
+
+    try {
+      setLoading(true);
+      const next = await listAuditRecords(userId, selectedCompanyId || undefined);
+      setRecords(Array.isArray(next) ? next : []);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not load audits.");
+    } finally {
+      setLoading(false);
+    }
+  }, [userId, selectedCompanyId]);
+
+  React.useEffect(() => {
+    void loadRecords();
+  }, [loadRecords]);
 
   return (
     <div className="space-y-6">
       <AuditCreateDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
-        onCreate={(record) => setRecords((prev) => [record, ...prev])}
+        facilities={companies}
+        onCreate={async (record) => {
+          try {
+            const created = await createAuditRecordApi(userId, {
+              facilityId: record.facilityId,
+              name: record.name,
+              customerName: record.customerName,
+              date: record.date,
+              nextAuditDate: record.nextAuditDate,
+              auditor: record.auditor,
+              progress: record.progress,
+              overallScore: record.overallScore,
+              findingsCount: record.findingsCount,
+              templateId: record.templateId,
+              checklist: record.checklist,
+              findings: record.findings,
+            });
+            setRecords((prev) => [created, ...prev]);
+            toast.success("Audit created.");
+            return true;
+          } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Could not create audit.");
+            return false;
+          }
+        }}
       />
 
-      <Tabs
-        value={moduleTab}
-        onValueChange={(v) => setModuleTab(v as AuditsModuleTab)}
-        className="space-y-6"
-      >
-        <AuditModuleTabs auditsCount={records.length} />
-
-        <TabsContent value="audits" className="m-0">
-          <AuditsOverviewTab records={records} />
-        </TabsContent>
-        <TabsContent value="certification" className="m-0">
-          <CertificationTab />
-        </TabsContent>
-        <TabsContent value="legal" className="m-0">
-          <LegalLicencesTab />
-        </TabsContent>
-        <TabsContent value="testing" className="m-0">
-          <TestingTab />
-        </TabsContent>
-      </Tabs>
+      {loading ? (
+        <div className="rounded-xl border bg-card p-6 text-sm text-muted-foreground">Loading audits...</div>
+      ) : (
+        <AuditsOverviewTab records={records} companyCount={companies.length} />
+      )}
     </div>
   );
 }
-

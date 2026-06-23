@@ -1,68 +1,76 @@
 import * as React from "react";
 
+import type { CompanyOption } from "@/core/app/state/slices/company";
+import { toast } from "@/core/app/lib/toast";
+import { useUser } from "@/core/app/state/slices/user";
 import { Input } from "@/components/ui/primitives/input";
-import { Button } from "@/components/ui/primitives/button";
-import { Textarea } from "@/components/ui/primitives/textarea";
 import { CreateActionDialog } from "@/components/layout/primitives/CreateActionDialog";
-import { SelectFilter } from "@/components/forms/SelectFilter";
 
-export function WastewaterCreateDialog(props: { floating?: boolean }) {
+import { createWastewaterRecord, uploadWastewaterLabReport } from "../services/api";
+import {
+  WastewaterFormFields,
+  createWastewaterFormState,
+  toWastewaterRecordInput,
+  validateWastewaterForm,
+} from "./WastewaterFormFields";
+
+export function WastewaterCreateDialog({
+  companies,
+  initialCompanyId,
+  onCreated,
+  floating,
+}: {
+  companies: CompanyOption[];
+  initialCompanyId?: string;
+  onCreated: () => void;
+  floating?: boolean;
+}) {
+  const { userId } = useUser();
+  const [form, setForm] = React.useState(() => createWastewaterFormState({ facilityId: initialCompanyId }));
+  const [reportFile, setReportFile] = React.useState<File | null>(null);
+
+  React.useEffect(() => {
+    setForm(createWastewaterFormState({ facilityId: initialCompanyId }));
+    setReportFile(null);
+  }, [initialCompanyId]);
+
   return (
     <CreateActionDialog
       title="Create lab record"
       triggerLabel="Create lab record"
-      triggerVariant={props.floating ? "floating" : "default"}
+      triggerVariant={floating ? "floating" : "default"}
+      onCreate={async () => {
+        const validationError = validateWastewaterForm(form);
+        if (validationError) return toast.error(validationError), false;
+
+        try {
+          const created = await createWastewaterRecord(userId, toWastewaterRecordInput(form));
+          if (reportFile) {
+            await uploadWastewaterLabReport(userId, {
+              recordId: created.id,
+              file: reportFile,
+            });
+          }
+
+          toast.success("Lab record created");
+          setForm(createWastewaterFormState({ facilityId: form.companyId }));
+          setReportFile(null);
+          onCreated();
+          return true;
+        } catch (error) {
+          toast.error(error instanceof Error ? error.message : "Create failed.");
+          return false;
+        }
+      }}
     >
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="space-y-4">
+        <WastewaterFormFields form={form} setForm={setForm} companies={companies} />
         <div className="grid gap-1.5">
-          <div className="text-muted-foreground text-xs">Sample date</div>
-          <Input type="date" />
-        </div>
-        <div className="grid gap-1.5">
-          <div className="text-muted-foreground text-xs">Point</div>
-          <SelectFilter
-            value={undefined}
-            onChange={(value) => {
-              void value;
-            }}
-            placeholder="Select point"
-            items={[
-              { value: "inlet", label: "Inlet" },
-              { value: "outlet", label: "Outlet" },
-            ]}
-          />
-        </div>
-        <div className="grid gap-1.5">
-          <div className="text-muted-foreground text-xs">pH</div>
-          <Input type="number" placeholder="0" />
-        </div>
-        <div className="grid gap-1.5">
-          <div className="text-muted-foreground text-xs">COD</div>
-          <Input type="number" placeholder="0" />
-        </div>
-        <div className="grid gap-1.5">
-          <div className="text-muted-foreground text-xs">BOD</div>
-          <Input type="number" placeholder="0" />
-        </div>
-        <div className="grid gap-1.5">
-          <div className="text-muted-foreground text-xs">TSS</div>
-          <Input type="number" placeholder="0" />
-        </div>
-        <div className="grid gap-1.5 sm:col-span-2">
-          <div className="text-muted-foreground text-xs">Lab report</div>
-          <div className="text-muted-foreground rounded-xl border border-dashed p-4 text-sm">
-            Upload lab PDF (placeholder)
+          <div className="text-muted-foreground text-xs">Lab report PDF</div>
+          <Input type="file" accept="application/pdf" onChange={(event) => setReportFile(event.target.files?.[0] || null)} />
+          <div className="text-muted-foreground text-xs">
+            {reportFile ? `Selected: ${reportFile.name}` : "Optional PDF attachment"}
           </div>
-        </div>
-        <div className="grid gap-1.5 sm:col-span-2">
-          <div className="text-muted-foreground text-xs">Notes</div>
-          <Textarea placeholder="Optional notes" />
-        </div>
-        <div className="flex items-center justify-between rounded-xl border p-3 sm:col-span-2">
-          <div className="text-sm font-medium">Exceedance auto-check</div>
-          <Button type="button" variant="outline" size="sm">
-            Enable
-          </Button>
         </div>
       </div>
     </CreateActionDialog>

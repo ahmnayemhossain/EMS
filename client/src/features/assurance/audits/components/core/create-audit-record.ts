@@ -24,7 +24,7 @@ export function createAuditRecord({
   nextAuditDate: string;
   templateId: string;
   findingsDrafts: FindingDraft[];
-  onCreate: (record: AuditRecord) => void;
+  onCreate: (record: AuditRecord) => void | boolean | Promise<void | boolean>;
 }) {
   if (!name.trim()) return toast.error("Audit name is required"), false;
   if (!facilityId) return toast.error("Select a company"), false;
@@ -33,7 +33,21 @@ export function createAuditRecord({
   const computed = computeChecklistStats(templateId, statusesByItemId);
   const checklist = Object.entries(statusesByItemId).map(([itemId, status]) => ({ itemId, status, evidenceCount: 0 }));
   const findings = buildFindings({ drafts: findingsDrafts, fallbackCustomerName: customerName });
-  onCreate(buildAuditRecord({ id: `audit_${Date.now()}`, nowIso: new Date().toISOString(), facilityId, name, customerName, date, nextAuditDate, auditor, templateId, progress: computed.progress, overallScore: computed.score, checklist, findings }));
-  toast.success("Audit created");
-  return true;
+  return onCreate(
+    buildAuditRecord({
+      id: `audit_${Date.now()}`,
+      nowIso: new Date().toISOString(),
+      facilityId,
+      name,
+      customerName,
+      date,
+      nextAuditDate,
+      auditor,
+      templateId,
+      progress: computed.progress,
+      overallScore: computed.score,
+      checklist,
+      findings,
+    }),
+  );
 }

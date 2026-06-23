@@ -27,6 +27,7 @@ npm run dev
 ```bash
 cd server
 npm install
+npm run db:setup
 npm run dev
 ```
 

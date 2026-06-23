@@ -10,7 +10,7 @@ export function useSignInPage() {
   const { token, loading, error, signIn } = useAuth();
   const [login, setLogin] = React.useState("");
   const [password, setPassword] = React.useState("");
-  const redirectTo = typeof location.state === "object" && location.state && "from" in location.state && typeof location.state.from === "string" ? location.state.from : "/dashboard";
+  const redirectTo = typeof location.state === "object" && location.state && "from" in location.state && typeof location.state.from === "string" ? location.state.from : "/utilities";
   const canSubmit = login.trim().length > 0 && password.length > 0 && !loading;
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {

@@ -1,16 +1,16 @@
 import * as React from "react";
-import { ShieldCheck } from "lucide-react";
 
 import type { CompanyOption } from "@/core/app/state/slices/company";
 import { toast } from "@/core/app/lib/toast";
 import { useUser } from "@/core/app/state/slices/user";
-import { Button } from "@/components/ui/primitives/button";
+import type { SDSRecord } from "@/core/types/models/ems";
 import { Input } from "@/components/ui/primitives/input";
-import { Textarea } from "@/components/ui/primitives/textarea";
 import { CreateActionDialog } from "@/components/layout/primitives/CreateActionDialog";
 import { SelectFilter } from "@/components/forms/SelectFilter";
 
-import { createChemical } from "../services/api";
+import { createChemical, listChemicalSdsRecords } from "../services/api";
+
+const MANUAL_SDS_VALUE = "__manual__";
 
 export function ChemicalCreateDialog({
   companies,
@@ -20,13 +20,42 @@ export function ChemicalCreateDialog({
   onCreated: (chemicalId: string) => void;
 }) {
   const { userId } = useUser();
-  const [companyId, setCompanyId] = React.useState<string>("");
+  const [companyId, setCompanyId] = React.useState("");
   const [supplier, setSupplier] = React.useState("");
   const [name, setName] = React.useState("");
   const [stockKg, setStockKg] = React.useState("");
   const [expiryDate, setExpiryDate] = React.useState("");
   const [storageArea, setStorageArea] = React.useState("");
-  const [notes, setNotes] = React.useState("");
+  const [sdsRows, setSdsRows] = React.useState<SDSRecord[]>([]);
+  const [sdsValue, setSdsValue] = React.useState(MANUAL_SDS_VALUE);
+
+  React.useEffect(() => {
+    let active = true;
+
+    void (async () => {
+      try {
+        const data = await listChemicalSdsRecords(userId);
+        if (active) setSdsRows(data);
+      } catch (error) {
+        if (active) toast.error(error instanceof Error ? error.message : "Could not load SDS records.");
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [userId]);
+
+  const selectedSds = React.useMemo(
+    () => sdsRows.find((row) => row.id === sdsValue),
+    [sdsRows, sdsValue],
+  );
+
+  React.useEffect(() => {
+    if (!selectedSds) return;
+    setName(selectedSds.chemicalName || "");
+    setSupplier(selectedSds.supplier || "");
+  }, [selectedSds]);
 
   return (
     <CreateActionDialog
@@ -38,8 +67,10 @@ export function ChemicalCreateDialog({
         if (!supplier.trim()) return toast.error("Supplier is required."), false;
         if (!name.trim()) return toast.error("Chemical name is required."), false;
         if (!storageArea.trim()) return toast.error("Storage area is required."), false;
+
         const stock = Number(stockKg);
         if (!Number.isFinite(stock) || stock < 0) return toast.error("Stock must be a number >= 0."), false;
+
         try {
           const created = await createChemical(userId, {
             facilityId: companyId,
@@ -50,13 +81,14 @@ export function ChemicalCreateDialog({
             approvalStatus: "pending",
             stockKg: stock,
             expiryDate: expiryDate || undefined,
-            sdsId: undefined,
+            sdsId: selectedSds?.id,
             ppe: [],
             storageInstructions: [],
             compatibilityWarnings: [],
             linkedWasteStream: undefined,
             batches: [],
           });
+
           onCreated(created.id);
           toast.success("Chemical created");
           setCompanyId("");
@@ -65,7 +97,7 @@ export function ChemicalCreateDialog({
           setStockKg("");
           setExpiryDate("");
           setStorageArea("");
-          setNotes("");
+          setSdsValue(MANUAL_SDS_VALUE);
           return true;
         } catch (error) {
           toast.error(error instanceof Error ? error.message : "Create failed.");
@@ -84,12 +116,37 @@ export function ChemicalCreateDialog({
           />
         </div>
         <div className="grid gap-1.5">
+          <div className="text-muted-foreground text-xs">SDS</div>
+          <SelectFilter
+            value={sdsValue}
+            onChange={setSdsValue}
+            placeholder="Select SDS"
+            items={[
+              { value: MANUAL_SDS_VALUE, label: "No SDS link" },
+              ...sdsRows.map((row) => ({
+                value: row.id,
+                label: `${row.chemicalName} - ${row.supplier}`,
+              })),
+            ]}
+          />
+        </div>
+        <div className="grid gap-1.5">
           <div className="text-muted-foreground text-xs">Supplier</div>
-          <Input value={supplier} onChange={(e) => setSupplier(e.target.value)} placeholder="Supplier name" />
+          <Input
+            value={supplier}
+            onChange={(e) => setSupplier(e.target.value)}
+            placeholder="Supplier name"
+            disabled={Boolean(selectedSds)}
+          />
         </div>
         <div className="grid gap-1.5 sm:col-span-2">
           <div className="text-muted-foreground text-xs">Chemical name</div>
-          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Chemical name" />
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Chemical name"
+            disabled={Boolean(selectedSds)}
+          />
         </div>
         <div className="grid gap-1.5">
           <div className="text-muted-foreground text-xs">Stock (kg)</div>
@@ -103,19 +160,7 @@ export function ChemicalCreateDialog({
           <div className="text-muted-foreground text-xs">Storage area</div>
           <Input value={storageArea} onChange={(e) => setStorageArea(e.target.value)} placeholder="e.g. Oxidizer store" />
         </div>
-        <div className="grid gap-1.5 sm:col-span-2">
-          <div className="text-muted-foreground text-xs">Notes</div>
-          <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional notes" />
-        </div>
-        <div className="flex items-center justify-between rounded-lg border p-3 sm:col-span-2">
-          <div className="text-sm font-medium">Approval workflow</div>
-          <Button type="button" variant="outline" size="sm">
-            <ShieldCheck className="mr-2 size-4" />
-            Open
-          </Button>
-        </div>
       </div>
     </CreateActionDialog>
   );
 }
-

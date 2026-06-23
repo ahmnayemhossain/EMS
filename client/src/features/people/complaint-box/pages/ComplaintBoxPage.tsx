@@ -1,18 +1,20 @@
+import * as React from "react";
+
 import { Tabs } from "@/components/ui/primitives/tabs";
 import { useSelectedCompany } from "@/core/app/state/slices/company";
 import { useReportBox } from "@/core/app/state/slices/report-box";
 import { useCurrentUser } from "@/core/app/state/slices/user";
-import { formatUserLabel } from "@/core/data/catalog/users";
+import { formatUserLabel } from "@/core/users/format-user-label";
 
+import { ComplaintBoxHeader } from "@/features/people/complaint-box/components/tabs/ComplaintBoxHeader";
 import { ComplaintBoxOverlays } from "@/features/people/complaint-box/components/tabs/ComplaintBoxOverlays";
 import { ComplaintBoxTabs } from "@/features/people/complaint-box/components/tabs/ComplaintBoxTabs";
-import { ComplaintBoxHeader } from "@/features/people/complaint-box/components/tabs/ComplaintBoxHeader";
-import { getPublicReportBoxUrl } from "@/features/people/complaint-box/config/utils";
+import { getPublicReportBoxUrl, getWorkingUsersForComplaint } from "@/features/people/complaint-box/config/utils";
 import { useComplaintBoxPage } from "@/features/people/complaint-box/hooks/useComplaintBoxPage";
 import { useComplaintSelectionSync } from "@/features/people/complaint-box/hooks/useComplaintSelectionSync";
 
 export function ComplaintBoxPage() {
-  const { selectedCompanyId } = useSelectedCompany();
+  const { companies, selectedCompanyId } = useSelectedCompany();
   const currentUser = useCurrentUser();
   const currentUserLabel = currentUser ? formatUserLabel(currentUser) : "User";
   const page = useComplaintBoxPage();
@@ -32,8 +34,30 @@ export function ComplaintBoxPage() {
     refreshFromInbox,
   } = useReportBox();
 
-  const publicUrl = getPublicReportBoxUrl(selectedCompanyId);
+  const publicUrl = getPublicReportBoxUrl(selectedCompanyId, companies);
   const flaggedCount = reports.filter((report) => report.flagged).length;
+  const reportAssignees = React.useMemo(() => {
+    const seen = new Set<string>();
+    const labels: string[] = [];
+
+    const push = (value?: string | null) => {
+      const label = String(value || "").trim();
+      if (!label) return;
+      const key = label.toLowerCase();
+      if (seen.has(key)) return;
+      seen.add(key);
+      labels.push(label);
+    };
+
+    push(currentUserLabel);
+    for (const report of reports) {
+      push(report.assignedTo);
+      push(report.handledBy);
+      for (const person of getWorkingUsersForComplaint(report)) push(person.label);
+    }
+
+    return labels;
+  }, [currentUserLabel, reports]);
 
   useComplaintSelectionSync({ reports, selectedComplaint: page.selectedComplaint, setSelectedComplaint: page.setSelectedComplaint });
 
@@ -68,6 +92,7 @@ export function ComplaintBoxPage() {
       />
 
       <ComplaintBoxOverlays
+        reportAssignees={reportAssignees}
         action={page.action}
         onCloseAction={() => page.setAction(null)}
         removeRecord={removeRecord}
@@ -96,4 +121,3 @@ export function ComplaintBoxPage() {
     </Tabs>
   );
 }
-

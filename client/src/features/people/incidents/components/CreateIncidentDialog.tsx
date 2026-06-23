@@ -9,7 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/primitives/dialog";
-import type { Facility, Incident } from "@/core/types/models/ems";
+import type { CompanyOption } from "@/core/app/state/slices/company";
+import type { Incident } from "@/core/types/models/ems";
 
 import { IncidentForm } from "./IncidentForm";
 
@@ -21,12 +22,12 @@ function makeIncidentId() {
 export function CreateIncidentDialog({
   open,
   onOpenChange,
-  facilities,
+  companies,
   onCreate,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  facilities: Facility[];
+  companies: CompanyOption[];
   onCreate: (incident: Incident) => void;
 }) {
   const [draft, setDraft] = React.useState<{
@@ -36,7 +37,7 @@ export function CreateIncidentDialog({
     type: Incident["type"];
     severity: Incident["severity"];
   }>(() => ({
-    facilityId: facilities[0]?.id,
+    facilityId: companies[0]?.id,
     date: new Date().toISOString().slice(0, 10),
     title: "",
     type: "near_miss",
@@ -45,25 +46,24 @@ export function CreateIncidentDialog({
 
   React.useEffect(() => {
     if (!open) return;
-    setDraft((d) => ({
-      ...d,
-      facilityId: d.facilityId ?? facilities[0]?.id,
+    setDraft({
+      facilityId: companies[0]?.id,
       date: new Date().toISOString().slice(0, 10),
       title: "",
       type: "near_miss",
       severity: "low",
-    }));
-  }, [open, facilities]);
+    });
+  }, [companies, open]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create incident</DialogTitle>
-          <DialogDescription>Log an environmental / safety incident.</DialogDescription>
+          <DialogDescription>Log an environmental or safety incident.</DialogDescription>
         </DialogHeader>
 
-        <IncidentForm facilities={facilities} draft={draft} onDraftChange={setDraft} />
+        <IncidentForm companies={companies} draft={draft} onDraftChange={setDraft} />
 
         <DialogFooter>
           <Button
@@ -88,4 +88,3 @@ export function CreateIncidentDialog({
     </Dialog>
   );
 }
-

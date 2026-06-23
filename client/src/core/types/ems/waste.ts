@@ -19,6 +19,19 @@ export type WasteRecord = {
   disposalStatus: "stored" | "scheduled" | "disposed";
   manifestNo?: string;
   dueBy?: string; // ISO date
+  notes?: string;
+  files?: Array<{
+    id?: number;
+    name: string;
+    storedName?: string;
+    mimeType?: string;
+    fileSize?: number;
+    storagePath?: string;
+    url?: string;
+    uploadedAt: string;
+  }>;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type WastewaterMetric = "pH" | "COD" | "BOD" | "TSS" | "DO";
@@ -32,8 +45,21 @@ export type WastewaterRecord = {
   COD: number;
   BOD: number;
   TSS: number;
+  DO?: number;
   exceedance?: WastewaterMetric[];
-  labReport?: { fileName: string; uploadedAt: string };
+  labReport?: {
+    id?: number;
+    fileName: string;
+    storedName?: string;
+    mimeType?: string;
+    fileSize?: number;
+    storagePath?: string;
+    url?: string;
+    uploadedAt: string;
+  };
+  notes?: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 

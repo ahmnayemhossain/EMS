@@ -297,7 +297,7 @@ function ReportForm(props: { value: Draft; onChange: (next: Draft) => void }) {
           value={props.value.variablesText}
           onChange={(e) => props.onChange({ ...props.value, variablesText: e.target.value })}
           className="min-h-28 font-mono text-xs"
-          placeholder='[{"name":"companyId","label":"Company","type":"company","required":true}]'
+          placeholder='[{"name":"companyId","label":"Company","type":"company","required":true},{"name":"fromMonth","label":"From month","type":"month","required":true}]'
         />
       </div>
 

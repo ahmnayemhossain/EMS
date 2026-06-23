@@ -2,9 +2,6 @@
 
 :root {
   --font-size: 16px;
-  --dashboard-grid-dot: rgb(0 0 0 / 0.06);
-  --dashboard-grid-dot-strong: rgb(0 0 0 / 0.09);
-  
   /* EMS Core Colors */
   --background: #f7f8fa;
   --foreground: #111827;
@@ -124,9 +121,6 @@
   --card-foreground: #eef2ff;
   --popover: #0e1730;
   --popover-foreground: #eef2ff;
-  --dashboard-grid-dot: rgb(255 255 255 / 0.06);
-  --dashboard-grid-dot-strong: rgb(255 255 255 / 0.09);
-
   /* EMS core palette (dark-adjusted) */
   --success-50: #052e16;
   --success-100: #064e3b;
@@ -368,44 +362,4 @@
 }
 
 @layer utilities {
-  .aws-dashboard-grid {
-    position: relative;
-    isolation: isolate;
-  }
-
-  .aws-dashboard-grid::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    opacity: 1;
-    background-image:
-      radial-gradient(circle at 1px 1px, var(--dashboard-grid-dot) 1px, transparent 0),
-      radial-gradient(circle at 1px 1px, var(--dashboard-grid-dot-strong) 1px, transparent 0);
-    background-size: 16px 16px, 80px 80px;
-    background-position: 0 0, 0 0;
-  }
-
-  /* Layout builder overlay (cssgridgenerator style) */
-  .dashboard-layout-overlay {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    display: grid;
-    grid-template-columns: repeat(var(--dash-grid-cols, 12), minmax(0, 1fr));
-    grid-auto-rows: var(--dash-grid-row-height, 72px);
-    gap: var(--dash-grid-gap, 16px);
-  }
-
-  .dashboard-layout-cell {
-    border-radius: var(--radius);
-    background: color-mix(in oklab, var(--muted) 70%, transparent);
-    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--border) 70%, transparent);
-    display: grid;
-    place-items: center;
-    color: color-mix(in oklab, var(--muted-foreground) 70%, transparent);
-    font-weight: 600;
-    user-select: none;
-  }
 }

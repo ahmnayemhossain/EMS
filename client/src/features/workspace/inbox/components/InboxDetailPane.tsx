@@ -1,10 +1,11 @@
 import { AlertTriangle, Flag, Info, Mails } from "lucide-react";
 
+import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { Button } from "@/components/ui/primitives/button";
 import { CardTitle } from "@/components/ui/primitives/card";
-import { StatusBadge } from "@/components/feedback/StatusBadge";
-import { getFacilityName } from "@/core/data/catalog/mock";
+import { useSelectedCompany } from "@/core/app/state/slices/company";
 import type { NotificationItem } from "@/core/app/state/slices/notifications";
+import { getCompanyName } from "@/core/companies/directory";
 
 import { formatDateTime, toneIcon } from "../utils/inbox-display";
 
@@ -16,6 +17,7 @@ export function InboxDetailPane(props: {
   onOpenItem: (item: NotificationItem) => void;
 }) {
   const selected = props.selected;
+  const { companies } = useSelectedCompany();
 
   return (
     <div className="min-h-0 bg-background/30">
@@ -30,7 +32,7 @@ export function InboxDetailPane(props: {
                   <StatusBadge tone={selected.tone}>{selected.tone}</StatusBadge>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  {selected.facilityId ? getFacilityName(selected.facilityId) : "Group"} | {formatDateTime(selected.createdAt)}
+                  {selected.facilityId ? getCompanyName(selected.facilityId, companies) : "Group"} | {formatDateTime(selected.createdAt)}
                 </div>
               </div>
 
@@ -43,7 +45,7 @@ export function InboxDetailPane(props: {
                   {selected.read ? "Mark unread" : "Mark read"}
                 </Button>
                 {props.nextUnread ? (
-                  <Button size="sm" variant="outline" onClick={() => props.onOpenItem(props.nextUnread!)}>
+                  <Button size="sm" variant="outline" onClick={() => props.onOpenItem(props.nextUnread)}>
                     Next unread
                   </Button>
                 ) : null}
@@ -80,7 +82,7 @@ export function InboxDetailPane(props: {
                       Context
                     </div>
                     <div className="text-xs text-muted-foreground">Category: {selected.tone} alert</div>
-                    <div className="text-xs text-muted-foreground">Scope: {selected.facilityId ? getFacilityName(selected.facilityId) : "Group"}</div>
+                    <div className="text-xs text-muted-foreground">Scope: {selected.facilityId ? getCompanyName(selected.facilityId, companies) : "Group"}</div>
                   </div>
                   <div className="rounded-xl border bg-muted/10 p-4">
                     <div className="mb-1 flex items-center gap-2 text-sm font-medium">

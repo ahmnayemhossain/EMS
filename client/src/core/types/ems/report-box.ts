@@ -6,7 +6,7 @@ export type ReportBoxAttachment = {
   mime: string;
   name?: string;
   dataUrl?: string; // base64 data url for local-only storage
-  url?: string; // public URL (e.g. from /public/report-box/inbox/*)
+  url?: string; // public URL (e.g. from /cdn/report-box/inbox/*)
 };
 
 export type ReportBoxMessage = {
@@ -16,7 +16,7 @@ export type ReportBoxMessage = {
   text?: string;
   attachment?: ReportBoxAttachment;
   durationSec?: number;
-  author?: string; // internal notes / replies (e.g. "User One (EMP-0001)")
+  author?: string; // internal notes / replies
 };
 
 export type ReportBoxReport = {

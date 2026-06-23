@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/primitives/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/primitives/card";
 import { Input } from "@/components/ui/primitives/input";
 import { useNotifications, type NotificationItem } from "@/core/app/state/slices/notifications";
-import { getFacilityName } from "@/core/data/catalog/mock";
+import { useSelectedCompany } from "@/core/app/state/slices/company";
+import { getCompanyName } from "@/core/companies/directory";
 import { InboxDetailPane } from "../components/InboxDetailPane";
 import { InboxListPane } from "../components/InboxListPane";
 import { QuickChip } from "../components/QuickChip";
@@ -13,6 +14,7 @@ import { toneWeight } from "../utils/inbox-display";
 
 export function InboxPage() {
   const notifications = useNotifications();
+  const { companies } = useSelectedCompany();
   const [query, setQuery] = React.useState("");
   const [showUnreadOnly, setShowUnreadOnly] = React.useState(false);
   const [showStarredOnly, setShowStarredOnly] = React.useState(false);
@@ -45,7 +47,7 @@ export function InboxPage() {
         return [
           item.title,
           item.description,
-          item.facilityId ? getFacilityName(item.facilityId) : "group",
+          item.facilityId ? getCompanyName(item.facilityId, companies) : "group",
           item.tone,
         ]
           .join(" ")
@@ -62,7 +64,7 @@ export function InboxPage() {
         if (toneDiff !== 0) return toneDiff;
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
-  }, [notifications.items, query, showStarredOnly, showUnreadOnly, toneFilter]);
+  }, [companies, notifications.items, query, showStarredOnly, showUnreadOnly, toneFilter]);
 
   const selected = filteredItems.find((item) => item.id === selectedId) ?? filteredItems[0] ?? null;
 
@@ -185,4 +187,3 @@ export function InboxPage() {
     </div>
   );
 }
-

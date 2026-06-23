@@ -61,24 +61,6 @@ export async function updateUtilityRecord(id: number, record: UtilityRecordInput
   return parseJsonResponse<UtilityRecord>(response, "Utilities request failed.");
 }
 
-export async function approveUtilityMonth(id: number, userId: string) {
-  const response = await fetch(`${UTILITIES_API}/${id}/approve-month`, {
-    method: "POST",
-    headers: authJsonHeaders(userId),
-  });
-
-  return parseJsonResponse<UtilityRecord>(response, "Utilities request failed.");
-}
-
-export async function submitUtilityMonth(id: number, userId: string) {
-  const response = await fetch(`${UTILITIES_API}/${id}/submit-month`, {
-    method: "POST",
-    headers: authJsonHeaders(userId),
-  });
-
-  return parseJsonResponse<UtilityRecord>(response, "Utilities request failed.");
-}
-
 export async function transitionUtilityMonth(id: number, transitionKey: string, userId: string, note?: string) {
   const response = await fetch(`${UTILITIES_API}/${id}/transition-month`, {
     method: "POST",

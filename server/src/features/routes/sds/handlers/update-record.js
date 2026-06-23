@@ -1,4 +1,4 @@
-import { pool } from "../../../../core/shared/postgres.js";
+import { withTransaction } from "../../../../core/shared/postgres.js";
 import { ensureCoreSchema } from "../../../../core/shared/schema.js";
 import { getRequestUserDbId } from "../../utilities/request-context.js";
 
@@ -12,11 +12,9 @@ export async function updateSdsRecord(req, res, next) {
     const userDbId = await getRequestUserDbId(req);
     const input = normalizeSdsInput(req.body || {});
 
-    const client = await pool.connect();
-    try {
-      await client.query("BEGIN");
+    const updated = await withTransaction(async (client) => {
       const existing = await client.query("SELECT id FROM sds_records WHERE id = $1", [req.params.id]);
-      if (!existing.rowCount) return res.status(404).json({ error: "not_found" });
+      if (!existing.rowCount) return null;
 
       await client.query(
         `UPDATE sds_records SET chemical_name=$2, supplier=$3, language=$4, revision_date=$5, file_name=$6, notes=$7, updated_by_user_id=$8, updated_at=NOW() WHERE id=$1`,
@@ -30,17 +28,12 @@ export async function updateSdsRecord(req, res, next) {
         );
       }
 
-      const updated = await client.query(`${selectSdsSql} WHERE sr.id = $1`, [req.params.id]);
-      await client.query("COMMIT");
-      res.json(rowToSdsRecord(updated.rows[0]));
-    } catch (error) {
-      await client.query("ROLLBACK");
-      throw error;
-    } finally {
-      client.release();
-    }
+      return client.query(`${selectSdsSql} WHERE sr.id = $1`, [req.params.id]);
+    });
+
+    if (!updated) return res.status(404).json({ error: "not_found" });
+    res.json(rowToSdsRecord(updated.rows[0]));
   } catch (error) {
     next(error);
   }
 }
-

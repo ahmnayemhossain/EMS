@@ -1,0 +1,842 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model approval_hierarchy_group_steps {
+  group_key                 String
+  step_key                  String
+  position_index            Int                       @default(0)
+  created_at                DateTime                  @default(now()) @db.Timestamptz(6)
+  approval_hierarchy_groups approval_hierarchy_groups @relation(fields: [group_key], references: [key], onDelete: Cascade)
+  approval_hierarchy_steps  approval_hierarchy_steps  @relation(fields: [step_key], references: [key], onDelete: Cascade)
+
+  @@id([group_key, step_key])
+  @@index([group_key, position_index], map: "idx_approval_hierarchy_group_steps_group")
+}
+
+model approval_hierarchy_group_transitions {
+  group_key                      String
+  transition_key                 String
+  position_index                 Int                            @default(0)
+  created_at                     DateTime                       @default(now()) @db.Timestamptz(6)
+  approval_hierarchy_groups      approval_hierarchy_groups      @relation(fields: [group_key], references: [key], onDelete: Cascade)
+  approval_hierarchy_transitions approval_hierarchy_transitions @relation(fields: [transition_key], references: [key], onDelete: Cascade)
+
+  @@id([group_key, transition_key])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model approval_hierarchy_groups {
+  key                                                       String                                 @id
+  name                                                      String
+  module_key                                                String
+  description                                               String?
+  is_default                                                Int                                    @default(0) @db.SmallInt
+  is_active                                                 Int                                    @default(1) @db.SmallInt
+  created_by_user_id                                        BigInt?
+  updated_by_user_id                                        BigInt?
+  created_at                                                DateTime                               @default(now()) @db.Timestamptz(6)
+  updated_at                                                DateTime                               @default(now()) @db.Timestamptz(6)
+  approval_hierarchy_group_steps                            approval_hierarchy_group_steps[]
+  approval_hierarchy_group_transitions                      approval_hierarchy_group_transitions[]
+  users_approval_hierarchy_groups_created_by_user_idTousers users?                                 @relation("approval_hierarchy_groups_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
+  users_approval_hierarchy_groups_updated_by_user_idTousers users?                                 @relation("approval_hierarchy_groups_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
+  approval_hierarchy_role_transitions                       approval_hierarchy_role_transitions[]
+  approval_hierarchy_user_transitions                       approval_hierarchy_user_transitions[]
+
+  @@index([module_key, is_default, is_active], map: "idx_approval_hierarchy_groups_module")
+}
+
+model approval_hierarchy_role_transitions {
+  group_key                      String
+  role_id                        BigInt
+  transition_key                 String
+  created_at                     DateTime                       @default(now()) @db.Timestamptz(6)
+  approval_hierarchy_groups      approval_hierarchy_groups      @relation(fields: [group_key], references: [key], onDelete: Cascade)
+  roles                          roles                          @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  approval_hierarchy_transitions approval_hierarchy_transitions @relation(fields: [transition_key], references: [key], onDelete: Cascade)
+
+  @@id([group_key, role_id, transition_key])
+  @@index([role_id, group_key], map: "idx_approval_hierarchy_role_transitions_role")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model approval_hierarchy_steps {
+  key                                                                                                   String                           @id
+  name                                                                                                  String
+  sort_order                                                                                            Int                              @default(0)
+  is_initial                                                                                            Int                              @default(0) @db.SmallInt
+  is_final                                                                                              Int                              @default(0) @db.SmallInt
+  is_active                                                                                             Int                              @default(1) @db.SmallInt
+  created_by_user_id                                                                                    BigInt?
+  updated_by_user_id                                                                                    BigInt?
+  created_at                                                                                            DateTime                         @default(now()) @db.Timestamptz(6)
+  updated_at                                                                                            DateTime                         @default(now()) @db.Timestamptz(6)
+  approval_hierarchy_group_steps                                                                        approval_hierarchy_group_steps[]
+  users_approval_hierarchy_steps_created_by_user_idTousers                                              users?                           @relation("approval_hierarchy_steps_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
+  users_approval_hierarchy_steps_updated_by_user_idTousers                                              users?                           @relation("approval_hierarchy_steps_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
+  approval_hierarchy_transitions_approval_hierarchy_transitions_from_step_keyToapproval_hierarchy_steps approval_hierarchy_transitions[] @relation("approval_hierarchy_transitions_from_step_keyToapproval_hierarchy_steps")
+  approval_hierarchy_transitions_approval_hierarchy_transitions_to_step_keyToapproval_hierarchy_steps   approval_hierarchy_transitions[] @relation("approval_hierarchy_transitions_to_step_keyToapproval_hierarchy_steps")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model approval_hierarchy_transitions {
+  key                                                                                             String                                 @id
+  name                                                                                            String
+  from_step_key                                                                                   String
+  to_step_key                                                                                     String
+  is_active                                                                                       Int                                    @default(1) @db.SmallInt
+  created_by_user_id                                                                              BigInt?
+  updated_by_user_id                                                                              BigInt?
+  created_at                                                                                      DateTime                               @default(now()) @db.Timestamptz(6)
+  updated_at                                                                                      DateTime                               @default(now()) @db.Timestamptz(6)
+  approval_hierarchy_group_transitions                                                            approval_hierarchy_group_transitions[]
+  approval_hierarchy_role_transitions                                                             approval_hierarchy_role_transitions[]
+  users_approval_hierarchy_transitions_created_by_user_idTousers                                  users?                                 @relation("approval_hierarchy_transitions_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
+  approval_hierarchy_steps_approval_hierarchy_transitions_from_step_keyToapproval_hierarchy_steps approval_hierarchy_steps               @relation("approval_hierarchy_transitions_from_step_keyToapproval_hierarchy_steps", fields: [from_step_key], references: [key], onDelete: Cascade)
+  approval_hierarchy_steps_approval_hierarchy_transitions_to_step_keyToapproval_hierarchy_steps   approval_hierarchy_steps               @relation("approval_hierarchy_transitions_to_step_keyToapproval_hierarchy_steps", fields: [to_step_key], references: [key], onDelete: Cascade)
+  users_approval_hierarchy_transitions_updated_by_user_idTousers                                  users?                                 @relation("approval_hierarchy_transitions_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
+  approval_hierarchy_user_transitions                                                             approval_hierarchy_user_transitions[]
+
+  @@index([from_step_key, to_step_key], map: "idx_approval_hierarchy_transitions_steps")
+}
+
+model approval_hierarchy_user_transitions {
+  group_key                      String
+  user_id                        BigInt
+  transition_key                 String
+  created_at                     DateTime                       @default(now()) @db.Timestamptz(6)
+  approval_hierarchy_groups      approval_hierarchy_groups      @relation(fields: [group_key], references: [key], onDelete: Cascade)
+  approval_hierarchy_transitions approval_hierarchy_transitions @relation(fields: [transition_key], references: [key], onDelete: Cascade)
+  users                          users                          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@id([group_key, user_id, transition_key])
+  @@index([user_id, group_key], map: "idx_approval_hierarchy_user_transitions_user")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model audit_logs {
+  id            BigInt   @id @default(autoincrement())
+  table_name    String
+  row_id        String
+  action        String
+  actor_user_id BigInt?
+  old_data      Json?
+  new_data      Json?
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
+  users         users?   @relation(fields: [actor_user_id], references: [id])
+
+  @@index([actor_user_id], map: "idx_audit_logs_actor_user_id")
+  @@index([created_at], map: "idx_audit_logs_created_at")
+  @@index([table_name, row_id], map: "idx_audit_logs_table_row")
+}
+
+model audit_records {
+  id                                            BigInt    @id @default(autoincrement())
+  facility_id                                   BigInt
+  name                                          String
+  customer_name                                 String?
+  audit_date                                    DateTime  @db.Date
+  next_audit_date                               DateTime? @db.Date
+  auditor                                       String
+  template_id                                   String
+  progress                                      Int       @default(0)
+  overall_score                                 Int       @default(0)
+  findings_count                                Json      @default("{\"major\": 0, \"minor\": 0, \"critical\": 0}")
+  checklist                                     Json      @default("[]")
+  findings                                      Json      @default("[]")
+  created_by_user_id                            BigInt?
+  updated_by_user_id                            BigInt?
+  created_at                                    DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at                                    DateTime  @default(now()) @db.Timestamptz(6)
+  users_audit_records_created_by_user_idTousers users?    @relation("audit_records_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
+  companies                                     companies @relation(fields: [facility_id], references: [id])
+  users_audit_records_updated_by_user_idTousers users?    @relation("audit_records_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
+
+  @@index([facility_id, audit_date(sort: Desc)], map: "idx_audit_records_facility_date")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model capa_records {
+  id                                           BigInt    @id @default(autoincrement())
+  facility_id                                  BigInt
+  title                                        String
+  description                                  String?
+  owner_name                                   String
+  severity                                     String
+  status                                       String
+  due_date                                     DateTime  @db.Date
+  evidence_count                               Int       @default(0)
+  related_finding_id                           String?
+  position_index                               Int       @default(0)
+  created_by_user_id                           BigInt?
+  updated_by_user_id                           BigInt?
+  created_at                                   DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at                                   DateTime  @default(now()) @db.Timestamptz(6)
+  is_dismissed                                 Int       @default(0) @db.SmallInt
+  dismissed_at                                 DateTime? @db.Timestamptz(6)
+  users_capa_records_created_by_user_idTousers users?    @relation("capa_records_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
+  companies                                    companies @relation(fields: [facility_id], references: [id])
+  users_capa_records_updated_by_user_idTousers users?    @relation("capa_records_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
+
+  @@index([due_date], map: "idx_capa_records_due_date")
+  @@index([facility_id, status, position_index], map: "idx_capa_records_facility_status_position")
+}
+
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
+model chemicals {
+  id                                        BigInt       @id @default(autoincrement())
+  facility_id                               BigInt
+  name                                      String
+  trade_name                                String?
+  supplier                                  String       @default("")
+  storage_area                              String
+  hazard_classes                            Json         @default("[]")
+  approval_status                           String       @default("pending")
+  stock_kg                                  Decimal      @default(0) @db.Decimal
+  min_stock_kg                              Decimal?     @db.Decimal
+  expiry_date                               DateTime?    @db.Date
+  sds_id                                    BigInt?
+  ppe                                       Json         @default("[]")
+  storage_instructions                      Json         @default("[]")
+  compatibility_warnings                    Json         @default("[]")
+  linked_waste_stream                       String?
+  batches                                   Json         @default("[]")
+  created_by_user_id                        BigInt?
+  updated_by_user_id                        BigInt?
+  created_at                                DateTime     @default(now()) @db.Timestamptz(6)
+  updated_at                                DateTime     @default(now()) @db.Timestamptz(6)
+  users_chemicals_created_by_user_idTousers users?       @relation("chemicals_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
+  companies                                 companies    @relation(fields: [facility_id], references: [id])
+  sds_records                               sds_records? @relation(fields: [sds_id], references: [id])
+  users_chemicals_updated_by_user_idTousers users?       @relation("chemicals_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
+
+  @@index([facility_id], map: "idx_chemicals_facility_id")
+  @@index([sds_id], map: "idx_chemicals_sds_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model companies {
+  id                                        BigInt                      @id @default(autoincrement())
+  name                                      String                      @unique
+  short_name                                String                      @unique
+  local_name                                String?
+  address                                   String?
+  is_active                                 Int                         @default(1) @db.SmallInt
+  created_by_user_id                        BigInt?
+  updated_by_user_id                        BigInt?
+  created_at                                DateTime                    @default(now()) @db.Timestamptz(6)
+  updated_at                                DateTime                    @default(now()) @db.Timestamptz(6)
+  audit_records                             audit_records[]
+  capa_records                              capa_records[]
+  chemicals                                 chemicals[]
+  users_companies_created_by_user_idTousers users?                      @relation("companies_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
+  users_companies_updated_by_user_idTousers users?                      @relation("companies_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
+  document_records                          document_records[]
+  employees                                 employees[]
+  file_assets                               file_assets[]
+  meters                                    meters[]
+  user_companies                            user_companies[]
+  utility_conversion_rules                  utility_conversion_rules[]
+  utility_monthly_approvals                 utility_monthly_approvals[]
+  utility_records                           utility_records[]
+  waste_records                             waste_records[]
+  wastewater_lab_records                    wastewater_lab_records[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model departments {
+  id                                          BigInt      @id @default(autoincrement())
+  name                                        String      @unique
+  is_active                                   Int         @default(1) @db.SmallInt
+  created_at                                  DateTime    @default(now()) @db.Timestamptz(6)
+  updated_at                                  DateTime    @default(now()) @db.Timestamptz(6)
+  created_by_user_id                          BigInt?
+  updated_by_user_id                          BigInt?
+  users_departments_created_by_user_idTousers users?      @relation("departments_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
+  users_departments_updated_by_user_idTousers users?      @relation("departments_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
+  employees                                   employees[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model designations {
+  id                                           BigInt      @id @default(autoincrement())
+  name                                         String      @unique
+  is_active                                    Int         @default(1) @db.SmallInt
+  created_at                                   DateTime    @default(now()) @db.Timestamptz(6)
+  updated_at                                   DateTime    @default(now()) @db.Timestamptz(6)
+  created_by_user_id                           BigInt?
+  updated_by_user_id                           BigInt?
+  users_designations_created_by_user_idTousers users?      @relation("designations_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
+  users_designations_updated_by_user_idTousers users?      @relation("designations_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
+  employees                                    employees[]
+}
+
+model document_records {
+  id                                               BigInt    @id @default(autoincrement())
+  facility_id                                      BigInt
+  title                                            String
+  category                                         String
+  owner_department                                 String
+  expires_on                                       DateTime? @db.Date
+  status                                           String    @default("valid")
+  file_name                                        String
+  notes                                            String?
+  created_by_user_id                               BigInt?
+  updated_by_user_id                               BigInt?
+  created_at                                       DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at                                       DateTime  @default(now()) @db.Timestamptz(6)
+  users_document_records_created_by_user_idTousers users?    @relation("document_records_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
+  companies                                        companies @relation(fields: [facility_id], references: [id])
+  users_document_records_updated_by_user_idTousers users?    @relation("document_records_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
+
+  @@index([facility_id, created_at(sort: Desc)], map: "idx_document_records_facility_date")
+  @@index([status], map: "idx_document_records_status")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model email_notification_settings {
+  id                                                          BigInt   @id @default(autoincrement())
+  key                                                         String   @unique
+  is_active                                                   Int      @default(0) @db.SmallInt
+  smtp_host                                                   String?
+  smtp_port                                                   Int?
+  smtp_secure                                                 Int      @default(1) @db.SmallInt
+  smtp_username                                               String?
+  smtp_password                                               String?
+  from_name                                                   String?
+  from_email                                                  String?
+  recipient_emails                                            Json     @default("[]")
+  subject_template                                            String   @default("Login alert: {{userName}}")
+  html_template                                               String   @default("<!doctype html><html><body><h2>Login alert</h2><p><strong>{{userName}}</strong> signed in to {{appName}}.</p><p>Username: {{username}}</p><p>Employee ID: {{employeeId}}</p><p>Email: {{userEmail}}</p><p>Time: {{loginAt}}</p><p>IP: {{ipAddress}}</p></body></html>")
+  created_by_user_id                                          BigInt?
+  updated_by_user_id                                          BigInt?
+  created_at                                                  DateTime @default(now()) @db.Timestamptz(6)
+  updated_at                                                  DateTime @default(now()) @db.Timestamptz(6)
+  users_email_notification_settings_created_by_user_idTousers users?   @relation("email_notification_settings_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
+  users_email_notification_settings_updated_by_user_idTousers users?   @relation("email_notification_settings_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
+
+  @@index([key], map: "idx_email_notification_settings_key")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model employees {
+  id                                        BigInt        @id @default(autoincrement())
+  employee_id                               Int           @unique
+  name                                      String
+  company_id                                BigInt?
+  department_id                             BigInt?
+  designation_id                            BigInt?
+  is_active                                 Int           @default(1) @db.SmallInt
+  email                                     String        @unique
+  phone                                     String?
+  joined_on                                 DateTime?     @db.Date
+  created_by_user_id                        BigInt?
+  updated_by_user_id                        BigInt?
+  created_at                                DateTime      @default(now()) @db.Timestamptz(6)
+  updated_at                                DateTime      @default(now()) @db.Timestamptz(6)
+  companies                                 companies?    @relation(fields: [company_id], references: [id])
+  users_employees_created_by_user_idTousers users?        @relation("employees_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
+  departments                               departments?  @relation(fields: [department_id], references: [id])
+  designations                              designations? @relation(fields: [designation_id], references: [id])
+  users_employees_updated_by_user_idTousers users?        @relation("employees_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
+  users_users_employee_idToemployees        users?        @relation("users_employee_idToemployees")
+}
+
+model file_assets {
+  id                  BigInt     @id @default(autoincrement())
+  module              String
+  entity_type         String
+  entity_id           BigInt
+  company_id          BigInt?
+  original_name       String
+  stored_name         String
+  storage_disk        String     @default("local-cdn")
+  storage_path        String
+  mime_type           String
+  file_size           BigInt
+  uploaded_by_user_id BigInt?
+  created_at          DateTime   @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime   @default(now()) @db.Timestamptz(6)
+  companies           companies? @relation(fields: [company_id], references: [id])
+  users               users?     @relation(fields: [uploaded_by_user_id], references: [id])
+
+  @@index([company_id], map: "idx_file_assets_company")
+  @@index([module, entity_type, entity_id], map: "idx_file_assets_entity")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model meters {
+  id                                     BigInt                      @id @default(autoincrement())
+  name                                   String
+  code                                   String?
+  location                               String?
+  company_id                             BigInt
+  utility_type_id                        BigInt
+  source_id                              BigInt?
+  uom_id                                 BigInt
+  is_active                              Int                         @default(1) @db.SmallInt
+  created_by_user_id                     BigInt?
+  updated_by_user_id                     BigInt?
+  created_at                             DateTime                    @default(now()) @db.Timestamptz(6)
+  updated_at                             DateTime                    @default(now()) @db.Timestamptz(6)
+  companies                              companies                   @relation(fields: [company_id], references: [id])
+  users_meters_created_by_user_idTousers users?                      @relation("meters_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
+  sources                                sources?                    @relation(fields: [source_id], references: [id])
+  uom                                    uom                         @relation(fields: [uom_id], references: [id])
+  users_meters_updated_by_user_idTousers users?                      @relation("meters_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
+  utility_types                          utility_types               @relation(fields: [utility_type_id], references: [id])
+  utility_monthly_approvals              utility_monthly_approvals[]
+  utility_records                        utility_records[]
+
+  @@unique([company_id, utility_type_id, name])
+}
+
+model permissions {
+  id               BigInt             @id @default(autoincrement())
+  key              String             @unique
+  created_at       DateTime           @default(now()) @db.Timestamptz(6)
+  role_permissions role_permissions[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model report_definitions {
+  id                                                 BigInt   @id @default(autoincrement())
+  key                                                String   @unique
+  name                                               String
+  description                                        String?
+  requires_company                                   Int      @default(1) @db.SmallInt
+  sql_text                                           String
+  variables                                          Json     @default("[]")
+  is_active                                          Int      @default(1) @db.SmallInt
+  created_by_user_id                                 BigInt?
+  updated_by_user_id                                 BigInt?
+  created_at                                         DateTime @default(now()) @db.Timestamptz(6)
+  updated_at                                         DateTime @default(now()) @db.Timestamptz(6)
+  users_report_definitions_created_by_user_idTousers users?   @relation("report_definitions_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
+  users_report_definitions_updated_by_user_idTousers users?   @relation("report_definitions_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
+
+  @@index([is_active], map: "idx_report_definitions_active")
+  @@index([key], map: "idx_report_definitions_key")
+}
+
+model role_permissions {
+  id            BigInt      @id @default(autoincrement())
+  role_id       BigInt
+  permission_id BigInt
+  permissions   permissions @relation(fields: [permission_id], references: [id], onDelete: Cascade)
+  roles         roles       @relation(fields: [role_id], references: [id], onDelete: Cascade)
+
+  @@unique([role_id, permission_id])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model roles {
+  id                                    BigInt                                @id @default(autoincrement())
+  name                                  String                                @unique
+  scope                                 String                                @default("company")
+  description                           String?
+  is_active                             Int                                   @default(1) @db.SmallInt
+  created_by_user_id                    BigInt?
+  updated_by_user_id                    BigInt?
+  created_at                            DateTime                              @default(now()) @db.Timestamptz(6)
+  updated_at                            DateTime                              @default(now()) @db.Timestamptz(6)
+  approval_hierarchy_role_transitions   approval_hierarchy_role_transitions[]
+  role_permissions                      role_permissions[]
+  users_roles_created_by_user_idTousers users?                                @relation("roles_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
+  users_roles_updated_by_user_idTousers users?                                @relation("roles_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
+  user_roles                            user_roles[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model sds_records {
+  id                                          BigInt         @id @default(autoincrement())
+  chemical_name                               String
+  supplier                                    String
+  language                                    String
+  revision_date                               DateTime       @db.Date
+  file_name                                   String?
+  notes                                       String?
+  is_active                                   Int            @default(1) @db.SmallInt
+  created_by_user_id                          BigInt?
+  updated_by_user_id                          BigInt?
+  created_at                                  DateTime       @default(now()) @db.Timestamptz(6)
+  updated_at                                  DateTime       @default(now()) @db.Timestamptz(6)
+  chemicals                                   chemicals[]
+  users_sds_records_created_by_user_idTousers users?         @relation("sds_records_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
+  users_sds_records_updated_by_user_idTousers users?         @relation("sds_records_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
+  sds_sections                                sds_sections[]
+
+  @@index([revision_date], map: "idx_sds_records_revision_date")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model sds_sections {
+  id          BigInt      @id @default(autoincrement())
+  sds_id      BigInt
+  section_no  Int         @db.SmallInt
+  title       String
+  summary     String
+  sds_records sds_records @relation(fields: [sds_id], references: [id], onDelete: Cascade)
+
+  @@unique([sds_id, section_no])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model source_wiring {
+  id                                            BigInt        @id @default(autoincrement())
+  source_id                                     BigInt
+  utility_type_id                               BigInt
+  is_active                                     Int           @default(1) @db.SmallInt
+  created_by_user_id                            BigInt?
+  updated_by_user_id                            BigInt?
+  created_at                                    DateTime      @default(now()) @db.Timestamptz(6)
+  updated_at                                    DateTime      @default(now()) @db.Timestamptz(6)
+  users_source_wiring_created_by_user_idTousers users?        @relation("source_wiring_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
+  sources                                       sources       @relation(fields: [source_id], references: [id], onDelete: Cascade)
+  users_source_wiring_updated_by_user_idTousers users?        @relation("source_wiring_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
+  utility_types                                 utility_types @relation(fields: [utility_type_id], references: [id], onDelete: Cascade)
+
+  @@unique([source_id, utility_type_id])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model sources {
+  id                                      BigInt                      @id @default(autoincrement())
+  name                                    String                      @unique
+  is_active                               Int                         @default(1) @db.SmallInt
+  created_by_user_id                      BigInt?
+  updated_by_user_id                      BigInt?
+  created_at                              DateTime                    @default(now()) @db.Timestamptz(6)
+  updated_at                              DateTime                    @default(now()) @db.Timestamptz(6)
+  meters                                  meters[]
+  source_wiring                           source_wiring[]
+  users_sources_created_by_user_idTousers users?                      @relation("sources_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
+  users_sources_updated_by_user_idTousers users?                      @relation("sources_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
+  utility_monthly_approvals               utility_monthly_approvals[]
+  utility_records                         utility_records[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model suppliers {
+  id                                        BigInt   @id @default(autoincrement())
+  name                                      String   @unique
+  is_active                                 Int      @default(1) @db.SmallInt
+  created_by_user_id                        BigInt?
+  updated_by_user_id                        BigInt?
+  created_at                                DateTime @default(now()) @db.Timestamptz(6)
+  updated_at                                DateTime @default(now()) @db.Timestamptz(6)
+  users_suppliers_created_by_user_idTousers users?   @relation("suppliers_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
+  users_suppliers_updated_by_user_idTousers users?   @relation("suppliers_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model uom {
+  id                                  BigInt       @id @default(autoincrement())
+  name                                String       @unique(map: "idx_uom_name_unique")
+  is_active                           Int          @default(1) @db.SmallInt
+  created_by_user_id                  BigInt?
+  updated_by_user_id                  BigInt?
+  created_at                          DateTime     @default(now()) @db.Timestamptz(6)
+  updated_at                          DateTime     @default(now()) @db.Timestamptz(6)
+  meters                              meters[]
+  users_uom_created_by_user_idTousers users?       @relation("uom_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
+  users_uom_updated_by_user_idTousers users?       @relation("uom_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
+  uom_wiring                          uom_wiring[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model uom_wiring {
+  id                                         BigInt        @id @default(autoincrement())
+  uom_id                                     BigInt
+  utility_type_id                            BigInt
+  is_active                                  Int           @default(1) @db.SmallInt
+  created_by_user_id                         BigInt?
+  updated_by_user_id                         BigInt?
+  created_at                                 DateTime      @default(now()) @db.Timestamptz(6)
+  updated_at                                 DateTime      @default(now()) @db.Timestamptz(6)
+  users_uom_wiring_created_by_user_idTousers users?        @relation("uom_wiring_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
+  uom                                        uom           @relation(fields: [uom_id], references: [id], onDelete: Cascade)
+  users_uom_wiring_updated_by_user_idTousers users?        @relation("uom_wiring_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
+  utility_types                              utility_types @relation(fields: [utility_type_id], references: [id], onDelete: Cascade)
+
+  @@unique([uom_id, utility_type_id])
+}
+
+model user_companies {
+  id         BigInt    @id @default(autoincrement())
+  user_id    BigInt
+  company_id BigInt
+  companies  companies @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, company_id])
+}
+
+model user_roles {
+  id      BigInt @id @default(autoincrement())
+  user_id BigInt
+  role_id BigInt
+  roles   roles  @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  users   users  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, role_id])
+}
+
+model users {
+  id                                                                                      BigInt                                @id @default(autoincrement())
+  employee_id                                                                             BigInt?                               @unique
+  username                                                                                String                                @unique
+  email                                                                                   String                                @unique
+  status                                                                                  String                                @default("active")
+  password_hash                                                                           String?
+  last_login_at                                                                           DateTime?                             @db.Timestamptz(6)
+  created_by_user_id                                                                      BigInt?
+  updated_by_user_id                                                                      BigInt?
+  created_at                                                                              DateTime                              @default(now()) @db.Timestamptz(6)
+  updated_at                                                                              DateTime                              @default(now()) @db.Timestamptz(6)
+  approval_hierarchy_groups_approval_hierarchy_groups_created_by_user_idTousers           approval_hierarchy_groups[]           @relation("approval_hierarchy_groups_created_by_user_idTousers")
+  approval_hierarchy_groups_approval_hierarchy_groups_updated_by_user_idTousers           approval_hierarchy_groups[]           @relation("approval_hierarchy_groups_updated_by_user_idTousers")
+  approval_hierarchy_steps_approval_hierarchy_steps_created_by_user_idTousers             approval_hierarchy_steps[]            @relation("approval_hierarchy_steps_created_by_user_idTousers")
+  approval_hierarchy_steps_approval_hierarchy_steps_updated_by_user_idTousers             approval_hierarchy_steps[]            @relation("approval_hierarchy_steps_updated_by_user_idTousers")
+  approval_hierarchy_transitions_approval_hierarchy_transitions_created_by_user_idTousers approval_hierarchy_transitions[]      @relation("approval_hierarchy_transitions_created_by_user_idTousers")
+  approval_hierarchy_transitions_approval_hierarchy_transitions_updated_by_user_idTousers approval_hierarchy_transitions[]      @relation("approval_hierarchy_transitions_updated_by_user_idTousers")
+  approval_hierarchy_user_transitions                                                     approval_hierarchy_user_transitions[]
+  audit_logs                                                                              audit_logs[]
+  audit_records_audit_records_created_by_user_idTousers                                   audit_records[]                       @relation("audit_records_created_by_user_idTousers")
+  audit_records_audit_records_updated_by_user_idTousers                                   audit_records[]                       @relation("audit_records_updated_by_user_idTousers")
+  capa_records_capa_records_created_by_user_idTousers                                     capa_records[]                        @relation("capa_records_created_by_user_idTousers")
+  capa_records_capa_records_updated_by_user_idTousers                                     capa_records[]                        @relation("capa_records_updated_by_user_idTousers")
+  chemicals_chemicals_created_by_user_idTousers                                           chemicals[]                           @relation("chemicals_created_by_user_idTousers")
+  chemicals_chemicals_updated_by_user_idTousers                                           chemicals[]                           @relation("chemicals_updated_by_user_idTousers")
+  companies_companies_created_by_user_idTousers                                           companies[]                           @relation("companies_created_by_user_idTousers")
+  companies_companies_updated_by_user_idTousers                                           companies[]                           @relation("companies_updated_by_user_idTousers")
+  departments_departments_created_by_user_idTousers                                       departments[]                         @relation("departments_created_by_user_idTousers")
+  departments_departments_updated_by_user_idTousers                                       departments[]                         @relation("departments_updated_by_user_idTousers")
+  designations_designations_created_by_user_idTousers                                     designations[]                        @relation("designations_created_by_user_idTousers")
+  designations_designations_updated_by_user_idTousers                                     designations[]                        @relation("designations_updated_by_user_idTousers")
+  document_records_document_records_created_by_user_idTousers                             document_records[]                    @relation("document_records_created_by_user_idTousers")
+  document_records_document_records_updated_by_user_idTousers                             document_records[]                    @relation("document_records_updated_by_user_idTousers")
+  email_notification_settings_email_notification_settings_created_by_user_idTousers       email_notification_settings[]         @relation("email_notification_settings_created_by_user_idTousers")
+  email_notification_settings_email_notification_settings_updated_by_user_idTousers       email_notification_settings[]         @relation("email_notification_settings_updated_by_user_idTousers")
+  employees_employees_created_by_user_idTousers                                           employees[]                           @relation("employees_created_by_user_idTousers")
+  employees_employees_updated_by_user_idTousers                                           employees[]                           @relation("employees_updated_by_user_idTousers")
+  file_assets                                                                             file_assets[]
+  meters_meters_created_by_user_idTousers                                                 meters[]                              @relation("meters_created_by_user_idTousers")
+  meters_meters_updated_by_user_idTousers                                                 meters[]                              @relation("meters_updated_by_user_idTousers")
+  report_definitions_report_definitions_created_by_user_idTousers                         report_definitions[]                  @relation("report_definitions_created_by_user_idTousers")
+  report_definitions_report_definitions_updated_by_user_idTousers                         report_definitions[]                  @relation("report_definitions_updated_by_user_idTousers")
+  roles_roles_created_by_user_idTousers                                                   roles[]                               @relation("roles_created_by_user_idTousers")
+  roles_roles_updated_by_user_idTousers                                                   roles[]                               @relation("roles_updated_by_user_idTousers")
+  sds_records_sds_records_created_by_user_idTousers                                       sds_records[]                         @relation("sds_records_created_by_user_idTousers")
+  sds_records_sds_records_updated_by_user_idTousers                                       sds_records[]                         @relation("sds_records_updated_by_user_idTousers")
+  source_wiring_source_wiring_created_by_user_idTousers                                   source_wiring[]                       @relation("source_wiring_created_by_user_idTousers")
+  source_wiring_source_wiring_updated_by_user_idTousers                                   source_wiring[]                       @relation("source_wiring_updated_by_user_idTousers")
+  sources_sources_created_by_user_idTousers                                               sources[]                             @relation("sources_created_by_user_idTousers")
+  sources_sources_updated_by_user_idTousers                                               sources[]                             @relation("sources_updated_by_user_idTousers")
+  suppliers_suppliers_created_by_user_idTousers                                           suppliers[]                           @relation("suppliers_created_by_user_idTousers")
+  suppliers_suppliers_updated_by_user_idTousers                                           suppliers[]                           @relation("suppliers_updated_by_user_idTousers")
+  uom_uom_created_by_user_idTousers                                                       uom[]                                 @relation("uom_created_by_user_idTousers")
+  uom_uom_updated_by_user_idTousers                                                       uom[]                                 @relation("uom_updated_by_user_idTousers")
+  uom_wiring_uom_wiring_created_by_user_idTousers                                         uom_wiring[]                          @relation("uom_wiring_created_by_user_idTousers")
+  uom_wiring_uom_wiring_updated_by_user_idTousers                                         uom_wiring[]                          @relation("uom_wiring_updated_by_user_idTousers")
+  user_companies                                                                          user_companies[]
+  user_roles                                                                              user_roles[]
+  users_users_created_by_user_idTousers                                                   users?                                @relation("users_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
+  other_users_users_created_by_user_idTousers                                             users[]                               @relation("users_created_by_user_idTousers")
+  employees_users_employee_idToemployees                                                  employees?                            @relation("users_employee_idToemployees", fields: [employee_id], references: [id])
+  users_users_updated_by_user_idTousers                                                   users?                                @relation("users_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
+  other_users_users_updated_by_user_idTousers                                             users[]                               @relation("users_updated_by_user_idTousers")
+  utility_conversion_rules_utility_conversion_rules_created_by_user_idTousers             utility_conversion_rules[]            @relation("utility_conversion_rules_created_by_user_idTousers")
+  utility_conversion_rules_utility_conversion_rules_updated_by_user_idTousers             utility_conversion_rules[]            @relation("utility_conversion_rules_updated_by_user_idTousers")
+  utility_monthly_approval_history                                                        utility_monthly_approval_history[]
+  utility_monthly_approvals_utility_monthly_approvals_approved_by_user_idTousers          utility_monthly_approvals[]           @relation("utility_monthly_approvals_approved_by_user_idTousers")
+  utility_monthly_approvals_utility_monthly_approvals_created_by_user_idTousers           utility_monthly_approvals[]           @relation("utility_monthly_approvals_created_by_user_idTousers")
+  utility_monthly_approvals_utility_monthly_approvals_updated_by_user_idTousers           utility_monthly_approvals[]           @relation("utility_monthly_approvals_updated_by_user_idTousers")
+  utility_records_utility_records_created_by_user_idTousers                               utility_records[]                     @relation("utility_records_created_by_user_idTousers")
+  utility_records_utility_records_updated_by_user_idTousers                               utility_records[]                     @relation("utility_records_updated_by_user_idTousers")
+  waste_records_waste_records_created_by_user_idTousers                                   waste_records[]                       @relation("waste_records_created_by_user_idTousers")
+  waste_records_waste_records_updated_by_user_idTousers                                   waste_records[]                       @relation("waste_records_updated_by_user_idTousers")
+  wastewater_lab_records_wastewater_lab_records_created_by_user_idTousers                 wastewater_lab_records[]              @relation("wastewater_lab_records_created_by_user_idTousers")
+  wastewater_lab_records_wastewater_lab_records_updated_by_user_idTousers                 wastewater_lab_records[]              @relation("wastewater_lab_records_updated_by_user_idTousers")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model utility_conversion_rules {
+  id                                                       BigInt     @id @default(autoincrement())
+  company_id                                               BigInt?
+  key                                                      String
+  value                                                    Decimal    @db.Decimal
+  is_active                                                Int        @default(1) @db.SmallInt
+  created_by_user_id                                       BigInt?
+  updated_by_user_id                                       BigInt?
+  created_at                                               DateTime   @default(now()) @db.Timestamptz(6)
+  updated_at                                               DateTime   @default(now()) @db.Timestamptz(6)
+  companies                                                companies? @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  users_utility_conversion_rules_created_by_user_idTousers users?     @relation("utility_conversion_rules_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
+  users_utility_conversion_rules_updated_by_user_idTousers users?     @relation("utility_conversion_rules_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
+
+  @@unique([company_id, key])
+  @@index([key], map: "idx_utility_conversion_rules_key")
+}
+
+model utility_monthly_approval_history {
+  id                        BigInt                    @id @default(autoincrement())
+  monthly_approval_id       BigInt
+  from_status               String
+  to_status                 String
+  actor_user_id             BigInt?
+  created_at                DateTime                  @default(now()) @db.Timestamptz(6)
+  note                      String?
+  users                     users?                    @relation(fields: [actor_user_id], references: [id])
+  utility_monthly_approvals utility_monthly_approvals @relation(fields: [monthly_approval_id], references: [id], onDelete: Cascade)
+
+  @@index([monthly_approval_id, created_at], map: "idx_utility_monthly_approval_history_monthly")
+}
+
+model utility_monthly_approvals {
+  id                                                         BigInt                             @id @default(autoincrement())
+  facility_id                                                BigInt
+  type                                                       String
+  meter_id                                                   BigInt?
+  meter_key                                                  String
+  meter_name                                                 String
+  source_id                                                  BigInt?
+  period_month                                               DateTime                           @db.Date
+  coverage_start                                             DateTime?                          @db.Date
+  coverage_end                                               DateTime?                          @db.Date
+  covered_days                                               Int                                @default(0)
+  month_days                                                 Int                                @default(0)
+  missing_ranges                                             Json                               @default("[]")
+  missing_days_count                                         Int                                @default(0)
+  record_count                                               Int                                @default(0)
+  total_value                                                Decimal                            @default(0) @db.Decimal
+  total_diesel_liters                                        Decimal?                           @db.Decimal
+  uom                                                        String?
+  approval_status                                            String                             @default("draft")
+  approved_by_user_id                                        BigInt?
+  approved_at                                                DateTime?                          @db.Timestamptz(6)
+  created_by_user_id                                         BigInt?
+  updated_by_user_id                                         BigInt?
+  created_at                                                 DateTime                           @default(now()) @db.Timestamptz(6)
+  updated_at                                                 DateTime                           @default(now()) @db.Timestamptz(6)
+  utility_monthly_approval_history                           utility_monthly_approval_history[]
+  users_utility_monthly_approvals_approved_by_user_idTousers users?                             @relation("utility_monthly_approvals_approved_by_user_idTousers", fields: [approved_by_user_id], references: [id])
+  users_utility_monthly_approvals_created_by_user_idTousers  users?                             @relation("utility_monthly_approvals_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
+  companies                                                  companies                          @relation(fields: [facility_id], references: [id], onDelete: Cascade)
+  meters                                                     meters?                            @relation(fields: [meter_id], references: [id])
+  sources                                                    sources?                           @relation(fields: [source_id], references: [id])
+  users_utility_monthly_approvals_updated_by_user_idTousers  users?                             @relation("utility_monthly_approvals_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
+
+  @@unique([facility_id, type, meter_key, period_month])
+  @@index([facility_id, period_month], map: "idx_utility_monthly_approvals_company_month")
+  @@index([approval_status], map: "idx_utility_monthly_approvals_status")
+}
+
+model utility_records {
+  id                                              BigInt    @id @default(autoincrement())
+  facility_id                                     BigInt
+  type                                            String
+  source_id                                       BigInt?
+  period_start                                    DateTime  @db.Date
+  period_end                                      DateTime  @db.Date
+  meter_name                                      String
+  previous_reading                                Decimal?  @db.Decimal
+  current_reading                                 Decimal?  @db.Decimal
+  uom                                             String
+  value                                           Decimal   @db.Decimal
+  baseline_value                                  Decimal?  @db.Decimal
+  min_threshold                                   Decimal?  @db.Decimal
+  max_threshold                                   Decimal?  @db.Decimal
+  variance                                        Decimal?  @db.Decimal
+  variance_percent                                Decimal?  @db.Decimal
+  variance_flag                                   String?
+  status                                          String?
+  remarks                                         String?
+  bill_files                                      Json      @default("[]")
+  created_by_user_id                              BigInt?
+  updated_by_user_id                              BigInt?
+  created_at                                      DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at                                      DateTime  @default(now()) @db.Timestamptz(6)
+  meter_id                                        BigInt?
+  diesel_liters                                   Decimal?  @db.Decimal
+  calc_method                                     String?
+  calc_factor                                     Decimal?  @db.Decimal
+  meter_key                                       String?
+  period_month                                    DateTime? @db.Date
+  users_utility_records_created_by_user_idTousers users?    @relation("utility_records_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
+  companies                                       companies @relation(fields: [facility_id], references: [id], map: "utility_records_facility_id_companies_fkey")
+  meters                                          meters?   @relation(fields: [meter_id], references: [id])
+  sources                                         sources?  @relation(fields: [source_id], references: [id])
+  users_utility_records_updated_by_user_idTousers users?    @relation("utility_records_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
+
+  @@index([facility_id], map: "idx_utility_records_facility_id")
+  @@index([facility_id, type, meter_key, period_month], map: "idx_utility_records_month_key")
+  @@index([period_start], map: "idx_utility_records_period_start")
+  @@index([type], map: "idx_utility_records_type")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model utility_types {
+  id            BigInt          @id @default(autoincrement())
+  key           String          @unique
+  name          String          @unique
+  is_active     Int             @default(1) @db.SmallInt
+  created_at    DateTime        @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime        @default(now()) @db.Timestamptz(6)
+  meters        meters[]
+  source_wiring source_wiring[]
+  uom_wiring    uom_wiring[]
+}
+
+model waste_records {
+  id                                            BigInt    @id @default(autoincrement())
+  facility_id                                   BigInt
+  log_date                                      DateTime  @db.Date
+  stream                                        String
+  waste_type                                    String
+  qty_kg                                        Decimal   @default(0) @db.Decimal
+  storage_location                              String
+  vendor                                        String?
+  disposal_status                               String    @default("stored")
+  manifest_no                                   String?
+  due_by                                        DateTime? @db.Date
+  notes                                         String?
+  created_by_user_id                            BigInt?
+  updated_by_user_id                            BigInt?
+  created_at                                    DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at                                    DateTime  @default(now()) @db.Timestamptz(6)
+  users_waste_records_created_by_user_idTousers users?    @relation("waste_records_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
+  companies                                     companies @relation(fields: [facility_id], references: [id])
+  users_waste_records_updated_by_user_idTousers users?    @relation("waste_records_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
+
+  @@index([facility_id, log_date(sort: Desc)], map: "idx_waste_records_facility_date")
+  @@index([disposal_status], map: "idx_waste_records_status")
+}
+
+model wastewater_lab_records {
+  id                                                     BigInt    @id @default(autoincrement())
+  facility_id                                            BigInt
+  sample_date                                            DateTime  @db.Date
+  sample_point                                           String
+  ph                                                     Decimal   @db.Decimal
+  cod                                                    Decimal   @db.Decimal
+  bod                                                    Decimal   @db.Decimal
+  tss                                                    Decimal   @db.Decimal
+  do_value                                               Decimal?  @db.Decimal
+  lab_report_name                                        String?
+  notes                                                  String?
+  created_by_user_id                                     BigInt?
+  updated_by_user_id                                     BigInt?
+  created_at                                             DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at                                             DateTime  @default(now()) @db.Timestamptz(6)
+  users_wastewater_lab_records_created_by_user_idTousers users?    @relation("wastewater_lab_records_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
+  companies                                              companies @relation(fields: [facility_id], references: [id])
+  users_wastewater_lab_records_updated_by_user_idTousers users?    @relation("wastewater_lab_records_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
+
+  @@index([facility_id, sample_date(sort: Desc)], map: "idx_wastewater_lab_records_facility_date")
+}

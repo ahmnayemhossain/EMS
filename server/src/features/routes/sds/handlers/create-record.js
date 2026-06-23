@@ -1,4 +1,4 @@
-import { pool } from "../../../../core/shared/postgres.js";
+import { withTransaction } from "../../../../core/shared/postgres.js";
 import { ensureCoreSchema } from "../../../../core/shared/schema.js";
 import { getRequestUserDbId } from "../../utilities/request-context.js";
 
@@ -12,9 +12,7 @@ export async function createSdsRecord(req, res, next) {
     const userDbId = await getRequestUserDbId(req);
     const input = normalizeSdsInput(req.body || {});
 
-    const client = await pool.connect();
-    try {
-      await client.query("BEGIN");
+    const created = await withTransaction(async (client) => {
       const inserted = await client.query(
         `INSERT INTO sds_records (chemical_name, supplier, language, revision_date, file_name, notes, created_by_user_id, updated_by_user_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$7) RETURNING id`,
         [input.chemicalName, input.supplier, input.language, input.revisionDate, input.fileName, input.notes, userDbId],
@@ -28,17 +26,11 @@ export async function createSdsRecord(req, res, next) {
         );
       }
 
-      const created = await client.query(`${selectSdsSql} WHERE sr.id = $1`, [sdsId]);
-      await client.query("COMMIT");
-      res.status(201).json(rowToSdsRecord(created.rows[0]));
-    } catch (error) {
-      await client.query("ROLLBACK");
-      throw error;
-    } finally {
-      client.release();
-    }
+      return client.query(`${selectSdsSql} WHERE sr.id = $1`, [sdsId]);
+    });
+
+    res.status(201).json(rowToSdsRecord(created.rows[0]));
   } catch (error) {
     next(error);
   }
 }
-

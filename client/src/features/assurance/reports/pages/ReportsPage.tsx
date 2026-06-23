@@ -1,21 +1,37 @@
 import * as React from "react";
-import { Eye, FileSpreadsheet, LayoutGrid, List, Search } from "lucide-react";
+import { FileSpreadsheet, Search } from "lucide-react";
 
+import { SectionCard } from "@/components/layout/primitives/SectionCard";
 import { Badge } from "@/components/ui/primitives/badge";
 import { Button } from "@/components/ui/primitives/button";
-import { CardDescription } from "@/components/ui/primitives/card";
 import { Input } from "@/components/ui/primitives/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/primitives/table";
 import { toast } from "@/core/app/lib/toast";
 import { useSelectedCompany } from "@/core/app/state/slices/company";
 import { useUser } from "@/core/app/state/slices/user";
-import { SectionCard } from "@/components/layout/primitives/SectionCard";
 import { ReportGridCard } from "@/features/assurance/reports/components/ReportGridCard";
 import { ReportPreviewDialog } from "@/features/assurance/reports/components/ReportPreviewDialog";
-import { listReportDefinitions, runReport, type ReportDefinition } from "@/features/assurance/reports/services/api";
-import { downloadTextFile } from "@/features/assurance/reports/utils/download-text-file";
-import { buildRunPayload, escapeCsv, getColumnKeys, getDefaultVarValues, type ReportRow, validateReportInputs } from "@/features/assurance/reports/utils/report-page-helpers";
-type ReportView = "grid" | "list";
+import {
+  exportReportCsv,
+  listReportDefinitions,
+  runReport,
+  type ReportDefinition,
+} from "@/features/assurance/reports/services/api";
+import { downloadBlobFile } from "@/features/assurance/reports/utils/download-blob-file";
+import {
+  buildRunPayload,
+  getDefaultVarValues,
+  getReportCategory,
+  type ReportCategoryKey,
+  type ReportRow,
+  validateReportInputs,
+} from "@/features/assurance/reports/utils/report-page-helpers";
+
+type ReportSection = {
+  key: ReportCategoryKey;
+  label: string;
+  description: string;
+  defs: ReportDefinition[];
+};
 
 export function ReportsPage() {
   const { companies, selectedCompanyId } = useSelectedCompany();
@@ -29,7 +45,6 @@ export function ReportsPage() {
   const [defsLoading, setDefsLoading] = React.useState(true);
   const [defs, setDefs] = React.useState<ReportDefinition[]>([]);
   const [reportSearch, setReportSearch] = React.useState("");
-  const [reportView, setReportView] = React.useState<ReportView>("grid");
 
   const [activeDef, setActiveDef] = React.useState<ReportDefinition | null>(null);
   const [previewOpen, setPreviewOpen] = React.useState(false);
@@ -46,6 +61,7 @@ export function ReportsPage() {
 
     async function load() {
       if (!userId) return;
+
       setDefsLoading(true);
       try {
         const list = await listReportDefinitions(userId);
@@ -62,6 +78,45 @@ export function ReportsPage() {
       cancelled = true;
     };
   }, [userId]);
+
+  const filteredDefs = React.useMemo(() => {
+    const query = reportSearch.trim().toLowerCase();
+    if (!query) return defs;
+
+    return defs.filter((def) =>
+      [def.name, def.description, def.key].some((value) =>
+        String(value || "").toLowerCase().includes(query),
+      ),
+    );
+  }, [defs, reportSearch]);
+
+  const sections = React.useMemo<ReportSection[]>(() => {
+    const map = new Map<ReportCategoryKey, ReportSection>();
+
+    for (const def of filteredDefs) {
+      const category = getReportCategory(def);
+      if (!map.has(category.key)) {
+        map.set(category.key, { ...category, defs: [] });
+      }
+      map.get(category.key)?.defs.push(def);
+    }
+
+    return [
+      map.get("master"),
+      map.get("reference"),
+      map.get("records"),
+      map.get("approved"),
+      map.get("exceptions"),
+    ].filter((section): section is ReportSection => Boolean(section?.defs.length));
+  }, [filteredDefs]);
+
+  function resetPreviewState() {
+    setPreviewOpen(false);
+    setActiveDef(null);
+    setPreviewRows([]);
+    setPreviewSearch("");
+    setLastPreviewKey("");
+  }
 
   function openPreview(def: ReportDefinition) {
     const defaults = getDefaultVarValues(def, selectedCompanyId);
@@ -102,7 +157,7 @@ export function ReportsPage() {
     }
   }
 
-  async function handleExportCsv(def: ReportDefinition) {
+  async function handleExport(def: ReportDefinition) {
     if (!userId) return;
 
     const validationError = validateReportInputs(def, varValues, selectedCompanyId);
@@ -113,127 +168,85 @@ export function ReportsPage() {
 
     setExporting(true);
     try {
-      const rows =
-        lastPreviewKey === def.key
-          ? previewRows
-          : (await runReport(userId, def.key, buildRunPayload(def, varValues, selectedCompanyId))).rows;
-      const safeRows = Array.isArray(rows) ? rows : [];
-      const headers = getColumnKeys(safeRows);
-      if (!headers.length) {
-        toast.error("No rows found for export.");
-        return;
-      }
-      const csvHeader = headers.map(escapeCsv).join(",");
-      const csvBody = safeRows.map((row) => headers.map((key) => escapeCsv(row?.[key] ?? "")).join(","));
-      downloadTextFile([csvHeader, ...csvBody].join("\n"), `${def.key}.csv`, "text/csv;charset=utf-8");
+      const payload = buildRunPayload(def, varValues, selectedCompanyId);
+      const result = await exportReportCsv(userId, def.key, payload);
+      downloadBlobFile(result.blob, result.filename);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to export CSV.");
+      toast.error(error instanceof Error ? error.message : "Failed to export report.");
     } finally {
       setExporting(false);
     }
   }
 
-  const filteredDefs = React.useMemo(() => {
-    const query = reportSearch.trim().toLowerCase();
-    if (!query) return defs;
-    return defs.filter((def) =>
-      [def.name, def.description, def.key].some((value) => String(value || "").toLowerCase().includes(query)),
-    );
-  }, [defs, reportSearch]);
+  const scopedCount = defs.filter((def) => def.requiresCompany).length;
 
   return (
     <div className="space-y-4">
       <SectionCard
         title="Reports"
-        description="Preview database reports first, then export CSV from the preview window."
+        description="Run the report first, verify the preview, then export the final CSV."
       >
-        <div className="px-4 pt-2 sm:px-6">
-          <div className="flex flex-col gap-2 rounded-2xl border bg-muted/20 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
-            <div className="relative w-full sm:max-w-sm">
-              <Search className="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2" />
-              <Input
-                value={reportSearch}
-                onChange={(event) => setReportSearch(event.target.value)}
-                placeholder="Search report name..."
-                className="h-8 border-0 bg-background/80 pl-9 shadow-none"
-              />
+        <div className="grid gap-3 px-4 pt-2 sm:px-6 lg:grid-cols-[minmax(0,1fr)_auto]">
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={reportSearch}
+              onChange={(event) => setReportSearch(event.target.value)}
+              placeholder="Search reports by name, key, or description..."
+              className="h-10 pl-9"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3 lg:min-w-[280px]">
+            <div className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2">
+              <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Active reports</div>
+              <div className="mt-1 text-xl font-semibold">{defs.length}</div>
             </div>
-            <div className="flex items-center gap-2 self-end sm:self-auto">
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className="size-8 rounded-full"
-                aria-label={reportView === "grid" ? "Switch to list view" : "Switch to grid view"}
-                onClick={() => setReportView((current) => (current === "grid" ? "list" : "grid"))}
-              >
-                {reportView === "grid" ? <List className="size-4" /> : <LayoutGrid className="size-4" />}
-              </Button>
+            <div className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2">
+              <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Company scoped</div>
+              <div className="mt-1 text-xl font-semibold">{scopedCount}</div>
             </div>
           </div>
         </div>
 
-        {defsLoading ? <div className="p-4 text-sm text-muted-foreground">Loading reports from database...</div> : null}
-        {!defsLoading && filteredDefs.length === 0 ? <div className="p-4 text-sm text-muted-foreground">No report definitions found.</div> : null}
+        <div className="px-4 pt-3 sm:px-6">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            <Badge variant="outline">{selectedCompany ? selectedCompany.name : "No company selected"}</Badge>
+            <span>Reports are grouped by purpose so preview and export stay clear.</span>
+          </div>
+        </div>
 
-        {!defsLoading && filteredDefs.length ? (
-          reportView === "grid" ? (
-            <div className="grid gap-4 px-4 pb-6 pt-1 sm:px-6 md:grid-cols-2 xl:grid-cols-3">
-              {filteredDefs.map((def) => (
-                <ReportGridCard
-                  key={def.key}
-                  def={def}
-                  previewLoading={previewLoading}
-                  activeKey={activeDef?.key}
-                  onPreview={openPreview}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="px-4 pb-6 pt-1 sm:px-6">
-              <div className="overflow-hidden rounded-xl border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Report</TableHead>
-                      <TableHead>Scope</TableHead>
-                      <TableHead>Variables</TableHead>
-                      <TableHead className="text-right">Action</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredDefs.map((def) => {
-                      const variableCount = (def.variables || []).filter((item) => item.name !== "companyId").length;
-                      return (
-                        <TableRow key={def.key}>
-                          <TableCell className="min-w-[360px]">
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2 font-medium">
-                                <FileSpreadsheet className="text-muted-foreground size-4" />
-                                <span className="truncate">{def.name}</span>
-                              </div>
-                              <div className="text-muted-foreground mt-1 text-xs">{def.description || "No description"}</div>
-                              <div className="text-muted-foreground mt-1 text-xs">Key: {def.key}</div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{def.requiresCompany ? "Company" : "Global"}</Badge>
-                          </TableCell>
-                          <TableCell>{variableCount}</TableCell>
-                          <TableCell className="text-right">
-                            <Button onClick={() => openPreview(def)} disabled={previewLoading && activeDef?.key === def.key}>
-                              <Eye className="mr-2 size-4" />
-                              Preview
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
+        {defsLoading ? <div className="p-4 text-sm text-muted-foreground">Loading reports from database...</div> : null}
+        {!defsLoading && filteredDefs.length === 0 ? (
+          <div className="p-4 text-sm text-muted-foreground">No report definitions found.</div>
+        ) : null}
+
+        {!defsLoading && sections.length ? (
+          <div className="space-y-5 px-4 pb-6 pt-3 sm:px-6">
+            {sections.map((section) => (
+              <div key={section.key} className="space-y-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <FileSpreadsheet className="size-4 text-muted-foreground" />
+                    <h3 className="text-sm font-semibold tracking-tight">{section.label}</h3>
+                    <Badge variant="secondary">{section.defs.length}</Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{section.description}</p>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {section.defs.map((def) => (
+                    <ReportGridCard
+                      key={def.key}
+                      def={def}
+                      previewLoading={previewLoading}
+                      activeKey={activeDef?.key}
+                      onPreview={openPreview}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          )
+            ))}
+          </div>
         ) : null}
       </SectionCard>
 
@@ -250,16 +263,9 @@ export function ReportsPage() {
         onPreviewSearchChange={setPreviewSearch}
         onVarValueChange={(name, value) => setVarValues((prev) => ({ ...prev, [name]: value }))}
         onRefresh={() => activeDef && void loadPreview(activeDef)}
-        onExport={() => activeDef && void handleExportCsv(activeDef)}
-        onCloseReset={() => {
-          setPreviewOpen(false);
-          setActiveDef(null);
-          setPreviewRows([]);
-          setPreviewSearch("");
-          setLastPreviewKey("");
-        }}
+        onExport={() => activeDef && void handleExport(activeDef)}
+        onCloseReset={resetPreviewState}
       />
     </div>
   );
 }
-

@@ -1,9 +1,9 @@
 import { Link } from "react-router";
 
 import { StatusBadge } from "@/components/feedback/StatusBadge";
-import { DetailPanel } from "@/components/layout/primitives/DetailPanel";
 import { Button } from "@/components/ui/primitives/button";
-import { getFacilityName } from "@/core/data/catalog/mock";
+import { useSelectedCompany } from "@/core/app/state/slices/company";
+import { getCompanyName } from "@/core/companies/directory";
 import type { ScheduledAudit } from "@/features/overview/audit-calendar/config/types";
 
 export function AuditDetailContent({ audits }: { audits: ScheduledAudit[] }) {
@@ -18,13 +18,15 @@ export function AuditDetailContent({ audits }: { audits: ScheduledAudit[] }) {
 }
 
 function AuditDetailCard({ audit }: { audit: ScheduledAudit }) {
+  const { companies } = useSelectedCompany();
+  const companyName = audit.companyName || getCompanyName(audit.facilityId, companies);
+
   return (
     <div className="rounded-xl border p-3">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="truncate text-sm font-semibold">{audit.name}</div>
-          <div className="text-muted-foreground mt-1 text-xs">{getFacilityName(audit.facilityId)} • {audit.auditor}</div>
-          {audit.time?.start ? <div className="text-muted-foreground mt-1 text-xs tabular-nums">{audit.time.start}{audit.time.end ? `–${audit.time.end}` : ""}</div> : null}
+          <div className="text-muted-foreground mt-1 text-xs">{companyName} • {audit.auditor}</div>
         </div>
         <StatusBadge tone={audit.progress >= 75 ? "compliant" : audit.progress > 0 ? "warning" : "neutral"}>{audit.progress}%</StatusBadge>
       </div>
@@ -42,7 +44,6 @@ function AuditDetailCard({ audit }: { audit: ScheduledAudit }) {
           </div>
         </MetricCard>
       </div>
-      <div className="text-muted-foreground mt-3 text-xs">Time slot: TBD</div>
     </div>
   );
 }

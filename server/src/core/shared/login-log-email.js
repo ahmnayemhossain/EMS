@@ -9,7 +9,7 @@ function getClientIp(req) {
 
 function buildVariables({ req, user }) {
   return {
-    appName: "Fortis Group EMS",
+    appName: "EMS",
     userName: user.name || user.username || "",
     username: user.username || "",
     employeeId: user.employeeId ? String(user.employeeId) : "",

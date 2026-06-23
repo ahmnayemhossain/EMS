@@ -19,7 +19,7 @@ const navGroups = Array.from(
     .reduce((map, item) => {
       const group = item.group!;
       const items = map.get(group) ?? [];
-      items.push({ label: item.label, to: `/${item.path.split("/:")[0]}`, icon: item.icon!, permission: item.permission, end: item.path === "dashboard" });
+      items.push({ label: item.label, to: `/${item.path.split("/:")[0]}`, icon: item.icon!, permission: item.permission });
       map.set(group, items);
       return map;
     }, new Map<string, AppNavItem[]>()),

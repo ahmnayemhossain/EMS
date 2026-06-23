@@ -1,8 +1,9 @@
 import { Flag } from "lucide-react";
 
 import { StatusBadge } from "@/components/feedback/StatusBadge";
-import { getFacilityName } from "@/core/data/catalog/mock";
+import { useSelectedCompany } from "@/core/app/state/slices/company";
 import type { NotificationItem } from "@/core/app/state/slices/notifications";
+import { getCompanyName } from "@/core/companies/directory";
 
 import { formatDateTime, toneIcon } from "../utils/inbox-display";
 
@@ -13,6 +14,8 @@ export function InboxListPane(props: {
   onOpenItem: (item: NotificationItem) => void;
   onToggleFlag: (id: string) => void;
 }) {
+  const { companies } = useSelectedCompany();
+
   return (
     <div className="flex min-h-0 flex-col border-b lg:border-b-0 lg:border-r">
       <div className="shrink-0 flex items-center justify-between border-b px-4 py-2.5">
@@ -51,7 +54,7 @@ export function InboxListPane(props: {
                   </div>
                   <div className="flex items-center gap-2 pt-1">
                     <StatusBadge tone={item.tone}>{item.tone}</StatusBadge>
-                    <span className="text-[11px] text-muted-foreground">{item.facilityId ? getFacilityName(item.facilityId) : "Group"}</span>
+                    <span className="text-[11px] text-muted-foreground">{item.facilityId ? getCompanyName(item.facilityId, companies) : "Group"}</span>
                     <button
                       type="button"
                       aria-label={item.flagged ? "Unflag" : "Flag"}

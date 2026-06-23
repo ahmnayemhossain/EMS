@@ -7,13 +7,17 @@ import { ChemicalDetailTabs } from "@/features/operations/chemicals/components/C
 export function ChemicalDetail({
   chemical,
   sdsFileName,
+  onUnlinkSds,
+  unlinking,
 }: {
   chemical: Chemical;
   sdsFileName?: string;
+  onUnlinkSds?: () => void;
+  unlinking?: boolean;
 }) {
   return (
     <div className="space-y-4">
-      <ChemicalSummaryCards chemical={chemical} sdsFileName={sdsFileName} />
+      <ChemicalSummaryCards chemical={chemical} sdsFileName={sdsFileName} onUnlinkSds={onUnlinkSds} unlinking={unlinking} />
       <ChemicalDetailTabs chemical={chemical} />
     </div>
   );

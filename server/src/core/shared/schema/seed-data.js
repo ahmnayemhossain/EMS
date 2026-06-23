@@ -1,5 +1,13 @@
 export const defaultCompanies = [["Fortis Group", "FG", null, null]];
-export const defaultRoles = [["Admin", "group", "Full access."], ["Sustainability", "group", "Monitoring and compliance access."], ["Supervisor", "company", "Company operations access."], ["Viewer", "company", "Read-only access."]];
+export const defaultRoles = [
+  ["Admin", "group", "Full access."],
+  ["Sustainability", "group", "Monitoring and compliance access."],
+  ["Supervisor", "company", "Company operations access."],
+  ["Viewer", "company", "Read-only access."],
+  ["Utilities Preparer", "company", "Prepare and submit monthly utility data."],
+  ["Utilities Approver", "company", "Approve submitted utility months and return them when correction is needed."],
+  ["Utilities Auditor", "company", "Audit approved utility months and reverse audited months when needed."],
+];
 export const defaultDepartments = [["IT & ERP Department"]];
 export const defaultDesignations = [["Jr. Executive"]];
 export const defaultUtilityTypes = [["electricity", "Electricity"], ["water", "Water"], ["fuel", "Fuel"], ["steam", "Steam"], ["refrigerant", "Refrigerant"], ["other", "Other"]];

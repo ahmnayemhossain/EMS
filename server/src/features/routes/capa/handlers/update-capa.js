@@ -1,4 +1,4 @@
-import { pool } from "../../../../core/shared/postgres.js";
+import { withTransaction } from "../../../../core/shared/postgres.js";
 import { ensureCoreSchema } from "../../../../core/shared/schema.js";
 import { getCompanyDbIdOrThrow, getRequestUserDbId } from "../../utilities/request-context.js";
 import { assertUserCompanyAccess } from "../../../modules/utilities/access.js";
@@ -14,11 +14,9 @@ export async function updateCapaRecord(req, res, next) {
     const userDbId = await getRequestUserDbId(req);
     await assertUserCompanyAccess(userDbId, companyDbId);
 
-    const client = await pool.connect();
-    try {
-      await client.query("BEGIN");
+    const updated = await withTransaction(async (client) => {
       const existing = await getCapaById(client, req.params.id);
-      if (!existing) return res.status(404).json({ error: "not_found" });
+      if (!existing) return null;
       if (String(existing.facility_id) !== String(companyDbId)) throw createHttpError(400, "facilityId cannot be changed.");
 
       let nextPosition = Number(existing.position_index ?? 0);
@@ -60,15 +58,11 @@ export async function updateCapaRecord(req, res, next) {
         await reorderStatusColumn(client, companyDbId, existing.status, sourceIds, userDbId);
       }
 
-      const updated = await getCapaById(client, req.params.id);
-      await client.query("COMMIT");
-      res.json(rowToCapa(updated));
-    } catch (error) {
-      await client.query("ROLLBACK");
-      throw error;
-    } finally {
-      client.release();
-    }
+      return getCapaById(client, req.params.id);
+    });
+
+    if (!updated) return res.status(404).json({ error: "not_found" });
+    res.json(rowToCapa(updated));
   } catch (error) {
     next(error);
   }

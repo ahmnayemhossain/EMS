@@ -70,5 +70,5 @@ export function ensureApprovalGroup(config: ApprovalHierarchyConfig, option: App
 }
 
 function isExcludedModule(moduleKey: string) {
-  return moduleKey === "dashboard" || moduleKey === "settings" || moduleKey === "companies" || moduleKey === "facilities";
+  return moduleKey === "settings" || moduleKey === "companies" || moduleKey === "facilities";
 }

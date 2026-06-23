@@ -1,31 +1,32 @@
 import * as React from "react";
 
 import { DateRangePickerPlaceholder } from "@/components/forms/DateRangePickerPlaceholder";
-import { DataTable } from "@/components/table/DataTable";
 import { FilterBar } from "@/components/forms/FilterBar";
-import { FloatingCreateButton } from "@/components/layout/primitives/FloatingCreateButton";
 import { SearchInput } from "@/components/forms/SearchInput";
 import { SelectFilter } from "@/components/forms/SelectFilter";
-import { facilities, incidents } from "@/core/data/catalog/mock";
+import { DataTable } from "@/components/table/DataTable";
+import { FloatingCreateButton } from "@/components/layout/primitives/FloatingCreateButton";
+import { useSelectedCompany } from "@/core/app/state/slices/company";
 import type { Incident } from "@/core/types/models/ems";
 
-import { getIncidentColumns } from "../config/columns";
 import { CreateIncidentDialog } from "../components/CreateIncidentDialog";
+import { getIncidentColumns } from "../config/columns";
 
 export function IncidentsPage() {
+  const { companies } = useSelectedCompany();
   const [search, setSearch] = React.useState("");
   const [companyId, setCompanyId] = React.useState<string | undefined>();
   const [createOpen, setCreateOpen] = React.useState(false);
-  const [incidentRows, setIncidentRows] = React.useState<Incident[]>(() => incidents);
+  const [incidentRows, setIncidentRows] = React.useState<Incident[]>([]);
 
-  const columns = React.useMemo(() => getIncidentColumns(), []);
+  const columns = React.useMemo(() => getIncidentColumns(companies), [companies]);
 
   const rowsFiltered = incidentRows
-    .filter((i) => (companyId ? i.facilityId === companyId : true))
-    .filter((i) => {
-      const q = search.trim().toLowerCase();
-      if (!q) return true;
-      return i.title.toLowerCase().includes(q) || i.type.toLowerCase().includes(q) || i.status.toLowerCase().includes(q);
+    .filter((incident) => (companyId ? incident.facilityId === companyId : true))
+    .filter((incident) => {
+      const normalizedQuery = search.trim().toLowerCase();
+      if (!normalizedQuery) return true;
+      return incident.title.toLowerCase().includes(normalizedQuery) || incident.type.toLowerCase().includes(normalizedQuery) || incident.status.toLowerCase().includes(normalizedQuery);
     });
 
   return (
@@ -42,7 +43,7 @@ export function IncidentsPage() {
               value={companyId}
               onChange={setCompanyId}
               placeholder="Company"
-              items={facilities.map((f) => ({ value: f.id, label: f.name }))}
+              items={companies.map((company) => ({ value: company.id, label: company.name }))}
             />
             <DateRangePickerPlaceholder label="Date" />
           </div>
@@ -53,13 +54,13 @@ export function IncidentsPage() {
         }}
       />
 
-      <DataTable rows={rowsFiltered} columns={columns} rowKey={(r) => r.id} />
+      <DataTable rows={rowsFiltered} columns={columns} rowKey={(row) => row.id} />
 
       <CreateIncidentDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
-        facilities={facilities}
-        onCreate={(incident) => setIncidentRows((r) => [incident, ...r])}
+        companies={companies}
+        onCreate={(incident) => setIncidentRows((current) => [incident, ...current])}
       />
     </div>
   );

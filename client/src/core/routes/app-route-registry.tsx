@@ -1,5 +1,5 @@
 import {
-  CalendarDays, ClipboardList, Droplets, FileText, Gauge, LayoutDashboard,
+  CalendarDays, ClipboardList, Droplets, FileText, Gauge,
   Leaf, LineChart, MessageSquareWarning, Settings, ShieldCheck, Sparkles,
   TriangleAlert, UsersRound,
 } from "lucide-react";
@@ -7,10 +7,7 @@ import {
 import type { AppRouteDef } from "@/core/routes/route.types";
 
 export const appRouteDefs: AppRouteDef[] = [
-  { path: "dashboard", segment: "dashboard", label: "Dashboard", group: "Overview", permission: "dashboard:read", icon: LayoutDashboard, exportName: "DashboardPage", load: () => import("@/features/overview/dashboard/pages/index") },
   { path: "audit-calendar", segment: "audit-calendar", label: "Audit calendar", group: "Overview", permission: "audit-calendar:read", icon: CalendarDays, exportName: "AuditCalendarPage", load: () => import("@/features/overview/audit-calendar/pages/index") },
-  { path: "companies/:id", segment: "companies", label: "Companies", exportName: "FacilityDashboardPage", load: () => import("@/features/workspace/facility-dashboard/pages/index") },
-  { path: "facilities/:id", segment: "facilities", label: "Companies", exportName: "FacilityDashboardPage", load: () => import("@/features/workspace/facility-dashboard/pages/index") },
   { path: "utilities", segment: "utilities", label: "Utilities", group: "Operations", permission: "utilities:read", icon: Gauge, exportName: "UtilitiesPage", load: () => import("@/features/operations/utilities/pages/UtilitiesPage") },
   { path: "chemicals", segment: "chemicals", label: "Chemicals", group: "Operations", permission: "chemicals:read", icon: Leaf, exportName: "ChemicalsPage", load: () => import("@/features/operations/chemicals/pages/index") },
   { path: "sds", segment: "sds", label: "SDS", group: "Operations", permission: "sds:read", icon: FileText, exportName: "SdsPage", load: () => import("@/features/operations/sds/pages/index") },

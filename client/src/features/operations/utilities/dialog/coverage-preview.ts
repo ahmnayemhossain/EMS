@@ -105,6 +105,6 @@ export function getCoveragePreview(input: {
   const label = formatRanges(missingRanges);
   return {
     error: "",
-    warning: `Month coverage has missing day(s): ${label}. Approval will stay pending until the full month is covered.`,
+    warning: `Month coverage has missing day(s): ${label}. This month will remain in draft until full coverage is completed.`,
   };
 }

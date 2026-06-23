@@ -1,14 +1,13 @@
-# EMS Platform API (Express)
+# EMS Platform API
 
-Local JSON-file backend for the EMS frontend. Built as a modular Express API so you can replace the `store` layer later with a real DB/service.
+Express + PostgreSQL API for the EMS application.
 
-## Run
-
-From repo root:
+## Local setup
 
 ```bash
 cd server
 npm install
+npm run db:setup
 npm run dev
 ```
 
@@ -20,30 +19,49 @@ Health check:
 curl http://localhost:4000/api/health
 ```
 
-## Endpoints (v0)
+## Database workflow
 
-### System
-- `GET /api/system/employees`
-- `POST /api/system/employees`
-- `PUT /api/system/employees/:id`
-- `DELETE /api/system/employees/:id`
-- `GET /api/system/users`
-- `GET /api/system/roles`
+The server now treats Prisma migrations as the only schema source of truth.
 
-### Reference
-- `GET /api/ref/factories`
-- `GET /api/ref/departments`
-- `GET /api/ref/designations`
-- `GET /api/ref/uoms`
-- `GET /api/ref/suppliers`
-- `GET /api/ref/emailSettings`
-- `GET /api/ref/complaintBoxSettings`
-- `GET /api/ref/thresholds`
-- `GET /api/ref/approvals`
+### Fresh database
 
-All reference routes also support `POST/PUT/DELETE` (CRUD).
+```bash
+npm run prisma:migrate:deploy
+npm run prisma:seed
+```
 
-## Data
+or just:
 
-Data is stored in `server/data/db.json`.
+```bash
+npm run db:setup
+```
 
+### Existing database created by the old startup SQL bootstrap
+
+Run this once to register the current schema as the Prisma baseline:
+
+```bash
+npm run prisma:migrate:baseline
+npm run prisma:seed
+```
+
+After that, use normal Prisma deploys:
+
+```bash
+npm run prisma:migrate:deploy
+```
+
+### Useful commands
+
+- `npm run prisma:validate`
+- `npm run prisma:generate`
+- `npm run prisma:migrate:status`
+- `npm run prisma:migrate:dev`
+- `npm run prisma:migrate:reset`
+- `npm run prisma:studio`
+
+## Notes
+
+- If the API starts before migrations are applied, it now fails fast with an explicit Prisma setup error.
+- Default/master data seeding stays idempotent and can still run on boot through `SEED_DEFAULTS=true`.
+- For schema changes Prisma cannot model directly, edit the generated `migration.sql` before applying it.

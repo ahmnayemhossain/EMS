@@ -1,7 +1,8 @@
 import { authJsonHeaders, parseJsonResponse } from "@/core/app/lib/api";
-import type { Chemical, HazardClass } from "@/core/types/models/ems";
+import type { Chemical, HazardClass, SDSRecord } from "@/core/types/models/ems";
 
 const CHEMICALS_API = "/api/chemicals";
+const SDS_API = "/api/sds";
 
 export async function listChemicals(userId: string, input?: { companyId?: string }) {
   const params = new URLSearchParams();
@@ -11,6 +12,13 @@ export async function listChemicals(userId: string, input?: { companyId?: string
   const data = await parseJsonResponse<unknown>(response, "Chemicals request failed.");
   if (!Array.isArray(data)) throw new Error("Chemicals request returned invalid data.");
   return data as Chemical[];
+}
+
+export async function listChemicalSdsRecords(userId: string) {
+  const response = await fetch(SDS_API, { cache: "no-store", headers: authJsonHeaders(userId) });
+  const data = await parseJsonResponse<unknown>(response, "SDS request failed.");
+  if (!Array.isArray(data)) throw new Error("SDS request returned invalid data.");
+  return data as SDSRecord[];
 }
 
 export async function createChemical(

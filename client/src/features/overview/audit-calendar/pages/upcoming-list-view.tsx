@@ -2,7 +2,8 @@ import { StatusBadge } from "@/components/feedback/StatusBadge";
 import { SearchInput } from "@/components/forms/SearchInput";
 import { SelectFilter } from "@/components/forms/SelectFilter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/primitives/card";
-import { getFacilityName } from "@/core/data/catalog/mock";
+import { useSelectedCompany } from "@/core/app/state/slices/company";
+import { getCompanyName } from "@/core/companies/directory";
 import { formatDate } from "@/core/utils/format";
 import type { AuditListFilter, ScheduledAudit } from "@/features/overview/audit-calendar/config/types";
 
@@ -39,7 +40,10 @@ export function UpcomingListView(props: {
 }
 
 function UpcomingAuditRow(props: { audit: ScheduledAudit; previousDate?: string; onSelectDate: (date: string) => void }) {
+  const { companies } = useSelectedCompany();
   const showDateHeader = !props.previousDate || props.previousDate !== props.audit.date;
+  const companyName = props.audit.companyName || getCompanyName(props.audit.facilityId, companies);
+
   return (
     <div>
       {showDateHeader ? <div className="text-muted-foreground mb-2 text-xs font-semibold tracking-wide">{formatDate(props.audit.date)}</div> : null}
@@ -47,8 +51,7 @@ function UpcomingAuditRow(props: { audit: ScheduledAudit; previousDate?: string;
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="truncate text-sm font-semibold">{props.audit.name}</div>
-            <div className="text-muted-foreground mt-1 text-xs">{getFacilityName(props.audit.facilityId)} • {props.audit.auditor}</div>
-            {props.audit.time?.start ? <div className="text-muted-foreground mt-1 text-xs tabular-nums">{props.audit.time.start}{props.audit.time.end ? `–${props.audit.time.end}` : ""}</div> : null}
+            <div className="text-muted-foreground mt-1 text-xs">{companyName} • {props.audit.auditor}</div>
           </div>
           <StatusBadge tone={props.audit.progress >= 75 ? "compliant" : props.audit.progress > 0 ? "warning" : "neutral"}>{props.audit.progress}%</StatusBadge>
         </div>

@@ -17,7 +17,6 @@ This guide explains the current frontend architecture in practical terms so a de
 ## Navigation to folder mapping
 
 - `overview`
-  - dashboard
   - audit calendar
 - `operations`
   - utilities
@@ -36,9 +35,6 @@ This guide explains the current frontend architecture in practical terms so a de
   - training
 - `admin`
   - settings
-- `workspace`
-  - inbox
-  - facility dashboard
 
 ## Settings module structure
 
@@ -123,48 +119,6 @@ Current structure:
 - `types`
   - local page/report types
 
-## Inbox business rules
-
-Inbox is a unified alert reader, not a separate report-box inbox anymore.
-
-Important behavior:
-
-- left pane is filtered/sorted list
-- right pane is read detail
-- sort priority:
-  - unread first
-  - flagged first
-  - higher severity first
-  - newest first
-- outer app canvas scroll is blocked while inbox is active
-
-Current structure:
-
-- `pages`
-  - page entry
-- `components`
-  - toolbar/list/detail helpers
-- `utils`
-  - tone/date display helpers
-
-## Facility dashboard structure
-
-Facility dashboard is intentionally split into:
-
-- `pages`
-  - route entry
-- `hooks`
-  - data shaping
-- `components`
-  - render blocks
-- `config`
-  - constants only
-
-Rule:
-- route/page files should not hold shaping logic
-- hook files should compute view model data
-- components should render prepared props
-
 ## Refactor rules
 
 When adding or changing frontend code:
@@ -186,7 +140,6 @@ When adding or changing frontend code:
 
 Current performance decisions:
 
-- drag-and-drop is scoped to dashboard instead of global app scope
 - vendor bundles are split by dependency group
 - chart code is isolated in a separate vendor chunk
 
@@ -194,7 +147,7 @@ If performance work continues:
 
 1. keep heavy libs route-local where possible
 2. lazy load feature pages instead of shell-level imports
-3. isolate charts and DnD from generic routes
+3. isolate charts and other heavy UI helpers from generic routes
 
 ## Safe maintenance checklist
 

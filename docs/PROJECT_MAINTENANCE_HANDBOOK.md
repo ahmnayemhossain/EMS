@@ -293,7 +293,6 @@ Important variables:
 - `PGUSER`
 - `PGPASSWORD`
 - `PGDATABASE`
-- `AUTO_MIGRATE`
 - `SEED_DEFAULTS`
 - `REPORT_QUERY_TIMEOUT_MS`
 - `UPLOADS_DIR`
@@ -326,17 +325,19 @@ Rule:
 
 ### 6.3 Migration and Seed Flags
 
-These variables control startup behavior:
+Prisma migrations now control schema setup.
 
-- `AUTO_MIGRATE`
+Relevant variables:
+
 - `SEED_DEFAULTS`
 
 Recommended:
 
-- local development: `true`
-- controlled production environments: usually `false` after proper migration process exists
+- run `npm run db:setup` for a fresh database
+- run `npm run prisma:migrate:baseline` once for an existing pre-Prisma database
+- keep `SEED_DEFAULTS=true` only if you want idempotent default data sync on API boot
 
-Current project behavior still supports startup schema sync, so be careful when changing core schema files.
+The API now checks `_prisma_migrations` on startup and fails fast when baseline or deploy steps are missing.
 
 ---
 
@@ -1042,11 +1043,12 @@ Check:
 
 Likely cause:
 
-- schema create order problem
+- Prisma migrations were not applied
 
 Check:
 
-- `server/src/core/shared/schema/sql/base-schema.sql`
+- `server/prisma/migrations/`
+- `npm run prisma:migrate:status`
 
 ## 17.3 Uploaded PDFs Disappear After Deploy
 

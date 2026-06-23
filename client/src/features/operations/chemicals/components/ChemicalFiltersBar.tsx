@@ -1,7 +1,4 @@
-import * as React from "react";
-
 import { Input } from "@/components/ui/primitives/input";
-import { DateRangePickerPlaceholder } from "@/components/forms/DateRangePickerPlaceholder";
 import { FilterBar } from "@/components/forms/FilterBar";
 import { SearchInput } from "@/components/forms/SearchInput";
 import { SelectFilter } from "@/components/forms/SelectFilter";
@@ -74,11 +71,9 @@ export function ChemicalFiltersBar({
             <Input type="date" value={expiryFrom} onChange={(e) => onExpiryFromChange(e.target.value)} />
             <Input type="date" value={expiryTo} onChange={(e) => onExpiryToChange(e.target.value)} />
           </div>
-          <DateRangePickerPlaceholder label="Expiry" />
         </div>
       }
       onClear={onClear}
     />
   );
 }
-

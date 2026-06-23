@@ -1,4 +1,4 @@
-import { pool } from "../../../../core/shared/postgres.js";
+import { withTransaction } from "../../../../core/shared/postgres.js";
 import { ensureCoreSchema } from "../../../../core/shared/schema.js";
 import { getCompanyDbIdOrThrow, getRequestUserDbId } from "../../utilities/request-context.js";
 import { assertUserCompanyAccess } from "../../../modules/utilities/access.js";
@@ -13,9 +13,7 @@ export async function createCapaRecord(req, res, next) {
     const userDbId = await getRequestUserDbId(req);
     await assertUserCompanyAccess(userDbId, companyDbId);
 
-    const client = await pool.connect();
-    try {
-      await client.query("BEGIN");
+    const created = await withTransaction(async (client) => {
       const positionIndex = await getNextPositionIndex(client, companyDbId, input.status);
       const inserted = await client.query(
         `INSERT INTO capa_records (facility_id, title, description, owner_name, severity, status, due_date, evidence_count, related_finding_id, position_index, created_by_user_id, updated_by_user_id)
@@ -35,15 +33,10 @@ export async function createCapaRecord(req, res, next) {
           userDbId,
         ],
       );
-      const created = await getCapaById(client, inserted.rows[0].id);
-      await client.query("COMMIT");
-      res.status(201).json(rowToCapa(created));
-    } catch (error) {
-      await client.query("ROLLBACK");
-      throw error;
-    } finally {
-      client.release();
-    }
+      return getCapaById(client, inserted.rows[0].id);
+    });
+
+    res.status(201).json(rowToCapa(created));
   } catch (error) {
     next(error);
   }

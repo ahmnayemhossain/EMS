@@ -8,7 +8,7 @@ import { AuditsKpis } from "./AuditsKpis";
 import { AuditsSideCard } from "./AuditsSideCard";
 import { getAuditColumns } from "./auditColumns";
 
-export function AuditsOverviewTab({ records }: { records: AuditRecord[] }) {
+export function AuditsOverviewTab({ records, companyCount }: { records: AuditRecord[]; companyCount: number }) {
   const [selected, setSelected] = React.useState<AuditRecord | null>(null);
 
   const sorted = React.useMemo(() => {
@@ -36,7 +36,7 @@ export function AuditsOverviewTab({ records }: { records: AuditRecord[] }) {
 
   return (
     <div className="space-y-6">
-      <AuditsKpis total={total} inProgress={inProgress} criticalFindings={criticalFindings} />
+      <AuditsKpis total={total} inProgress={inProgress} criticalFindings={criticalFindings} companyCount={companyCount} />
 
       <div className="grid gap-4 xl:grid-cols-3">
         <Card className="shadow-xs xl:col-span-2">

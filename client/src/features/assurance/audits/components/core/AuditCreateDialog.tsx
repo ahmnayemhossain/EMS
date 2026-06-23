@@ -1,7 +1,6 @@
 import * as React from "react";
 
 import { auditTemplates } from "@/core/data/catalog/audit-templates";
-import { facilities } from "@/core/data/catalog/mock";
 import { CreateActionDialog } from "@/components/layout/primitives/CreateActionDialog";
 import type { AuditRecord } from "@/core/types/models/audit";
 
@@ -13,12 +12,14 @@ export function AuditCreateDialog({
   open,
   onOpenChange,
   onCreate,
+  facilities,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreate: (record: AuditRecord) => void;
+  onCreate: (record: AuditRecord) => void | boolean | Promise<void | boolean>;
+  facilities: Array<{ id: string; name: string }>;
 }) {
-  const state = useAuditCreateDialog(open);
+  const state = useAuditCreateDialog(open, facilities[0]?.id);
 
   return (
     <CreateActionDialog

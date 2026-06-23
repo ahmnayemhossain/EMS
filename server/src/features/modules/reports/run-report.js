@@ -1,4 +1,4 @@
-import { pool, query } from "../../../core/shared/postgres.js";
+import { query, withTransaction } from "../../../core/shared/postgres.js";
 import { ensureCoreSchema } from "../../../core/shared/schema.js";
 
 import { assertUserCompanyAccess } from "../utilities/access.js";
@@ -101,27 +101,30 @@ export async function runReportByKey(input) {
   assertQuerySafe(def.sql_text);
   const { sql, params } = buildQuery(def.sql_text, values);
 
-  // hard limit to prevent huge payloads
-  const wrappedSql = `SELECT * FROM (${sql}) AS q LIMIT 2000`;
+  const maxRows = Number(input?.maxRows ?? 2000);
+  const wrappedSql = Number.isFinite(maxRows) && maxRows > 0
+    ? `SELECT * FROM (${sql}) AS q LIMIT ${Math.floor(maxRows)}`
+    : `SELECT * FROM (${sql}) AS q`;
   const timeoutMs = Number(process.env.REPORT_QUERY_TIMEOUT_MS || 8000);
-  const client = await pool.connect();
-
-  try {
-    await client.query("BEGIN");
+  const result = await withTransaction(async (client) => {
     if (Number.isFinite(timeoutMs) && timeoutMs > 0) {
       await client.query(`SET LOCAL statement_timeout = '${Math.floor(timeoutMs)}ms'`);
     }
-    const result = await client.query(wrappedSql, params);
-    await client.query("COMMIT");
-    return result.rows;
-  } catch (error) {
-    try {
-      await client.query("ROLLBACK");
-    } catch {
-      // ignore
-    }
-    throw error;
-  } finally {
-    client.release();
-  }
+    return client.query(wrappedSql, params);
+  });
+
+  return result.rows;
+}
+
+export function convertRowsToCsv(rows) {
+  const safeRows = Array.isArray(rows) ? rows : [];
+  if (!safeRows.length) return "";
+
+  const headers = Object.keys(safeRows[0] || {});
+  const escapeCsv = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+  const lines = [
+    headers.map(escapeCsv).join(","),
+    ...safeRows.map((row) => headers.map((key) => escapeCsv(row?.[key])).join(",")),
+  ];
+  return lines.join("\n");
 }

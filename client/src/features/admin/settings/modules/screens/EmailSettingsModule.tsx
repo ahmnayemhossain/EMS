@@ -17,7 +17,7 @@ type Draft = Omit<EmailSettings, "id" | "key">;
 
 const PREVIEW_VARIABLES: Record<string, Record<string, string>> = {
   login_log: {
-    appName: "Fortis Group EMS",
+    appName: "EMS",
     userName: "A. H. M Nayem Hossain",
     username: "700901",
     employeeId: "700901",
@@ -26,7 +26,7 @@ const PREVIEW_VARIABLES: Record<string, Record<string, string>> = {
     ipAddress: "192.168.50.118",
   },
   utility_approval_submission: {
-    appName: "Fortis Group EMS",
+    appName: "EMS",
     companyName: "Fortis Group",
     utilityType: "Electricity",
     meterName: "Main Grid Meter",
@@ -47,7 +47,7 @@ const DEFAULTS: Record<string, Draft> = {
     smtpSecure: true,
     smtpUsername: "",
     smtpPassword: "",
-    fromName: "Fortis Group EMS",
+    fromName: "EMS",
     fromEmail: "",
     recipientEmails: [],
     subjectTemplate: "Login alert: {{userName}}",
@@ -60,7 +60,7 @@ const DEFAULTS: Record<string, Draft> = {
     smtpSecure: true,
     smtpUsername: "",
     smtpPassword: "",
-    fromName: "Fortis Group EMS",
+    fromName: "EMS",
     fromEmail: "",
     recipientEmails: [],
     subjectTemplate: "Utility approval required: {{companyName}} {{utilityType}} {{billMonth}}",
@@ -178,7 +178,7 @@ export function EmailSettingsModule(props: {
               <Field label="SMTP port"><Input type="number" value={String(draft.smtpPort || "")} onChange={(e) => setDraft((prev) => ({ ...prev, smtpPort: Number(e.target.value || 0) }))} placeholder="465" disabled={loading} /></Field>
               <Field label="SMTP username"><Input value={draft.smtpUsername} onChange={(e) => setDraft((prev) => ({ ...prev, smtpUsername: e.target.value }))} placeholder="username" disabled={loading} /></Field>
               <Field label="SMTP password"><Input type="password" value={draft.smtpPassword} onChange={(e) => setDraft((prev) => ({ ...prev, smtpPassword: e.target.value }))} placeholder="password" disabled={loading} /></Field>
-              <Field label="From name"><Input value={draft.fromName} onChange={(e) => setDraft((prev) => ({ ...prev, fromName: e.target.value }))} placeholder="Fortis Group EMS" disabled={loading} /></Field>
+              <Field label="From name"><Input value={draft.fromName} onChange={(e) => setDraft((prev) => ({ ...prev, fromName: e.target.value }))} placeholder="EMS" disabled={loading} /></Field>
               <Field label="From email"><Input value={draft.fromEmail} onChange={(e) => setDraft((prev) => ({ ...prev, fromEmail: e.target.value }))} placeholder="noreply@example.com" disabled={loading} /></Field>
             </div>
 

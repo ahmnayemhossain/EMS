@@ -13,7 +13,7 @@ export function NotFoundPage() {
         <CardContent className="space-y-4">
           <p className="text-muted-foreground text-sm">The page you’re looking for doesn’t exist or has moved.</p>
           <Button asChild>
-            <Link to="/dashboard">Go to dashboard</Link>
+            <Link to="/utilities">Go to utilities</Link>
           </Button>
         </CardContent>
       </Card>

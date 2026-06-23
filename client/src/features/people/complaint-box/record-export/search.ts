@@ -1,4 +1,4 @@
-import { getFacilityName } from "@/core/data/catalog/mock";
+import { getCompanyName } from "@/core/companies/directory";
 import type { ReportBoxRecord } from "@/core/types/models/ems";
 
 import { formatReportNumber } from "@/features/people/complaint-box/config/utils";
@@ -16,6 +16,5 @@ export function getRecordSearchHaystack(record: ReportBoxRecord) {
 }
 
 function getRecordCompanyName(record: ReportBoxRecord) {
-  const facilityId = record.snapshot.facilityId;
-  return facilityId ? getFacilityName(facilityId) : "Unknown company";
+  return getCompanyName(record.snapshot.facilityId);
 }

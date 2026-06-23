@@ -3,6 +3,8 @@ import type { SDSRecord } from "@/core/types/models/ems";
 
 const SDS_API = "/api/sds";
 
+export type SdsRecordInput = Omit<SDSRecord, "id" | "fileName" | "files"> & { fileName?: string };
+
 export async function listSdsRecords(userId: string) {
   const response = await fetch(SDS_API, { cache: "no-store", headers: authJsonHeaders(userId) });
   const data = await parseJsonResponse<unknown>(response, "SDS request failed.");
@@ -10,7 +12,7 @@ export async function listSdsRecords(userId: string) {
   return data as SDSRecord[];
 }
 
-export async function createSdsRecord(userId: string, input: Omit<SDSRecord, "id" | "fileName" | "files"> & { fileName?: string }) {
+export async function createSdsRecord(userId: string, input: SdsRecordInput) {
   const response = await fetch(SDS_API, {
     method: "POST",
     headers: authJsonHeaders(userId),
@@ -19,7 +21,16 @@ export async function createSdsRecord(userId: string, input: Omit<SDSRecord, "id
   return parseJsonResponse<SDSRecord>(response, "SDS request failed.");
 }
 
-export async function updateSdsRecord(userId: string, id: string, input: Omit<SDSRecord, "id" | "fileName" | "files"> & { fileName?: string }) {
+export async function importSdsRecords(userId: string, records: SdsRecordInput[]) {
+  const response = await fetch(`${SDS_API}/import`, {
+    method: "POST",
+    headers: authJsonHeaders(userId),
+    body: JSON.stringify({ records }),
+  });
+  return parseJsonResponse<{ createdCount: number; records: SDSRecord[] }>(response, "SDS import failed.");
+}
+
+export async function updateSdsRecord(userId: string, id: string, input: SdsRecordInput) {
   const response = await fetch(`${SDS_API}/${id}`, {
     method: "PUT",
     headers: authJsonHeaders(userId),

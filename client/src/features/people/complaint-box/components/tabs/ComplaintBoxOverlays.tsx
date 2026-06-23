@@ -1,15 +1,14 @@
-import { reportAssignees } from "@/core/data/catalog/report-box";
+import type { ReportBoxReport } from "@/core/types/models/ems";
 
+import { handleComplaintAction } from "@/features/people/complaint-box/actions/getComplaintActionHandler";
 import { ComplaintBoxActionModal } from "@/features/people/complaint-box/components/tabs/ComplaintBoxActionModal";
 import type { ComplaintBoxAction } from "@/features/people/complaint-box/config/complaint-box.types";
 import { ComplaintDrawer } from "@/features/people/complaint-box/drawer/ComplaintDrawer";
-import { handleComplaintAction } from "@/features/people/complaint-box/actions/getComplaintActionHandler";
-import type { ReportBoxReport } from "@/core/types/models/ems";
 
 export function ComplaintBoxOverlays(props: ComplaintBoxOverlaysProps) {
   return (
     <>
-      <ComplaintDrawer {...props.drawer} reportAssignees={[...reportAssignees]} />
+      <ComplaintDrawer {...props.drawer} reportAssignees={props.reportAssignees} />
       <ComplaintBoxActionModal
         action={props.action}
         onClose={props.onCloseAction}
@@ -28,6 +27,7 @@ export function ComplaintBoxOverlays(props: ComplaintBoxOverlaysProps) {
 }
 
 type ComplaintBoxOverlaysProps = {
+  reportAssignees: string[];
   action: ComplaintBoxAction;
   onCloseAction: () => void;
   removeRecord: (recordId: string) => void;
