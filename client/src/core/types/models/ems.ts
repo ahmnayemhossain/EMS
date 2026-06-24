@@ -8,7 +8,6 @@ export type * from "@/core/types/ems/waste";
 export type * from "@/core/types/ems/audits";
 export type * from "@/core/types/ems/documents";
 export type * from "@/core/types/ems/incidents";
-export type * from "@/core/types/ems/report-box";
 export type * from "@/core/types/ems/training";
 
 export type Notification = {

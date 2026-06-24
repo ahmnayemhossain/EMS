@@ -8,11 +8,11 @@ import type { WasteRecord } from "@/core/types/models/ems";
 
 import { WasteCreateDialog } from "../components/WasteCreateDialog";
 import { WasteDetailPanel } from "../components/WasteDetailPanel";
+import { WasteFilters } from "../components/WasteFilters";
 import { WasteKpis } from "../components/WasteKpis";
+import { WastePanels } from "../components/WastePanels";
 import { wasteTabs } from "../config/constants";
-import { WasteFilters } from "../page/WasteFilters";
-import { WastePanels } from "../page/WastePanels";
-import { useWastePage } from "../page/use-waste-page";
+import { useWastePage } from "../hooks/use-waste-page";
 import { deleteWasteRecord, updateWasteRecord, uploadWasteAttachment, type WasteRecordInput } from "../services/api";
 
 export function WastePage() {

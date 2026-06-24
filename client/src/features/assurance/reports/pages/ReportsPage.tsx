@@ -2,133 +2,18 @@ import * as React from "react";
 
 import { SectionCard } from "@/components/layout/primitives/SectionCard";
 import { Badge } from "@/components/ui/primitives/badge";
-import { toast } from "@/core/app/lib/toast";
 import { useSelectedCompany } from "@/core/app/state/slices/company";
-import { useUser } from "@/core/app/state/slices/user";
 import { ReportGridCard } from "@/features/assurance/reports/components/ReportGridCard";
 import { ReportPreviewDialog } from "@/features/assurance/reports/components/ReportPreviewDialog";
-import {
-  exportReportCsv,
-  listReportDefinitions,
-  runReport,
-  type ReportDefinition,
-} from "@/features/assurance/reports/services/api";
-import { downloadBlobFile } from "@/features/assurance/reports/utils/download-blob-file";
-import {
-  buildRunPayload,
-  getDefaultVarValues,
-  type ReportRow,
-  validateReportInputs,
-} from "@/features/assurance/reports/utils/report-page-helpers";
+import { useReportsPage } from "@/features/assurance/reports/hooks/use-reports-page";
 
 export function ReportsPage() {
   const { companies, selectedCompanyId } = useSelectedCompany();
-  const { userId } = useUser();
-
   const selectedCompany = React.useMemo(
     () => companies.find((company) => company.id === selectedCompanyId) ?? null,
     [companies, selectedCompanyId],
   );
-
-  const [defsLoading, setDefsLoading] = React.useState(true);
-  const [defs, setDefs] = React.useState<ReportDefinition[]>([]);
-
-  const [activeDef, setActiveDef] = React.useState<ReportDefinition | null>(null);
-  const [previewOpen, setPreviewOpen] = React.useState(false);
-  const [previewLoading, setPreviewLoading] = React.useState(false);
-  const [exporting, setExporting] = React.useState(false);
-
-  const [previewSearch, setPreviewSearch] = React.useState("");
-  const [previewRows, setPreviewRows] = React.useState<ReportRow[]>([]);
-  const [varValues, setVarValues] = React.useState<Record<string, string>>({});
-
-  React.useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
-      if (!userId) return;
-
-      setDefsLoading(true);
-      try {
-        const list = await listReportDefinitions(userId);
-        if (!cancelled) setDefs(Array.isArray(list) ? list : []);
-      } catch (error) {
-        if (!cancelled) toast.error(error instanceof Error ? error.message : "Failed to load reports.");
-      } finally {
-        if (!cancelled) setDefsLoading(false);
-      }
-    }
-
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [userId]);
-
-  const utilityMasterReport = defs[0] ?? null;
-
-  function resetPreviewState() {
-    setPreviewOpen(false);
-    setActiveDef(null);
-    setPreviewRows([]);
-    setPreviewSearch("");
-  }
-
-  function openPreview(def: ReportDefinition) {
-    const defaults = getDefaultVarValues(def, selectedCompanyId);
-    setActiveDef(def);
-    setVarValues(defaults);
-    setPreviewRows([]);
-    setPreviewSearch("");
-    setPreviewOpen(true);
-    void loadPreview(def, defaults);
-  }
-
-  async function loadPreview(def: ReportDefinition, nextVars?: Record<string, string>) {
-    if (!userId) return;
-
-    const resolvedVars = nextVars ?? varValues;
-    const validationError = validateReportInputs(def, resolvedVars, selectedCompanyId);
-    if (validationError) {
-      toast.error(validationError);
-      setPreviewRows([]);
-      return;
-    }
-
-    setPreviewLoading(true);
-    try {
-      const payload = buildRunPayload(def, resolvedVars, selectedCompanyId);
-      const result = await runReport(userId, def.key, payload);
-      const rows = Array.isArray(result?.rows) ? result.rows : [];
-      setPreviewRows(rows);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to load preview.");
-      setPreviewRows([]);
-    } finally {
-      setPreviewLoading(false);
-    }
-  }
-
-  async function handleExport(def: ReportDefinition) {
-    if (!userId) return;
-
-    const validationError = validateReportInputs(def, varValues, selectedCompanyId);
-    if (validationError) {
-      toast.error(validationError);
-      return;
-    }
-
-    setExporting(true);
-    try {
-      const payload = buildRunPayload(def, varValues, selectedCompanyId);
-      const result = await exportReportCsv(userId, def.key, payload);
-      downloadBlobFile(result.blob, result.filename);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to export report.");
-    } finally {
-      setExporting(false);
-    }
-  }
+  const page = useReportsPage(selectedCompanyId);
 
   return (
     <div className="space-y-4">
@@ -143,19 +28,19 @@ export function ReportsPage() {
           </div>
         </div>
 
-        {defsLoading ? <div className="p-4 text-sm text-muted-foreground">Loading reports from database...</div> : null}
-        {!defsLoading && !utilityMasterReport ? (
+        {page.defsLoading ? <div className="p-4 text-sm text-muted-foreground">Loading reports from database...</div> : null}
+        {!page.defsLoading && !page.utilityMasterReport ? (
           <div className="p-4 text-sm text-muted-foreground">Utility master report is not available.</div>
         ) : null}
 
-        {!defsLoading && utilityMasterReport ? (
+        {!page.defsLoading && page.utilityMasterReport ? (
           <div className="px-4 pb-6 pt-3 sm:px-6">
             <div className="grid gap-4 md:max-w-[540px]">
               <ReportGridCard
-                def={utilityMasterReport}
-                previewLoading={previewLoading}
-                activeKey={activeDef?.key}
-                onPreview={openPreview}
+                def={page.utilityMasterReport}
+                previewLoading={page.previewLoading}
+                activeKey={page.activeDef?.key}
+                onPreview={page.openPreview}
               />
             </div>
           </div>
@@ -163,20 +48,20 @@ export function ReportsPage() {
       </SectionCard>
 
       <ReportPreviewDialog
-        open={previewOpen}
-        activeDef={activeDef}
+        open={page.previewOpen}
+        activeDef={page.activeDef}
         selectedCompanyName={selectedCompany?.name}
-        previewLoading={previewLoading}
-        exporting={exporting}
-        previewSearch={previewSearch}
-        previewRows={previewRows}
-        varValues={varValues}
-        onOpenChange={setPreviewOpen}
-        onPreviewSearchChange={setPreviewSearch}
-        onVarValueChange={(name, value) => setVarValues((prev) => ({ ...prev, [name]: value }))}
-        onRefresh={() => activeDef && void loadPreview(activeDef)}
-        onExport={() => activeDef && void handleExport(activeDef)}
-        onCloseReset={resetPreviewState}
+        previewLoading={page.previewLoading}
+        exporting={page.exporting}
+        previewSearch={page.previewSearch}
+        previewRows={page.previewRows}
+        varValues={page.varValues}
+        onOpenChange={page.setPreviewOpen}
+        onPreviewSearchChange={page.setPreviewSearch}
+        onVarValueChange={(name, value) => page.setVarValues((prev) => ({ ...prev, [name]: value }))}
+        onRefresh={() => page.activeDef && void page.loadPreview(page.activeDef)}
+        onExport={() => page.activeDef && void page.exportActiveReport(page.activeDef)}
+        onCloseReset={page.resetPreviewState}
       />
     </div>
   );

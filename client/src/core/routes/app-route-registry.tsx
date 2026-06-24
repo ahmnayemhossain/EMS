@@ -1,6 +1,6 @@
 import {
   CalendarDays, ClipboardList, Droplets, FileText, Gauge,
-  Leaf, LineChart, MessageSquareWarning, Settings, ShieldCheck, Sparkles,
+  Leaf, LineChart, Settings, ShieldCheck, Sparkles,
   TriangleAlert, UsersRound,
 } from "lucide-react";
 
@@ -17,7 +17,6 @@ export const appRouteDefs: AppRouteDef[] = [
   { path: "capa", segment: "capa", label: "CAPA", group: "Assurance", permission: "capa:read", icon: ClipboardList, exportName: "CapaPage", load: () => import("@/features/assurance/capa/pages/index") },
   { path: "reports", segment: "reports", label: "Reports", group: "Assurance", permission: "reports:read", icon: LineChart, exportName: "ReportsPage", load: () => import("@/features/assurance/reports/pages/index") },
   { path: "documents", segment: "documents", label: "Documents", group: "Assurance", permission: "documents:read", icon: FileText, exportName: "DocumentsPage", load: () => import("@/features/assurance/documents/index") },
-  { path: "complaint-box", segment: "complaint-box", label: "Complaint box", group: "People", permission: "complaints:read", icon: MessageSquareWarning, exportName: "ComplaintBoxPage", load: () => import("@/features/people/complaint-box/pages/index") },
   { path: "incidents", segment: "incidents", label: "Incidents", group: "People", permission: "incidents:read", icon: TriangleAlert, exportName: "IncidentsPage", load: () => import("@/features/people/incidents/pages/index") },
   { path: "training", segment: "training", label: "Training", group: "People", permission: "training:read", icon: UsersRound, exportName: "TrainingPage", load: () => import("@/features/people/training") },
   { path: "settings", segment: "settings", label: "Settings", group: "Admin", permission: "settings:read", icon: Settings },

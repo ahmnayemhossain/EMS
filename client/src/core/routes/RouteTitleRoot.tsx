@@ -10,7 +10,6 @@ const baseTitle = "EMS";
 
 const routeTitleEntries = [
   { path: "/inbox", label: "Inbox" },
-  { path: "/report-box", label: "Report box" },
   { path: "/settings", label: "Settings" },
   ...publicRouteDefs.map((item) => ({
     path: normalizePath(item.path),

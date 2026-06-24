@@ -1,3 +1,4 @@
+import type { Dispatch, SetStateAction } from "react";
 import type { SettingsEntity } from "@/features/admin/settings/modules/services/settingsEntityApi";
 import type { UtilityTypeOption } from "@/features/admin/settings/modules/services/uomSettingsApi";
 
@@ -42,5 +43,36 @@ export type MasterWiringApi = {
   createWiring: (item: WiringDraft, userId: string) => Promise<WiringRow>;
   updateWiring: (item: WiringDraft, userId: string) => Promise<WiringRow>;
   deleteWiring: (id: string, userId: string) => Promise<{ ok: true }>;
+};
+
+export type MasterWiringVm = {
+  userId: string;
+  loading: boolean;
+  search: string;
+  wiringSearch: string;
+  utilityTypeFilter: string;
+  statusFilter: string;
+  entityRows: SettingsEntity[];
+  wiringRows: WiringRow[];
+  utilityTypeOptions: UtilityTypeOption[];
+  entityDraft: SettingsEntity;
+  wiringDraft: WiringDraft;
+  entityEdit: SettingsEntity | null;
+  wiringEdit: WiringDraft | null;
+  deleteEntityId: string | null;
+  deleteWiringId: string | null;
+  setSearch: (value: string) => void;
+  setWiringSearch: (value: string) => void;
+  setUtilityTypeFilter: (value: string) => void;
+  setStatusFilter: (value: string) => void;
+  setEntityRows: Dispatch<SetStateAction<SettingsEntity[]>>;
+  setWiringRows: Dispatch<SetStateAction<WiringRow[]>>;
+  setEntityDraft: Dispatch<SetStateAction<SettingsEntity>>;
+  setWiringDraft: Dispatch<SetStateAction<WiringDraft>>;
+  setEntityEdit: Dispatch<SetStateAction<SettingsEntity | null>>;
+  setWiringEdit: Dispatch<SetStateAction<WiringDraft | null>>;
+  setDeleteEntityId: (value: string | null) => void;
+  setDeleteWiringId: (value: string | null) => void;
+  loadAll: () => Promise<void>;
 };
 

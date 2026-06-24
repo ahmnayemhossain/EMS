@@ -8,6 +8,16 @@ import type { Chemical } from "@/core/types/models/ems";
 import { ChemicalDetail } from "../components/ChemicalDetail";
 import { getChemicalColumns } from "../config/columns";
 
+type ChemicalsContentProps = {
+  rows: Chemical[];
+  companies: Array<{ id: string; name: string }>;
+  selected: Chemical | null;
+  onSelect: (chemical: Chemical | null) => void;
+  onClear: () => void;
+  onUnlinkSds: (chemical: Chemical) => Promise<void>;
+  unlinking: boolean;
+};
+
 export function ChemicalsContent({
   rows,
   companies,
@@ -16,15 +26,7 @@ export function ChemicalsContent({
   onClear,
   onUnlinkSds,
   unlinking,
-}: {
-  rows: Chemical[];
-  companies: Array<{ id: string; name: string }>;
-  selected: Chemical | null;
-  onSelect: (chemical: Chemical | null) => void;
-  onClear: () => void;
-  onUnlinkSds: (chemical: Chemical) => Promise<void>;
-  unlinking: boolean;
-}) {
+}: ChemicalsContentProps) {
   const [confirmUnlink, setConfirmUnlink] = React.useState(false);
   const getCompanyName = (id: string) => companies.find((company) => company.id === id)?.name || "Company";
   const columns = getChemicalColumns(getCompanyName);

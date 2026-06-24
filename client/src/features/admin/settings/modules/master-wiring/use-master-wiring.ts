@@ -2,10 +2,10 @@ import * as React from "react";
 import { toast } from "@/core/app/lib/toast";
 import { useUser } from "@/core/app/state/slices/user";
 import type { SettingsEntity } from "@/features/admin/settings/modules/services/settingsEntityApi";
-import type { MasterWiringApi, WiringDraft, WiringRow } from "@/features/admin/settings/modules/master-wiring/types";
+import type { MasterWiringApi, MasterWiringVm, WiringDraft, WiringRow } from "@/features/admin/settings/modules/master-wiring/types";
 import type { UtilityTypeOption } from "@/features/admin/settings/modules/services/uomSettingsApi";
 
-export function useMasterWiring(api: MasterWiringApi) {
+export function useMasterWiring(api: MasterWiringApi): MasterWiringVm {
   const { userId } = useUser();
   const [loading, setLoading] = React.useState(true);
   const [search, setSearch] = React.useState("");
@@ -23,10 +23,56 @@ export function useMasterWiring(api: MasterWiringApi) {
   const [deleteWiringId, setDeleteWiringId] = React.useState<string | null>(null);
 
   const loadAll = React.useCallback(async () => {
-    try { setLoading(true); const [entities, wiring, lookups] = await Promise.all([api.listEntities(userId), api.listWiring(userId), api.listLookups(userId)]); setEntityRows(entities); setWiringRows(wiring); setUtilityTypeOptions(lookups.utilityTypeOptions); } catch (error) { toast.error(error instanceof Error ? error.message : "Could not load settings."); } finally { setLoading(false); }
+    try {
+      setLoading(true);
+      const [entities, wiring, lookups] = await Promise.all([
+        api.listEntities(userId),
+        api.listWiring(userId),
+        api.listLookups(userId),
+      ]);
+      setEntityRows(entities);
+      setWiringRows(wiring);
+      setUtilityTypeOptions(lookups.utilityTypeOptions);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not load settings.");
+    } finally {
+      setLoading(false);
+    }
   }, [api, userId]);
 
-  React.useEffect(() => { void loadAll(); }, [loadAll]);
-  return { userId, loading, search, wiringSearch, utilityTypeFilter, statusFilter, entityRows, wiringRows, utilityTypeOptions, entityDraft, wiringDraft, entityEdit, wiringEdit, deleteEntityId, deleteWiringId, setSearch, setWiringSearch, setUtilityTypeFilter, setStatusFilter, setEntityRows, setWiringRows, setEntityDraft, setWiringDraft, setEntityEdit, setWiringEdit, setDeleteEntityId, setDeleteWiringId, loadAll };
+  React.useEffect(() => {
+    void loadAll();
+  }, [loadAll]);
+
+  return {
+    userId,
+    loading,
+    search,
+    wiringSearch,
+    utilityTypeFilter,
+    statusFilter,
+    entityRows,
+    wiringRows,
+    utilityTypeOptions,
+    entityDraft,
+    wiringDraft,
+    entityEdit,
+    wiringEdit,
+    deleteEntityId,
+    deleteWiringId,
+    setSearch,
+    setWiringSearch,
+    setUtilityTypeFilter,
+    setStatusFilter,
+    setEntityRows,
+    setWiringRows,
+    setEntityDraft,
+    setWiringDraft,
+    setEntityEdit,
+    setWiringEdit,
+    setDeleteEntityId,
+    setDeleteWiringId,
+    loadAll,
+  };
 }
 

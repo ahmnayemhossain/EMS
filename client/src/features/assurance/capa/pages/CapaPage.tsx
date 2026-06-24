@@ -1,17 +1,14 @@
 import * as React from "react";
 
-import { SearchInput } from "@/components/forms/SearchInput";
-import { PageHeader } from "@/components/layout/primitives/PageHeader";
-import { Button } from "@/components/ui/primitives/button";
 import { DndProvider } from "@/core/app/providers/DndProvider";
 import { useSelectedCompany } from "@/core/app/state/slices/company";
 import { useCan } from "@/core/app/state/slices/permissions";
 import { useUser } from "@/core/app/state/slices/user";
-import { Archive, KanbanSquare, List, RefreshCw } from "lucide-react";
 
 import { CapaBoard } from "../components/CapaBoard";
 import { CreateCapaDialog, EditCapaDialog } from "../components/CapaDialogs";
 import { CapaListView } from "../components/CapaListView";
+import { CapaToolbar } from "../components/CapaToolbar";
 import { useCapaBoard } from "../hooks/useCapaBoard";
 
 export function CapaPage() {
@@ -38,39 +35,16 @@ export function CapaPage() {
   return (
     <DndProvider>
       <div className="space-y-4 pb-6">
-        <PageHeader
-          actions={
-            <div className="flex items-center gap-2">
-              <div className="hidden w-[280px] lg:block">
-                <SearchInput value={search} onChange={setSearch} placeholder="Search CAPA..." />
-              </div>
-              <Button
-                variant={mode === "dismissed" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setMode((current) => (current === "active" ? "dismissed" : "active"))}
-                className="gap-2"
-              >
-                <Archive className="size-4" />
-                Dismissed
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setView((current) => (current === "kanban" ? "list" : "kanban"))}
-                aria-label={view === "kanban" ? "Switch to list view" : "Switch to kanban view"}
-                title={view === "kanban" ? "List view" : "Kanban view"}
-              >
-                {view === "kanban" ? <List className="size-4" /> : <KanbanSquare className="size-4" />}
-              </Button>
-              <Button variant="outline" size="icon" onClick={() => void loadRows()} disabled={loading} aria-label="Refresh CAPA">
-                <RefreshCw className={["size-4", loading ? "animate-spin" : ""].join(" ")} />
-              </Button>
-            </div>
-          }
+        <CapaToolbar
+          loading={loading}
+          search={search}
+          mode={mode}
+          view={view}
+          onSearchChange={setSearch}
+          onModeToggle={() => setMode((current) => (current === "active" ? "dismissed" : "active"))}
+          onViewToggle={() => setView((current) => (current === "kanban" ? "list" : "kanban"))}
+          onRefresh={loadRows}
         />
-        <div className="lg:hidden">
-          <SearchInput value={search} onChange={setSearch} placeholder="Search CAPA..." />
-        </div>
 
         {!selectedCompanyId ? (
           <div className="grid min-h-[260px] place-items-center rounded-[28px] border border-dashed bg-card/65 p-8 text-center text-sm text-muted-foreground">

@@ -14,11 +14,11 @@ import { UtilitiesKpis } from "@/features/operations/utilities/components/Utilit
 import { UtilitiesTabStrip } from "@/features/operations/utilities/components/UtilitiesTabs";
 import { utilityTypes } from "@/features/operations/utilities/config/constants";
 import { getUtilityColumns } from "@/features/operations/utilities/config/columns";
-import { UtilityAnalyticsSection } from "@/features/operations/utilities/page/UtilityAnalyticsSection";
-import { UtilityDetailDrawer } from "@/features/operations/utilities/page/UtilityDetailDrawer";
-import { UtilityRecordsSection } from "@/features/operations/utilities/page/UtilityRecordsSection";
-import { createUtilityActions } from "@/features/operations/utilities/page/use-utility-actions";
-import { useUtilitiesLoader } from "@/features/operations/utilities/page/use-utilities-loader";
+import { UtilityAnalyticsSection } from "@/features/operations/utilities/components/UtilityAnalyticsSection";
+import { UtilityDetailDrawer } from "@/features/operations/utilities/components/UtilityDetailDrawer";
+import { UtilityRecordsSection } from "@/features/operations/utilities/components/UtilityRecordsSection";
+import { createUtilityActions } from "@/features/operations/utilities/hooks/use-utility-actions";
+import { useUtilitiesLoader } from "@/features/operations/utilities/hooks/use-utilities-loader";
 import { useUtilitiesRows } from "@/features/operations/utilities/hooks/useUtilitiesRows";
 import { getUtilityApprovalFlow } from "@/features/operations/utilities/services/api";
 import type { UtilityApprovalFlow, UtilityRecord, UtilityType } from "@/core/types/models/ems";

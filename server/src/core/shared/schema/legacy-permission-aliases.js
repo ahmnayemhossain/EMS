@@ -26,8 +26,6 @@ export const legacyPermissionAliases = {
   "reports:view": "reports:read",
   "documents:view": "documents:read",
   "documents:manage": "documents:update",
-  "complaints:view": "complaints:read",
-  "report-box:manage": "report-box:update",
   "incidents:view": "incidents:read",
   "incidents:manage": "incidents:update",
   "training:view": "training:read",

@@ -16,18 +16,12 @@ export interface TranslationKeys {
   nav: {
     audits: string;
     incidents: string;
-    complaints: string;
     documents: string;
     training: string;
     chemicals: string;
     waste: string;
     wastewater: string;
     settings: string;
-  };
-  reportBox: {
-    workerReport: string;
-    voiceReport: string;
-    photoReport: string;
   };
 }
 
@@ -47,7 +41,6 @@ const en: TranslationKeys = {
   nav: {
     audits: "Audits",
     incidents: "Incidents",
-    complaints: "Complaints",
     documents: "Documents",
     training: "Training",
     chemicals: "Chemicals",
@@ -55,41 +48,30 @@ const en: TranslationKeys = {
     wastewater: "Wastewater",
     settings: "Settings",
   },
-  reportBox: {
-    workerReport: "Worker Report",
-    voiceReport: "Voice Report",
-    photoReport: "Photo Report",
-  },
 };
 
 const bn: TranslationKeys = {
   common: {
-    save: "সংরক্ষণ",
-    cancel: "বাতিল",
-    delete: "মুছুন",
-    edit: "সম্পাদনা",
-    create: "তৈরি",
-    search: "অনুসন্ধান",
-    loading: "লোড হচ্ছে...",
-    error: "ত্রুটি",
-    success: "সফল",
-    confirm: "নিশ্চিত",
+    save: "???????",
+    cancel: "?????",
+    delete: "?????",
+    edit: "????????",
+    create: "????",
+    search: "?????????",
+    loading: "??? ?????...",
+    error: "??????",
+    success: "???",
+    confirm: "???????",
   },
   nav: {
-    audits: "অডিট",
-    incidents: "ঘটনা",
-    complaints: "অভিযোগ",
-    documents: "নথি",
-    training: "প্রশিক্ষণ",
-    chemicals: "রাসায়নিক",
-    waste: "বর্জ্য",
-    wastewater: "বর্জ্য পানি",
-    settings: "সেটিংস",
-  },
-  reportBox: {
-    workerReport: "কর্মী রিপোর্ট",
-    voiceReport: "ভয়েস রিপোর্ট",
-    photoReport: "ছবি রিপোর্ট",
+    audits: "????",
+    incidents: "????",
+    documents: "???",
+    training: "?????????",
+    chemicals: "?????????",
+    waste: "??????",
+    wastewater: "?????? ????",
+    settings: "??????",
   },
 };
 

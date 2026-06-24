@@ -11,7 +11,7 @@ export type SettingsCardKey =
   | "role_wise_status" | "user_wise_status"
   | "status_relations" | "role_mapping"
   | "utilities_rules"
-  | "email" | "complaint_box" | "thresholds" | "approvals";
+  | "email" | "thresholds" | "approvals";
 
 export type SettingsCardDef = {
   key: SettingsCardKey;

@@ -1,4 +1,4 @@
-import { Building2, FileSpreadsheet, Gauge, GitBranch, MailCheck, MessagesSquare, Ruler, ShieldCheck, SlidersHorizontal, UserRound, UsersRound, Wrench } from "lucide-react";
+import { Building2, FileSpreadsheet, Gauge, GitBranch, MailCheck, Ruler, ShieldCheck, SlidersHorizontal, UserRound, UsersRound, Wrench } from "lucide-react";
 
 import type { SettingsCardDef, SettingsCardKey } from "@/features/admin/settings/home/settings-types";
 
@@ -30,7 +30,6 @@ export const settingsRouteDefs: SettingsRouteDef[] = [
   drawer("thresholds", "compliance", "Thresholds", "Wastewater and utilities thresholds for alerts.", SlidersHorizontal),
   page("approvals", "compliance", "Approvals", "Restricted list, SDS rules, and approval settings.", ShieldCheck, "SettingsApprovalsPage", () => import("@/features/admin/settings/pages/SettingsApprovalsPage")),
   page("email", "communications", "Email setup", "SMTP, login notification toggle, and HTML template.", MailCheck, "SettingsEmailPage", () => import("@/features/admin/settings/pages/SettingsEmailPage")),
-  drawer("complaint_box", "communications", "Complaint box", "Public URL behavior, routing, and retention rules.", MessagesSquare, "complaint-box"),
 ];
 
 export const settingsTabs = ["system", "operations", "compliance", "communications"] as const;

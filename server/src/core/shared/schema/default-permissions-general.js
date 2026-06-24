@@ -7,9 +7,7 @@ export const generalPermissions = [
   "wastewater:update", "wastewater:delete", "audits:read", "audits:write", "audits:update",
   "audits:delete", "capa:read", "capa:write", "capa:update", "capa:delete",
   "reports:read", "reports:export", "documents:read", "documents:write", "documents:update",
-  "documents:delete", "complaints:read", "complaints:write", "complaints:update", "complaints:delete",
-  "complaints:triage", "complaints:handle", "complaints:export", "report-box:read", "report-box:write",
-  "report-box:update", "report-box:delete", "incidents:read", "incidents:write", "incidents:update",
+  "documents:delete", "incidents:read", "incidents:write", "incidents:update",
   "incidents:delete", "training:read", "training:write", "training:update", "training:delete",
   "notifications:read", "notifications:write", "notifications:update", "notifications:delete", "settings:read", "settings:manage",
 ];

@@ -8,8 +8,6 @@ export const permissionCatalog = [
   ["Audits", "audits:read", "Read"], ["Audits", "audits:write", "Write"], ["Audits", "audits:update", "Update"], ["Audits", "audits:delete", "Delete"],
   ["CAPA", "capa:read", "Read"], ["CAPA", "capa:write", "Write"], ["CAPA", "capa:update", "Update"], ["CAPA", "capa:delete", "Delete"],
   ["Reports", "reports:read", "Read"], ["Reports", "reports:export", "Export"], ["Documents", "documents:read", "Read"], ["Documents", "documents:write", "Write"], ["Documents", "documents:update", "Update"], ["Documents", "documents:delete", "Delete"],
-  ["Complaint box", "complaints:read", "Read"], ["Complaint box", "complaints:write", "Write"], ["Complaint box", "complaints:update", "Update"], ["Complaint box", "complaints:delete", "Delete"], ["Complaint box", "complaints:triage", "Triage"], ["Complaint box", "complaints:handle", "Handle"], ["Complaint box", "complaints:export", "Export"],
-  ["Worker report box", "report-box:read", "Read"], ["Worker report box", "report-box:write", "Write"], ["Worker report box", "report-box:update", "Update"], ["Worker report box", "report-box:delete", "Delete"],
   ["Incidents", "incidents:read", "Read"], ["Incidents", "incidents:write", "Write"], ["Incidents", "incidents:update", "Update"], ["Incidents", "incidents:delete", "Delete"],
   ["Training", "training:read", "Read"], ["Training", "training:write", "Write"], ["Training", "training:update", "Update"], ["Training", "training:delete", "Delete"],
   ["Notifications", "notifications:read", "Read"], ["Notifications", "notifications:write", "Write"], ["Notifications", "notifications:update", "Update"], ["Notifications", "notifications:delete", "Delete"],

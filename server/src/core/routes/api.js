@@ -9,7 +9,6 @@ import { sdsRouter } from "../../features/routes/sds.js";
 import { wasteRouter } from "../../features/routes/waste.js";
 import { wastewaterRouter } from "../../features/routes/wastewater.js";
 import { reportsRouter } from "../../features/routes/reports.js";
-import { reportBoxRouter } from "../../features/routes/report-box.js";
 import { auditsRouter } from "../../features/routes/audits.js";
 import { documentsRouter } from "../../features/routes/documents.js";
 
@@ -26,4 +25,3 @@ apiRouter.use("/wastewater", wastewaterRouter);
 apiRouter.use("/audits", auditsRouter);
 apiRouter.use("/reports", reportsRouter);
 apiRouter.use("/documents", documentsRouter);
-apiRouter.use("/report-box", reportBoxRouter);
