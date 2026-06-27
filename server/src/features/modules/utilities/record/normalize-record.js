@@ -25,7 +25,7 @@ export function normalizeRecordInput(input) {
   if (!isValidUtilityType(type)) throw new Error("Invalid utility type.");
   if (!isDateString(periodStart) || !isDateString(periodEnd)) throw new Error("Period start and end must be valid YYYY-MM-DD dates.");
   if (periodEnd < periodStart) throw new Error("Period end must be after period start.");
-  if (typeof dieselLiters === "number" && !Number.isNaN(dieselLiters) && dieselLiters <= 0) throw new Error("dieselLiters must be greater than 0.");
+  if (typeof dieselLiters === "number" && !Number.isFinite(dieselLiters)) throw new Error("dieselLiters must be a number.");
   if (typeof dieselLiters !== "number" && (typeof value !== "number" || value <= 0)) throw new Error("value must be greater than 0.");
   if (varianceFlag && !VALID_FLAGS.has(varianceFlag)) throw new Error("Invalid varianceFlag.");
   if (status && !VALID_STATUSES.has(status)) throw new Error("Invalid status.");

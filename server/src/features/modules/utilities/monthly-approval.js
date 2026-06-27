@@ -2,6 +2,9 @@ import { query } from "../../../core/shared/postgres.js";
 import { createHttpError } from "./record/error.js";
 import { toDateString } from "./record/parsers.js";
 
+const WORKFLOW_KEY = "utilities_approval_flow";
+const ENTITY_TYPE = "utility_period";
+
 function startOfMonth(value) {
   return new Date(`${toDateString(value)}T00:00:00Z`);
 }
@@ -20,6 +23,11 @@ function addDays(value, days) {
 function diffDaysInclusive(start, end) {
   const ms = new Date(`${toDateString(end)}T00:00:00Z`).getTime() - new Date(`${toDateString(start)}T00:00:00Z`).getTime();
   return Math.floor(ms / 86400000) + 1;
+}
+
+function sameNumber(left, right) {
+  if (left == null && right == null) return true;
+  return Number(left || 0) === Number(right || 0);
 }
 
 export function buildUtilityMeterKey(input) {
@@ -71,11 +79,106 @@ function buildCoverage(rows, periodMonth) {
     monthDays: diffDaysInclusive(monthStart, monthEnd),
     missingRanges,
     missingDaysCount,
-    isComplete: records.length > 0 && missingDaysCount === 0 && records[0].start === toDateString(monthStart) && records[records.length - 1].end === toDateString(monthEnd),
     totalValue: rows.reduce((sum, row) => sum + Number(row.value || 0), 0),
     totalDieselLiters: rows.every((row) => row.diesel_liters == null) ? null : rows.reduce((sum, row) => sum + Number(row.diesel_liters || 0), 0),
     uom: records.find((item) => item.uom)?.uom || null,
   };
+}
+
+async function getInitialWorkflowStepKey() {
+  const result = await query(
+    `SELECT key
+       FROM workflow_steps
+      WHERE workflow_key = $1
+        AND is_initial = 1
+        AND is_active = 1
+      ORDER BY sort_order ASC, name ASC
+      LIMIT 1`,
+    [WORKFLOW_KEY],
+  );
+  return result.rows[0]?.key || "draft";
+}
+
+async function deleteUtilityPeriodAggregate({ facilityId, type, meterKey, periodMonth }) {
+  const existingRes = await query(
+    `SELECT id
+       FROM utility_periods
+      WHERE facility_id = $1 AND type = $2 AND meter_key = $3 AND period_month = $4`,
+    [facilityId, type, meterKey, periodMonth],
+  );
+  const periodId = existingRes.rows[0]?.id;
+  if (!periodId) return;
+
+  await query(
+    `DELETE FROM workflow_events
+      WHERE workflow_instance_id IN (
+        SELECT id
+          FROM workflow_instances
+         WHERE workflow_key = $1
+           AND entity_type = $2
+           AND entity_id = $3
+      )`,
+    [WORKFLOW_KEY, ENTITY_TYPE, periodId],
+  );
+  await query(
+    `DELETE FROM workflow_instances
+      WHERE workflow_key = $1
+        AND entity_type = $2
+        AND entity_id = $3`,
+    [WORKFLOW_KEY, ENTITY_TYPE, periodId],
+  );
+  await query(`DELETE FROM utility_periods WHERE id = $1`, [periodId]);
+}
+
+function hasAggregateChanged(existing, nextCoverage, rowCount, firstRow) {
+  return !(
+    toDateString(existing.coverage_start) === String(nextCoverage.coverageStart || "") &&
+    toDateString(existing.coverage_end) === String(nextCoverage.coverageEnd || "") &&
+    Number(existing.record_count || 0) === Number(rowCount || 0) &&
+    sameNumber(existing.total_value, nextCoverage.totalValue) &&
+    sameNumber(existing.total_diesel_liters, nextCoverage.totalDieselLiters) &&
+    Number(existing.missing_days_count || 0) === Number(nextCoverage.missingDaysCount || 0) &&
+    Number(existing.covered_days || 0) === Number(nextCoverage.coveredDays || 0) &&
+    Number(existing.month_days || 0) === Number(nextCoverage.monthDays || 0) &&
+    String(existing.uom || "") === String(nextCoverage.uom || "") &&
+    String(existing.meter_name || "") === String(firstRow.meter_name || "") &&
+    Number(existing.meter_id || 0) === Number(firstRow.meter_id || 0) &&
+    Number(existing.source_id || 0) === Number(firstRow.source_id || 0)
+  );
+}
+
+async function ensureWorkflowInstance({ periodId, facilityId, actorUserId, initialStepKey, currentStepKey }) {
+  const existingRes = await query(
+    `SELECT id, current_step_key
+       FROM workflow_instances
+      WHERE workflow_key = $1
+        AND entity_type = $2
+        AND entity_id = $3`,
+    [WORKFLOW_KEY, ENTITY_TYPE, periodId],
+  );
+  const existing = existingRes.rows[0];
+  if (existing) {
+    if (currentStepKey && currentStepKey !== existing.current_step_key) {
+      await query(
+        `UPDATE workflow_instances
+            SET current_step_key = $2,
+                updated_by_user_id = $3::bigint,
+                updated_at = NOW()
+          WHERE id = $1`,
+        [existing.id, currentStepKey, actorUserId],
+      );
+    }
+    return existing;
+  }
+
+  const insertRes = await query(
+    `INSERT INTO workflow_instances
+      (workflow_key, entity_type, entity_id, current_step_key, company_id, created_by_user_id, updated_by_user_id, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6::bigint, $6::bigint, NOW(), NOW())
+     RETURNING id, current_step_key`,
+    [WORKFLOW_KEY, ENTITY_TYPE, periodId, currentStepKey || initialStepKey, facilityId, actorUserId],
+  );
+  return insertRes.rows[0];
 }
 
 export async function syncUtilityMonthlyApproval(input) {
@@ -86,6 +189,7 @@ export async function syncUtilityMonthlyApproval(input) {
   if (actorUserId != null && (!Number.isFinite(actorUserId) || actorUserId <= 0)) {
     throw createHttpError(400, "Invalid utility approval user context.");
   }
+
   const result = await query(
     `SELECT id, facility_id, type, meter_id, meter_key, meter_name, source_id, period_month, period_start, period_end, value, diesel_liters, uom
        FROM utility_records
@@ -95,75 +199,91 @@ export async function syncUtilityMonthlyApproval(input) {
   );
 
   if (!result.rowCount) {
-    await query(
-      `DELETE FROM utility_monthly_approvals
-        WHERE facility_id = $1 AND type = $2 AND meter_key = $3 AND period_month = $4`,
-      [input.facilityId, input.type, input.meterKey, input.periodMonth],
-    );
+    await deleteUtilityPeriodAggregate(input);
     return null;
   }
 
   const firstRow = result.rows[0];
   const coverage = buildCoverage(result.rows, input.periodMonth);
+  const existingRes = await query(
+    `SELECT up.*, wi.id AS workflow_instance_id, wi.current_step_key
+       FROM utility_periods up
+       LEFT JOIN workflow_instances wi
+         ON wi.workflow_key = $5
+        AND wi.entity_type = $6
+        AND wi.entity_id = up.id
+      WHERE up.facility_id = $1
+        AND up.type = $2
+        AND up.meter_key = $3
+        AND up.period_month = $4`,
+    [input.facilityId, input.type, input.meterKey, input.periodMonth, WORKFLOW_KEY, ENTITY_TYPE],
+  );
 
+  const existing = existingRes.rows[0];
+  const initialStepKey = await getInitialWorkflowStepKey();
+
+  if (!existing) {
+    const insertRes = await query(
+      `INSERT INTO utility_periods
+        (facility_id, type, meter_id, meter_key, meter_name, source_id, period_month, coverage_start, coverage_end, covered_days, month_days, missing_ranges, missing_days_count, record_count, total_value, total_diesel_liters, uom, created_by_user_id, updated_by_user_id, created_at, updated_at)
+       VALUES
+        ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb,$13,$14,$15,$16,$17,$18::bigint,$18::bigint,NOW(),NOW())
+       RETURNING id`,
+      [
+        input.facilityId,
+        input.type,
+        firstRow.meter_id,
+        input.meterKey,
+        firstRow.meter_name,
+        firstRow.source_id,
+        input.periodMonth,
+        coverage.coverageStart,
+        coverage.coverageEnd,
+        coverage.coveredDays,
+        coverage.monthDays,
+        JSON.stringify(coverage.missingRanges),
+        coverage.missingDaysCount,
+        result.rowCount,
+        coverage.totalValue,
+        coverage.totalDieselLiters,
+        coverage.uom,
+        actorUserId,
+      ],
+    );
+    await ensureWorkflowInstance({
+      periodId: insertRes.rows[0].id,
+      facilityId: input.facilityId,
+      actorUserId,
+      initialStepKey,
+      currentStepKey: initialStepKey,
+    });
+    return coverage;
+  }
+
+  const aggregateChanged = hasAggregateChanged(existing, coverage, result.rowCount, firstRow);
   await query(
-    `INSERT INTO utility_monthly_approvals
-      (facility_id, type, meter_id, meter_key, meter_name, source_id, period_month, coverage_start, coverage_end, covered_days, month_days, missing_ranges, missing_days_count, record_count, total_value, total_diesel_liters, uom, approval_status, approved_by_user_id, approved_at, created_by_user_id, updated_by_user_id, created_at, updated_at)
-     VALUES
-      ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12::jsonb,$13,$14,$15,$16,$17,'draft',NULL,NULL,$18::bigint,$18::bigint,NOW(),NOW())
-     ON CONFLICT (facility_id, type, meter_key, period_month) DO UPDATE SET
-      meter_id = EXCLUDED.meter_id,
-      meter_name = EXCLUDED.meter_name,
-      source_id = EXCLUDED.source_id,
-      coverage_start = EXCLUDED.coverage_start,
-      coverage_end = EXCLUDED.coverage_end,
-      covered_days = EXCLUDED.covered_days,
-      month_days = EXCLUDED.month_days,
-      missing_ranges = EXCLUDED.missing_ranges,
-      missing_days_count = EXCLUDED.missing_days_count,
-      record_count = EXCLUDED.record_count,
-      total_value = EXCLUDED.total_value,
-      total_diesel_liters = EXCLUDED.total_diesel_liters,
-      uom = EXCLUDED.uom,
-      approval_status = CASE
-        WHEN utility_monthly_approvals.coverage_start IS NOT DISTINCT FROM EXCLUDED.coverage_start
-         AND utility_monthly_approvals.coverage_end IS NOT DISTINCT FROM EXCLUDED.coverage_end
-         AND utility_monthly_approvals.record_count = EXCLUDED.record_count
-         AND utility_monthly_approvals.total_value = EXCLUDED.total_value
-         AND utility_monthly_approvals.missing_days_count = EXCLUDED.missing_days_count
-        THEN utility_monthly_approvals.approval_status
-        ELSE 'draft'
-      END,
-      approved_by_user_id = CASE
-        WHEN utility_monthly_approvals.approval_status IN ('approved', 'audited')
-         AND utility_monthly_approvals.coverage_start IS NOT DISTINCT FROM EXCLUDED.coverage_start
-         AND utility_monthly_approvals.coverage_end IS NOT DISTINCT FROM EXCLUDED.coverage_end
-         AND utility_monthly_approvals.record_count = EXCLUDED.record_count
-         AND utility_monthly_approvals.total_value = EXCLUDED.total_value
-         AND utility_monthly_approvals.missing_days_count = EXCLUDED.missing_days_count
-        THEN utility_monthly_approvals.approved_by_user_id
-        ELSE NULL
-      END,
-      approved_at = CASE
-        WHEN utility_monthly_approvals.approval_status IN ('approved', 'audited')
-         AND utility_monthly_approvals.coverage_start IS NOT DISTINCT FROM EXCLUDED.coverage_start
-         AND utility_monthly_approvals.coverage_end IS NOT DISTINCT FROM EXCLUDED.coverage_end
-         AND utility_monthly_approvals.record_count = EXCLUDED.record_count
-         AND utility_monthly_approvals.total_value = EXCLUDED.total_value
-         AND utility_monthly_approvals.missing_days_count = EXCLUDED.missing_days_count
-        THEN utility_monthly_approvals.approved_at
-        ELSE NULL
-      END,
-      updated_by_user_id = EXCLUDED.updated_by_user_id,
-      updated_at = NOW()`,
+    `UPDATE utility_periods
+        SET meter_id = $2,
+            meter_name = $3,
+            source_id = $4,
+            coverage_start = $5,
+            coverage_end = $6,
+            covered_days = $7,
+            month_days = $8,
+            missing_ranges = $9::jsonb,
+            missing_days_count = $10,
+            record_count = $11,
+            total_value = $12,
+            total_diesel_liters = $13,
+            uom = $14,
+            updated_by_user_id = $15::bigint,
+            updated_at = NOW()
+      WHERE id = $1`,
     [
-      input.facilityId,
-      input.type,
+      existing.id,
       firstRow.meter_id,
-      input.meterKey,
       firstRow.meter_name,
       firstRow.source_id,
-      input.periodMonth,
       coverage.coverageStart,
       coverage.coverageEnd,
       coverage.coveredDays,
@@ -177,6 +297,37 @@ export async function syncUtilityMonthlyApproval(input) {
       actorUserId,
     ],
   );
+
+  const instance = await ensureWorkflowInstance({
+    periodId: existing.id,
+    facilityId: input.facilityId,
+    actorUserId,
+    initialStepKey,
+    currentStepKey: existing.current_step_key || initialStepKey,
+  });
+
+  if (aggregateChanged && instance.current_step_key && instance.current_step_key !== initialStepKey) {
+    await query(
+      `UPDATE workflow_instances
+          SET current_step_key = $2,
+              updated_by_user_id = $3::bigint,
+              updated_at = NOW()
+        WHERE id = $1`,
+      [instance.id, initialStepKey, actorUserId],
+    );
+    await query(
+      `INSERT INTO workflow_events
+        (workflow_instance_id, transition_key, from_step_key, to_step_key, actor_user_id, note)
+       VALUES ($1, NULL, $2, $3, $4::bigint, $5)`,
+      [
+        instance.id,
+        instance.current_step_key,
+        initialStepKey,
+        actorUserId,
+        "Workflow reset after utility data changed.",
+      ],
+    );
+  }
 
   return coverage;
 }

@@ -51,6 +51,28 @@ async function getAuthUserByLogin(login) {
   return result.rows[0] || null;
 }
 
+async function getAuthUserById(id) {
+  const result = await query(
+    `
+      SELECT
+        u.id,
+        u.username,
+        u.email,
+        u.status,
+        u.password_hash,
+        e.employee_id,
+        e.name
+      FROM users u
+      LEFT JOIN employees e ON e.id = u.employee_id
+      WHERE u.id = $1
+      LIMIT 1
+    `,
+    [id],
+  );
+
+  return result.rows[0] || null;
+}
+
 authRouter.post("/sign-in", async (req, res, next) => {
   try {
     await ensureCoreSchema();
@@ -89,4 +111,52 @@ authRouter.post("/sign-out", (req, res) => {
   const token = readSessionToken(req);
   const session = verifySessionToken(token);
   res.json({ ok: true, signedOut: Boolean(session) });
+});
+
+authRouter.post("/change-password", async (req, res, next) => {
+  try {
+    await ensureCoreSchema();
+
+    const session = verifySessionToken(readSessionToken(req));
+    if (!session?.sub) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const currentPassword = String(req.body?.currentPassword || "");
+    const newPassword = String(req.body?.newPassword || "");
+
+    if (!currentPassword) {
+      return res.status(400).json({ error: "Current password is required." });
+    }
+
+    if (!newPassword) {
+      return res.status(400).json({ error: "New password is required." });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: "New password must be at least 8 characters." });
+    }
+
+    if (currentPassword === newPassword) {
+      return res.status(400).json({ error: "New password must be different from current password." });
+    }
+
+    const row = await getAuthUserById(session.sub);
+    if (!row || row.status !== "active") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    if (!verifyPassword(currentPassword, row.password_hash)) {
+      return res.status(401).json({ error: "Current password is incorrect." });
+    }
+
+    await query(
+      "UPDATE users SET password_hash = $2, updated_at = NOW() WHERE id = $1",
+      [row.id, hashPassword(newPassword)],
+    );
+
+    res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
 });

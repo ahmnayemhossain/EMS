@@ -44,10 +44,8 @@ export function getCreateDialogErrors(input: {
       ? "Current reading must be >= previous reading."
       : "",
     generatorMode
-      ? typeof input.manualConsumption !== "number" ||
-          Number.isNaN(input.manualConsumption) ||
-          input.manualConsumption <= 0
-        ? "Diesel consumption must be > 0."
+      ? typeof input.manualConsumption !== "number" || Number.isNaN(input.manualConsumption)
+        ? "Diesel consumption is required."
         : ""
       : !readingEnabled &&
           (typeof input.manualConsumption !== "number" ||

@@ -200,59 +200,57 @@ export async function replaceApprovalHierarchyConfig(req, res, next) {
   try {
     await ensureCoreSchema();
     const { steps, transitions, groups, roleMappings, userMappings } = assertValidPayload(req.body || {});
-    const actor = await getRequestActor(req);
+    await getRequestActor(req);
     const client = await pool.connect();
 
     try {
       await client.query("BEGIN");
 
-      await client.query("DELETE FROM approval_hierarchy_user_transitions");
-      await client.query("DELETE FROM approval_hierarchy_role_transitions");
-      await client.query("DELETE FROM approval_hierarchy_group_transitions");
-      await client.query("DELETE FROM approval_hierarchy_group_steps");
-      await client.query("DELETE FROM approval_hierarchy_groups");
-      await client.query("DELETE FROM approval_hierarchy_transitions");
-      await client.query("DELETE FROM approval_hierarchy_steps");
+      await client.query("DELETE FROM workflow_user_assignments");
+      await client.query("DELETE FROM workflow_role_assignments");
+      await client.query("DELETE FROM workflow_events");
+      await client.query("DELETE FROM workflow_instances");
+      await client.query("DELETE FROM workflow_transitions");
+      await client.query("DELETE FROM workflow_steps");
+      await client.query("DELETE FROM workflow_definitions");
 
-      for (const step of steps) {
-        await client.query(
-          `INSERT INTO approval_hierarchy_steps
-            (key, name, sort_order, is_initial, is_final, is_active, created_by_user_id, updated_by_user_id)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $7)`,
-          [step.key, step.name, step.sortOrder, step.isInitial, step.isFinal, step.isActive, actor.id],
-        );
-      }
-
-      for (const transition of transitions) {
-        await client.query(
-          `INSERT INTO approval_hierarchy_transitions
-            (key, name, from_step_key, to_step_key, is_active, created_by_user_id, updated_by_user_id)
-           VALUES ($1, $2, $3, $4, $5, $6, $6)`,
-          [transition.key, transition.name, transition.fromStepKey, transition.toStepKey, transition.isActive, actor.id],
-        );
-      }
+      const stepByKey = new Map(steps.map((item) => [item.key, item]));
+      const transitionByKey = new Map(transitions.map((item) => [item.key, item]));
 
       for (const group of groups) {
         await client.query(
-          `INSERT INTO approval_hierarchy_groups
-            (key, name, module_key, description, is_default, is_active, created_by_user_id, updated_by_user_id)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $7)`,
-          [group.key, group.name, group.moduleKey, group.description, group.isDefault, group.isActive, actor.id],
+          `INSERT INTO workflow_definitions
+            (key, name, module_key, description, is_default, is_active, created_at, updated_at)
+           VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())`,
+          [group.key, group.name, group.moduleKey, group.description, group.isDefault, group.isActive],
         );
 
         for (let index = 0; index < group.stepKeys.length; index += 1) {
+          const step = stepByKey.get(group.stepKeys[index]);
+          if (!step) continue;
           await client.query(
-            `INSERT INTO approval_hierarchy_group_steps (group_key, step_key, position_index)
-             VALUES ($1, $2, $3)`,
-            [group.key, group.stepKeys[index], index + 1],
+            `INSERT INTO workflow_steps
+              (workflow_key, key, name, sort_order, is_initial, is_final, is_active, created_at, updated_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())`,
+            [group.key, step.key, step.name, index + 1, step.isInitial, step.isFinal, step.isActive],
           );
         }
 
         for (let index = 0; index < group.transitionKeys.length; index += 1) {
+          const transition = transitionByKey.get(group.transitionKeys[index]);
+          if (!transition) continue;
           await client.query(
-            `INSERT INTO approval_hierarchy_group_transitions (group_key, transition_key, position_index)
-             VALUES ($1, $2, $3)`,
-            [group.key, group.transitionKeys[index], index + 1],
+            `INSERT INTO workflow_transitions
+              (workflow_key, key, name, from_step_key, to_step_key, is_active, created_at, updated_at)
+             VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())`,
+            [
+              group.key,
+              transition.key,
+              transition.name,
+              transition.fromStepKey,
+              transition.toStepKey,
+              transition.isActive,
+            ],
           );
         }
       }
@@ -260,7 +258,7 @@ export async function replaceApprovalHierarchyConfig(req, res, next) {
       for (const mapping of roleMappings) {
         for (const transitionKey of mapping.transitionKeys) {
           await client.query(
-            `INSERT INTO approval_hierarchy_role_transitions (group_key, role_id, transition_key)
+            `INSERT INTO workflow_role_assignments (workflow_key, role_id, transition_key)
              VALUES ($1, $2, $3)`,
             [mapping.groupKey, mapping.roleId, transitionKey],
           );
@@ -270,7 +268,7 @@ export async function replaceApprovalHierarchyConfig(req, res, next) {
       for (const mapping of userMappings) {
         for (const transitionKey of mapping.transitionKeys) {
           await client.query(
-            `INSERT INTO approval_hierarchy_user_transitions (group_key, user_id, transition_key)
+            `INSERT INTO workflow_user_assignments (workflow_key, user_id, transition_key)
              VALUES ($1, $2, $3)`,
             [mapping.groupKey, mapping.userId, transitionKey],
           );

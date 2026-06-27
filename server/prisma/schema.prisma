@@ -6,116 +6,101 @@ datasource db {
   provider = "postgresql"
 }
 
-model approval_hierarchy_group_steps {
-  group_key                 String
-  step_key                  String
-  position_index            Int                       @default(0)
-  created_at                DateTime                  @default(now()) @db.Timestamptz(6)
-  approval_hierarchy_groups approval_hierarchy_groups @relation(fields: [group_key], references: [key], onDelete: Cascade)
-  approval_hierarchy_steps  approval_hierarchy_steps  @relation(fields: [step_key], references: [key], onDelete: Cascade)
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model workflow_definitions {
+  key           String   @id
+  name          String
+  module_key    String
+  description   String?
+  is_default    Int      @default(0) @db.SmallInt
+  is_active     Int      @default(1) @db.SmallInt
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime @default(now()) @db.Timestamptz(6)
 
-  @@id([group_key, step_key])
-  @@index([group_key, position_index], map: "idx_approval_hierarchy_group_steps_group")
-}
-
-model approval_hierarchy_group_transitions {
-  group_key                      String
-  transition_key                 String
-  position_index                 Int                            @default(0)
-  created_at                     DateTime                       @default(now()) @db.Timestamptz(6)
-  approval_hierarchy_groups      approval_hierarchy_groups      @relation(fields: [group_key], references: [key], onDelete: Cascade)
-  approval_hierarchy_transitions approval_hierarchy_transitions @relation(fields: [transition_key], references: [key], onDelete: Cascade)
-
-  @@id([group_key, transition_key])
+  @@index([module_key, is_default, is_active], map: "idx_workflow_definitions_module")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model approval_hierarchy_groups {
-  key                                                       String                                 @id
-  name                                                      String
-  module_key                                                String
-  description                                               String?
-  is_default                                                Int                                    @default(0) @db.SmallInt
-  is_active                                                 Int                                    @default(1) @db.SmallInt
-  created_by_user_id                                        BigInt?
-  updated_by_user_id                                        BigInt?
-  created_at                                                DateTime                               @default(now()) @db.Timestamptz(6)
-  updated_at                                                DateTime                               @default(now()) @db.Timestamptz(6)
-  approval_hierarchy_group_steps                            approval_hierarchy_group_steps[]
-  approval_hierarchy_group_transitions                      approval_hierarchy_group_transitions[]
-  users_approval_hierarchy_groups_created_by_user_idTousers users?                                 @relation("approval_hierarchy_groups_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
-  users_approval_hierarchy_groups_updated_by_user_idTousers users?                                 @relation("approval_hierarchy_groups_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
-  approval_hierarchy_role_transitions                       approval_hierarchy_role_transitions[]
-  approval_hierarchy_user_transitions                       approval_hierarchy_user_transitions[]
+model workflow_steps {
+  id            BigInt   @id @default(autoincrement())
+  workflow_key  String
+  key           String
+  name          String
+  sort_order    Int      @default(0)
+  is_initial    Int      @default(0) @db.SmallInt
+  is_final      Int      @default(0) @db.SmallInt
+  is_active     Int      @default(1) @db.SmallInt
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime @default(now()) @db.Timestamptz(6)
 
-  @@index([module_key, is_default, is_active], map: "idx_approval_hierarchy_groups_module")
-}
-
-model approval_hierarchy_role_transitions {
-  group_key                      String
-  role_id                        BigInt
-  transition_key                 String
-  created_at                     DateTime                       @default(now()) @db.Timestamptz(6)
-  approval_hierarchy_groups      approval_hierarchy_groups      @relation(fields: [group_key], references: [key], onDelete: Cascade)
-  roles                          roles                          @relation(fields: [role_id], references: [id], onDelete: Cascade)
-  approval_hierarchy_transitions approval_hierarchy_transitions @relation(fields: [transition_key], references: [key], onDelete: Cascade)
-
-  @@id([group_key, role_id, transition_key])
-  @@index([role_id, group_key], map: "idx_approval_hierarchy_role_transitions_role")
+  @@unique([workflow_key, key], map: "ux_workflow_steps_workflow_key")
+  @@index([workflow_key, sort_order], map: "idx_workflow_steps_workflow")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model approval_hierarchy_steps {
-  key                                                                                                   String                           @id
-  name                                                                                                  String
-  sort_order                                                                                            Int                              @default(0)
-  is_initial                                                                                            Int                              @default(0) @db.SmallInt
-  is_final                                                                                              Int                              @default(0) @db.SmallInt
-  is_active                                                                                             Int                              @default(1) @db.SmallInt
-  created_by_user_id                                                                                    BigInt?
-  updated_by_user_id                                                                                    BigInt?
-  created_at                                                                                            DateTime                         @default(now()) @db.Timestamptz(6)
-  updated_at                                                                                            DateTime                         @default(now()) @db.Timestamptz(6)
-  approval_hierarchy_group_steps                                                                        approval_hierarchy_group_steps[]
-  users_approval_hierarchy_steps_created_by_user_idTousers                                              users?                           @relation("approval_hierarchy_steps_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
-  users_approval_hierarchy_steps_updated_by_user_idTousers                                              users?                           @relation("approval_hierarchy_steps_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
-  approval_hierarchy_transitions_approval_hierarchy_transitions_from_step_keyToapproval_hierarchy_steps approval_hierarchy_transitions[] @relation("approval_hierarchy_transitions_from_step_keyToapproval_hierarchy_steps")
-  approval_hierarchy_transitions_approval_hierarchy_transitions_to_step_keyToapproval_hierarchy_steps   approval_hierarchy_transitions[] @relation("approval_hierarchy_transitions_to_step_keyToapproval_hierarchy_steps")
+model workflow_transitions {
+  id            BigInt   @id @default(autoincrement())
+  workflow_key  String
+  key           String
+  name          String
+  from_step_key String
+  to_step_key   String
+  is_active     Int      @default(1) @db.SmallInt
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime @default(now()) @db.Timestamptz(6)
+
+  @@unique([workflow_key, key], map: "ux_workflow_transitions_workflow_key")
+  @@index([workflow_key, from_step_key, to_step_key], map: "idx_workflow_transitions_steps")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model approval_hierarchy_transitions {
-  key                                                                                             String                                 @id
-  name                                                                                            String
-  from_step_key                                                                                   String
-  to_step_key                                                                                     String
-  is_active                                                                                       Int                                    @default(1) @db.SmallInt
-  created_by_user_id                                                                              BigInt?
-  updated_by_user_id                                                                              BigInt?
-  created_at                                                                                      DateTime                               @default(now()) @db.Timestamptz(6)
-  updated_at                                                                                      DateTime                               @default(now()) @db.Timestamptz(6)
-  approval_hierarchy_group_transitions                                                            approval_hierarchy_group_transitions[]
-  approval_hierarchy_role_transitions                                                             approval_hierarchy_role_transitions[]
-  users_approval_hierarchy_transitions_created_by_user_idTousers                                  users?                                 @relation("approval_hierarchy_transitions_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
-  approval_hierarchy_steps_approval_hierarchy_transitions_from_step_keyToapproval_hierarchy_steps approval_hierarchy_steps               @relation("approval_hierarchy_transitions_from_step_keyToapproval_hierarchy_steps", fields: [from_step_key], references: [key], onDelete: Cascade)
-  approval_hierarchy_steps_approval_hierarchy_transitions_to_step_keyToapproval_hierarchy_steps   approval_hierarchy_steps               @relation("approval_hierarchy_transitions_to_step_keyToapproval_hierarchy_steps", fields: [to_step_key], references: [key], onDelete: Cascade)
-  users_approval_hierarchy_transitions_updated_by_user_idTousers                                  users?                                 @relation("approval_hierarchy_transitions_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
-  approval_hierarchy_user_transitions                                                             approval_hierarchy_user_transitions[]
+model workflow_role_assignments {
+  workflow_key    String
+  role_id         BigInt
+  transition_key  String
+  created_at      DateTime @default(now()) @db.Timestamptz(6)
 
-  @@index([from_step_key, to_step_key], map: "idx_approval_hierarchy_transitions_steps")
+  @@id([workflow_key, role_id, transition_key])
+  @@index([role_id, workflow_key], map: "idx_workflow_role_assignments_role")
 }
 
-model approval_hierarchy_user_transitions {
-  group_key                      String
-  user_id                        BigInt
-  transition_key                 String
-  created_at                     DateTime                       @default(now()) @db.Timestamptz(6)
-  approval_hierarchy_groups      approval_hierarchy_groups      @relation(fields: [group_key], references: [key], onDelete: Cascade)
-  approval_hierarchy_transitions approval_hierarchy_transitions @relation(fields: [transition_key], references: [key], onDelete: Cascade)
-  users                          users                          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+model workflow_user_assignments {
+  workflow_key    String
+  user_id         BigInt
+  transition_key  String
+  created_at      DateTime @default(now()) @db.Timestamptz(6)
 
-  @@id([group_key, user_id, transition_key])
-  @@index([user_id, group_key], map: "idx_approval_hierarchy_user_transitions_user")
+  @@id([workflow_key, user_id, transition_key])
+  @@index([user_id, workflow_key], map: "idx_workflow_user_assignments_user")
+}
+
+model workflow_instances {
+  id                BigInt   @id @default(autoincrement())
+  workflow_key      String
+  entity_type       String
+  entity_id         BigInt
+  current_step_key  String
+  company_id        BigInt?
+  created_by_user_id BigInt?
+  updated_by_user_id BigInt?
+  created_at        DateTime @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime @default(now()) @db.Timestamptz(6)
+
+  @@unique([workflow_key, entity_type, entity_id], map: "ux_workflow_instances_entity")
+  @@index([company_id, workflow_key], map: "idx_workflow_instances_company")
+}
+
+model workflow_events {
+  id                   BigInt   @id @default(autoincrement())
+  workflow_instance_id BigInt
+  transition_key       String?
+  from_step_key        String
+  to_step_key          String
+  actor_user_id        BigInt?
+  note                 String?
+  created_at           DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([workflow_instance_id, created_at], map: "idx_workflow_events_instance")
+  @@index([actor_user_id], map: "idx_workflow_events_actor")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -242,7 +227,6 @@ model companies {
   meters                                    meters[]
   user_companies                            user_companies[]
   utility_conversion_rules                  utility_conversion_rules[]
-  utility_monthly_approvals                 utility_monthly_approvals[]
   utility_records                           utility_records[]
   waste_records                             waste_records[]
   wastewater_lab_records                    wastewater_lab_records[]
@@ -390,7 +374,6 @@ model meters {
   uom                                    uom                         @relation(fields: [uom_id], references: [id])
   users_meters_updated_by_user_idTousers users?                      @relation("meters_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
   utility_types                          utility_types               @relation(fields: [utility_type_id], references: [id])
-  utility_monthly_approvals              utility_monthly_approvals[]
   utility_records                        utility_records[]
 
   @@unique([company_id, utility_type_id, name])
@@ -445,7 +428,6 @@ model roles {
   updated_by_user_id                    BigInt?
   created_at                            DateTime                              @default(now()) @db.Timestamptz(6)
   updated_at                            DateTime                              @default(now()) @db.Timestamptz(6)
-  approval_hierarchy_role_transitions   approval_hierarchy_role_transitions[]
   role_permissions                      role_permissions[]
   users_roles_created_by_user_idTousers users?                                @relation("roles_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
   users_roles_updated_by_user_idTousers users?                                @relation("roles_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
@@ -517,7 +499,6 @@ model sources {
   source_wiring                           source_wiring[]
   users_sources_created_by_user_idTousers users?                      @relation("sources_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
   users_sources_updated_by_user_idTousers users?                      @relation("sources_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
-  utility_monthly_approvals               utility_monthly_approvals[]
   utility_records                         utility_records[]
 }
 
@@ -599,13 +580,6 @@ model users {
   updated_by_user_id                                                                      BigInt?
   created_at                                                                              DateTime                              @default(now()) @db.Timestamptz(6)
   updated_at                                                                              DateTime                              @default(now()) @db.Timestamptz(6)
-  approval_hierarchy_groups_approval_hierarchy_groups_created_by_user_idTousers           approval_hierarchy_groups[]           @relation("approval_hierarchy_groups_created_by_user_idTousers")
-  approval_hierarchy_groups_approval_hierarchy_groups_updated_by_user_idTousers           approval_hierarchy_groups[]           @relation("approval_hierarchy_groups_updated_by_user_idTousers")
-  approval_hierarchy_steps_approval_hierarchy_steps_created_by_user_idTousers             approval_hierarchy_steps[]            @relation("approval_hierarchy_steps_created_by_user_idTousers")
-  approval_hierarchy_steps_approval_hierarchy_steps_updated_by_user_idTousers             approval_hierarchy_steps[]            @relation("approval_hierarchy_steps_updated_by_user_idTousers")
-  approval_hierarchy_transitions_approval_hierarchy_transitions_created_by_user_idTousers approval_hierarchy_transitions[]      @relation("approval_hierarchy_transitions_created_by_user_idTousers")
-  approval_hierarchy_transitions_approval_hierarchy_transitions_updated_by_user_idTousers approval_hierarchy_transitions[]      @relation("approval_hierarchy_transitions_updated_by_user_idTousers")
-  approval_hierarchy_user_transitions                                                     approval_hierarchy_user_transitions[]
   audit_logs                                                                              audit_logs[]
   audit_records_audit_records_created_by_user_idTousers                                   audit_records[]                       @relation("audit_records_created_by_user_idTousers")
   audit_records_audit_records_updated_by_user_idTousers                                   audit_records[]                       @relation("audit_records_updated_by_user_idTousers")
@@ -653,10 +627,6 @@ model users {
   other_users_users_updated_by_user_idTousers                                             users[]                               @relation("users_updated_by_user_idTousers")
   utility_conversion_rules_utility_conversion_rules_created_by_user_idTousers             utility_conversion_rules[]            @relation("utility_conversion_rules_created_by_user_idTousers")
   utility_conversion_rules_utility_conversion_rules_updated_by_user_idTousers             utility_conversion_rules[]            @relation("utility_conversion_rules_updated_by_user_idTousers")
-  utility_monthly_approval_history                                                        utility_monthly_approval_history[]
-  utility_monthly_approvals_utility_monthly_approvals_approved_by_user_idTousers          utility_monthly_approvals[]           @relation("utility_monthly_approvals_approved_by_user_idTousers")
-  utility_monthly_approvals_utility_monthly_approvals_created_by_user_idTousers           utility_monthly_approvals[]           @relation("utility_monthly_approvals_created_by_user_idTousers")
-  utility_monthly_approvals_utility_monthly_approvals_updated_by_user_idTousers           utility_monthly_approvals[]           @relation("utility_monthly_approvals_updated_by_user_idTousers")
   utility_records_utility_records_created_by_user_idTousers                               utility_records[]                     @relation("utility_records_created_by_user_idTousers")
   utility_records_utility_records_updated_by_user_idTousers                               utility_records[]                     @relation("utility_records_updated_by_user_idTousers")
   waste_records_waste_records_created_by_user_idTousers                                   waste_records[]                       @relation("waste_records_created_by_user_idTousers")
@@ -684,21 +654,7 @@ model utility_conversion_rules {
   @@index([key], map: "idx_utility_conversion_rules_key")
 }
 
-model utility_monthly_approval_history {
-  id                        BigInt                    @id @default(autoincrement())
-  monthly_approval_id       BigInt
-  from_status               String
-  to_status                 String
-  actor_user_id             BigInt?
-  created_at                DateTime                  @default(now()) @db.Timestamptz(6)
-  note                      String?
-  users                     users?                    @relation(fields: [actor_user_id], references: [id])
-  utility_monthly_approvals utility_monthly_approvals @relation(fields: [monthly_approval_id], references: [id], onDelete: Cascade)
-
-  @@index([monthly_approval_id, created_at], map: "idx_utility_monthly_approval_history_monthly")
-}
-
-model utility_monthly_approvals {
+model utility_periods {
   id                                                         BigInt                             @id @default(autoincrement())
   facility_id                                                BigInt
   type                                                       String
@@ -717,24 +673,13 @@ model utility_monthly_approvals {
   total_value                                                Decimal                            @default(0) @db.Decimal
   total_diesel_liters                                        Decimal?                           @db.Decimal
   uom                                                        String?
-  approval_status                                            String                             @default("draft")
-  approved_by_user_id                                        BigInt?
-  approved_at                                                DateTime?                          @db.Timestamptz(6)
   created_by_user_id                                         BigInt?
   updated_by_user_id                                         BigInt?
   created_at                                                 DateTime                           @default(now()) @db.Timestamptz(6)
   updated_at                                                 DateTime                           @default(now()) @db.Timestamptz(6)
-  utility_monthly_approval_history                           utility_monthly_approval_history[]
-  users_utility_monthly_approvals_approved_by_user_idTousers users?                             @relation("utility_monthly_approvals_approved_by_user_idTousers", fields: [approved_by_user_id], references: [id])
-  users_utility_monthly_approvals_created_by_user_idTousers  users?                             @relation("utility_monthly_approvals_created_by_user_idTousers", fields: [created_by_user_id], references: [id])
-  companies                                                  companies                          @relation(fields: [facility_id], references: [id], onDelete: Cascade)
-  meters                                                     meters?                            @relation(fields: [meter_id], references: [id])
-  sources                                                    sources?                           @relation(fields: [source_id], references: [id])
-  users_utility_monthly_approvals_updated_by_user_idTousers  users?                             @relation("utility_monthly_approvals_updated_by_user_idTousers", fields: [updated_by_user_id], references: [id])
 
   @@unique([facility_id, type, meter_key, period_month])
-  @@index([facility_id, period_month], map: "idx_utility_monthly_approvals_company_month")
-  @@index([approval_status], map: "idx_utility_monthly_approvals_status")
+  @@index([facility_id, period_month], map: "idx_utility_periods_company_month")
 }
 
 model utility_records {

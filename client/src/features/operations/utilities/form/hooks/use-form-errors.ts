@@ -70,9 +70,8 @@ export function useUtilityFormErrors(props: UtilityFormProps): UtilityFormErrors
       ? !props.dieselLitersInput.trim()
         ? "Diesel consumption is required."
         : typeof dieselNumber !== "number" ||
-            Number.isNaN(dieselNumber) ||
-            dieselNumber <= 0
-          ? "Diesel consumption must be > 0."
+            Number.isNaN(dieselNumber)
+          ? "Diesel consumption must be a valid number."
           : ""
       : readingEnabled
         ? ""

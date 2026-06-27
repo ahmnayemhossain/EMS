@@ -50,7 +50,7 @@ export function useCurrentUser() {
     return {
       id: authUser.id,
       name: authUser.name,
-      employeeId: authUser.employeeId ? `EMP-${String(authUser.employeeId).padStart(4, "0")}` : authUser.username,
+      employeeId: authUser.employeeId ? String(authUser.employeeId) : authUser.username,
     };
   }
 

@@ -46,7 +46,6 @@ export function MeterReadingSection({ props, errors }: { props: UtilityFormProps
             <FieldLabel required>Diesel consumption (L)</FieldLabel>
             <Input
               type="number"
-              min={0}
               step="0.01"
               value={props.dieselLitersInput}
               onChange={(event) => props.onDieselLitersInputChange(event.target.value)}

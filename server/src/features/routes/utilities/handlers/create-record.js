@@ -29,7 +29,7 @@ export async function createUtilityRecord(req, res, next) {
     let dieselLiters = record.dieselLiters ?? null;
     let calcMethod = null;
     let calcFactor = null;
-    if (typeof dieselLiters !== "number" || !Number.isFinite(dieselLiters) || dieselLiters <= 0) dieselLiters = null;
+    if (typeof dieselLiters !== "number" || !Number.isFinite(dieselLiters)) dieselLiters = null;
 
     if (!(await isAllowedUom(record.type, uom))) throw createHttpError(400, "Invalid utility UOM.");
     if (!(await isAllowedSource(record.type, sourceId))) throw createHttpError(400, "Invalid utility source.");

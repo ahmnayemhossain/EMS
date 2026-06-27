@@ -67,42 +67,42 @@ export async function runUtilityMonthTransition(input) {
         throw createHttpError(409, "Only full-month utility data can move forward in the approval flow.");
       }
     }
+    if (!approval.workflow_instance_id) {
+      throw createHttpError(409, "Utility workflow instance is missing for this month.");
+    }
 
     await query(
-      `UPDATE utility_monthly_approvals
-          SET approval_status = $2,
-              approved_by_user_id = CASE
-                WHEN $2 = 'approved' THEN COALESCE(approved_by_user_id, $3::bigint)
-                WHEN $2 = 'audited' THEN approved_by_user_id
-                ELSE NULL
-              END,
-              approved_at = CASE
-                WHEN $2 = 'approved' THEN COALESCE(approved_at, NOW())
-                WHEN $2 = 'audited' THEN approved_at
-                ELSE NULL
-              END,
+      `UPDATE workflow_instances
+          SET current_step_key = $2,
               updated_by_user_id = $3::bigint,
               updated_at = NOW()
         WHERE id = $1`,
-      [approval.id, nextStepKey, actorUserId],
+      [approval.workflow_instance_id, nextStepKey, actorUserId],
     );
 
     await query(
-      `INSERT INTO utility_monthly_approval_history
-        (monthly_approval_id, from_status, to_status, actor_user_id, note)
-       VALUES ($1, $2, $3, $4::bigint, NULLIF($5, ''))`,
-      [approval.id, currentStepKey, nextStepKey, actorUserId, note],
+      `INSERT INTO workflow_events
+        (workflow_instance_id, transition_key, from_step_key, to_step_key, actor_user_id, note)
+       VALUES ($1, $2, $3, $4, $5::bigint, NULLIF($6, ''))`,
+      [approval.workflow_instance_id, transitionKey, currentStepKey, nextStepKey, actorUserId, note],
+    );
+    await query(
+      `UPDATE utility_periods
+          SET updated_by_user_id = $2::bigint,
+              updated_at = NOW()
+        WHERE id = $1`,
+      [approval.id, actorUserId],
     );
 
     if (nextStepKey === "submitted") {
       const detailRes = await query(
-        `SELECT uma.*, c.name AS company_name, ut.name AS utility_type_name, COALESCE(e.name, u.username) AS submitted_by
-           FROM utility_monthly_approvals uma
-           JOIN companies c ON c.id = uma.facility_id
-           LEFT JOIN utility_types ut ON ut.key = uma.type
+        `SELECT up.*, c.name AS company_name, ut.name AS utility_type_name, COALESCE(e.name, u.username) AS submitted_by
+           FROM utility_periods up
+           JOIN companies c ON c.id = up.facility_id
+           LEFT JOIN utility_types ut ON ut.key = up.type
           LEFT JOIN users u ON u.id = $2
            LEFT JOIN employees e ON e.id = u.employee_id
-          WHERE uma.id = $1`,
+          WHERE up.id = $1`,
         [approval.id, actorUserId],
       );
       const detail = detailRes.rows[0];

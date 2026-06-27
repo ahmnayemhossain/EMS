@@ -50,15 +50,16 @@ async function seedApprovalHierarchy() {
 
   for (const [key, name, sortOrder, isInitial, isFinal] of steps) {
     await query(
-      `INSERT INTO approval_hierarchy_steps (key, name, sort_order, is_initial, is_final, is_active)
-       VALUES ($1, $2, $3, $4, $5, 1)
-       ON CONFLICT (key) DO UPDATE
-         SET name = EXCLUDED.name,
+      `INSERT INTO workflow_steps (key, workflow_key, name, sort_order, is_initial, is_final, is_active)
+       VALUES ($1, $2, $3, $4, $5, $6, 1)
+       ON CONFLICT (workflow_key, key) DO UPDATE
+         SET workflow_key = EXCLUDED.workflow_key,
+             name = EXCLUDED.name,
              sort_order = EXCLUDED.sort_order,
              is_initial = EXCLUDED.is_initial,
              is_final = EXCLUDED.is_final,
              is_active = EXCLUDED.is_active`,
-      [key, name, sortOrder, isInitial, isFinal],
+      [key, "utilities_approval_flow", name, sortOrder, isInitial, isFinal],
     );
   }
 
@@ -73,19 +74,20 @@ async function seedApprovalHierarchy() {
 
   for (const [key, name, fromStepKey, toStepKey] of transitions) {
     await query(
-      `INSERT INTO approval_hierarchy_transitions (key, name, from_step_key, to_step_key, is_active)
-       VALUES ($1, $2, $3, $4, 1)
-       ON CONFLICT (key) DO UPDATE
-         SET name = EXCLUDED.name,
+      `INSERT INTO workflow_transitions (key, workflow_key, name, from_step_key, to_step_key, is_active)
+       VALUES ($1, $2, $3, $4, $5, 1)
+       ON CONFLICT (workflow_key, key) DO UPDATE
+         SET workflow_key = EXCLUDED.workflow_key,
+             name = EXCLUDED.name,
              from_step_key = EXCLUDED.from_step_key,
              to_step_key = EXCLUDED.to_step_key,
              is_active = EXCLUDED.is_active`,
-      [key, name, fromStepKey, toStepKey],
+      [key, "utilities_approval_flow", name, fromStepKey, toStepKey],
     );
   }
 
   await query(
-    `INSERT INTO approval_hierarchy_groups (key, name, module_key, description, is_default, is_active)
+    `INSERT INTO workflow_definitions (key, name, module_key, description, is_default, is_active)
      VALUES ($1, $2, $3, $4, 1, 1)
      ON CONFLICT (key) DO UPDATE
        SET name = EXCLUDED.name,
@@ -101,71 +103,13 @@ async function seedApprovalHierarchy() {
     ],
   );
 
-  for (let index = 0; index < steps.length; index += 1) {
-    await query(
-      `INSERT INTO approval_hierarchy_group_steps (group_key, step_key, position_index)
-       VALUES ($1, $2, $3)
-       ON CONFLICT (group_key, step_key) DO UPDATE
-         SET position_index = EXCLUDED.position_index`,
-      ["utilities_approval_flow", steps[index][0], index + 1],
-    );
-  }
-
-  await query(
-    `DELETE FROM approval_hierarchy_group_steps
-      WHERE group_key = $1
-        AND step_key <> ALL($2::text[])`,
-    ["utilities_approval_flow", steps.map(([key]) => key)],
-  );
-
-  for (let index = 0; index < transitions.length; index += 1) {
-    await query(
-      `INSERT INTO approval_hierarchy_group_transitions (group_key, transition_key, position_index)
-       VALUES ($1, $2, $3)
-       ON CONFLICT (group_key, transition_key) DO UPDATE
-         SET position_index = EXCLUDED.position_index`,
-      ["utilities_approval_flow", transitions[index][0], index + 1],
-    );
-  }
-
-  await query(
-    `DELETE FROM approval_hierarchy_group_transitions
-      WHERE group_key = $1
-        AND transition_key <> ALL($2::text[])`,
-    ["utilities_approval_flow", transitions.map(([key]) => key)],
-  );
-  await query(
-    `DELETE FROM approval_hierarchy_role_transitions
-      WHERE group_key = $1
-        AND transition_key <> ALL($2::text[])`,
-    ["utilities_approval_flow", transitions.map(([key]) => key)],
-  );
-  await query(
-    `DELETE FROM approval_hierarchy_user_transitions
-      WHERE group_key = $1
-        AND transition_key <> ALL($2::text[])`,
-    ["utilities_approval_flow", transitions.map(([key]) => key)],
-  );
-
-  await query(
-    `UPDATE utility_monthly_approvals
-        SET approval_status = CASE
-          WHEN approval_status IN ('pending', 'draft') THEN 'draft'
-          WHEN approval_status IN ('submitted', 'checked', 'recommended') THEN 'submitted'
-          WHEN approval_status = 'approved' THEN 'approved'
-          WHEN approval_status = 'audited' THEN 'audited'
-          ELSE approval_status
-        END
-      WHERE approval_status IN ('pending', 'draft', 'submitted', 'checked', 'recommended', 'approved', 'audited')`,
-  );
-
   const adminRoleId = await getIdByName("roles", "Admin");
   if (adminRoleId) {
     for (const [transitionKey] of transitions) {
       await query(
-        `INSERT INTO approval_hierarchy_role_transitions (group_key, role_id, transition_key)
+        `INSERT INTO workflow_role_assignments (workflow_key, role_id, transition_key)
          VALUES ($1, $2, $3)
-         ON CONFLICT (group_key, role_id, transition_key) DO NOTHING`,
+         ON CONFLICT (workflow_key, role_id, transition_key) DO NOTHING`,
         ["utilities_approval_flow", adminRoleId, transitionKey],
       );
     }
@@ -222,15 +166,15 @@ async function seedUtilitiesRoleTransitions() {
     const roleId = await getIdByName("roles", roleName);
     if (!roleId) continue;
     await query(
-      `DELETE FROM approval_hierarchy_role_transitions
-        WHERE group_key = $1 AND role_id = $2`,
+      `DELETE FROM workflow_role_assignments
+        WHERE workflow_key = $1 AND role_id = $2`,
       ["utilities_approval_flow", roleId],
     );
     for (const transitionKey of transitionKeys) {
       await query(
-        `INSERT INTO approval_hierarchy_role_transitions (group_key, role_id, transition_key)
+        `INSERT INTO workflow_role_assignments (workflow_key, role_id, transition_key)
          VALUES ($1, $2, $3)
-         ON CONFLICT (group_key, role_id, transition_key) DO NOTHING`,
+         ON CONFLICT (workflow_key, role_id, transition_key) DO NOTHING`,
         ["utilities_approval_flow", roleId, transitionKey],
       );
     }
@@ -408,38 +352,48 @@ async function seedReportDefinitions() {
   const approvedUtilitiesSql = `
     SELECT
       c.name AS company,
-      COALESCE(m.code, uma.meter_key) AS utility_id,
+      COALESCE(m.code, up.meter_key) AS utility_id,
       ut.name AS utility_type,
-      COALESCE(sw.name, s.name, '-') AS source_type,
+      COALESCE(s.name, '-') AS source_type,
       COALESCE(s.name, '-') AS source_name,
       COALESCE(m.code, '-') AS meter_id,
-      uma.meter_name AS meter_name,
+      up.meter_name AS meter_name,
       COALESCE(m.location, '-') AS location,
-      COALESCE(uma.uom, u.name, '-') AS unit,
-      TO_CHAR(uma.period_month, 'YYYY-MM') AS bill_month,
-      uma.record_count AS entry_count,
-      uma.covered_days AS covered_days,
-      uma.month_days AS month_days,
-      uma.total_value AS approved_total,
-      uma.total_diesel_liters AS diesel_liters,
+      COALESCE(up.uom, u.name, '-') AS unit,
+      TO_CHAR(up.period_month, 'YYYY-MM') AS bill_month,
+      up.record_count AS entry_count,
+      up.covered_days AS covered_days,
+      up.month_days AS month_days,
+      up.total_value AS approved_total,
+      up.total_diesel_liters AS diesel_liters,
       COALESCE(ae.name, au.username) AS approved_by,
-      uma.approved_at AS approved_at,
-      uma.approval_status AS approval_status
-    FROM utility_monthly_approvals uma
-    JOIN companies c ON c.id = uma.facility_id
-    LEFT JOIN meters m ON m.id = uma.meter_id
-    LEFT JOIN utility_types ut ON ut.key = uma.type
-    LEFT JOIN sources s ON s.id = uma.source_id
-    LEFT JOIN source_wiring swr ON swr.source_id = s.id AND swr.utility_type_id = ut.id
-    LEFT JOIN sources sw ON sw.id = swr.source_id
+      approved_event.created_at AS approved_at,
+      wi.current_step_key AS approval_status
+    FROM utility_periods up
+    JOIN companies c ON c.id = up.facility_id
+    LEFT JOIN meters m ON m.id = up.meter_id
+    LEFT JOIN utility_types ut ON ut.key = up.type
+    LEFT JOIN sources s ON s.id = up.source_id
     LEFT JOIN uom u ON u.id = m.uom_id
-    LEFT JOIN users au ON au.id = uma.approved_by_user_id
+    LEFT JOIN workflow_instances wi
+      ON wi.workflow_key = 'utilities_approval_flow'
+     AND wi.entity_type = 'utility_period'
+     AND wi.entity_id = up.id
+    LEFT JOIN LATERAL (
+      SELECT we.actor_user_id, we.created_at
+      FROM workflow_events we
+      WHERE we.workflow_instance_id = wi.id
+        AND we.to_step_key = 'approved'
+      ORDER BY we.created_at DESC
+      LIMIT 1
+    ) approved_event ON true
+    LEFT JOIN users au ON au.id = approved_event.actor_user_id
     LEFT JOIN employees ae ON ae.id = au.employee_id
-    WHERE uma.facility_id = {{companyDbId}}
-      AND uma.period_month >= {{fromMonth}}
-      AND uma.period_month <= {{toMonth}}
-      AND uma.approval_status IN ('approved', 'audited')
-    ORDER BY uma.period_month DESC, ut.name ASC, uma.meter_name ASC
+    WHERE up.facility_id = {{companyDbId}}
+      AND up.period_month >= {{fromMonth}}
+      AND up.period_month <= {{toMonth}}
+      AND COALESCE(wi.current_step_key, 'draft') IN ('approved', 'audited')
+    ORDER BY up.period_month DESC, ut.name ASC, up.meter_name ASC
   `.trim();
 
   const monthVariables = JSON.stringify([
@@ -472,42 +426,46 @@ async function seedReportDefinitions() {
   const utilityNoiseSql = `
     SELECT
       c.name AS company,
-      COALESCE(m.code, uma.meter_key) AS utility_id,
+      COALESCE(m.code, up.meter_key) AS utility_id,
       ut.name AS utility_type,
       COALESCE(s.name, '-') AS source_name,
       COALESCE(m.code, '-') AS meter_id,
-      uma.meter_name AS meter_name,
+      up.meter_name AS meter_name,
       COALESCE(m.location, '-') AS location,
-      COALESCE(uma.uom, u.name, '-') AS unit,
-      TO_CHAR(uma.period_month, 'YYYY-MM') AS bill_month,
-      uma.record_count AS entry_count,
-      uma.covered_days AS covered_days,
-      uma.month_days AS month_days,
-      uma.total_value AS current_total,
-      uma.missing_days_count AS missing_days_count,
+      COALESCE(up.uom, u.name, '-') AS unit,
+      TO_CHAR(up.period_month, 'YYYY-MM') AS bill_month,
+      up.record_count AS entry_count,
+      up.covered_days AS covered_days,
+      up.month_days AS month_days,
+      up.total_value AS current_total,
+      up.missing_days_count AS missing_days_count,
       CASE
-        WHEN uma.missing_days_count > 0 THEN (
+        WHEN up.missing_days_count > 0 THEN (
           SELECT string_agg(x.start || ' to ' || x."end", ', ')
-          FROM jsonb_to_recordset(uma.missing_ranges) AS x(start text, "end" text)
+          FROM jsonb_to_recordset(up.missing_ranges) AS x(start text, "end" text)
         )
         ELSE '-'
       END AS missing_ranges,
-      uma.approval_status AS approval_status,
+      COALESCE(wi.current_step_key, 'draft') AS approval_status,
       COALESCE(ue.name, uu.username) AS last_updated_by,
-      uma.updated_at AS last_updated_at
-    FROM utility_monthly_approvals uma
-    JOIN companies c ON c.id = uma.facility_id
-    LEFT JOIN meters m ON m.id = uma.meter_id
-    LEFT JOIN utility_types ut ON ut.key = uma.type
-    LEFT JOIN sources s ON s.id = uma.source_id
+      up.updated_at AS last_updated_at
+    FROM utility_periods up
+    JOIN companies c ON c.id = up.facility_id
+    LEFT JOIN meters m ON m.id = up.meter_id
+    LEFT JOIN utility_types ut ON ut.key = up.type
+    LEFT JOIN sources s ON s.id = up.source_id
     LEFT JOIN uom u ON u.id = m.uom_id
-    LEFT JOIN users uu ON uu.id = uma.updated_by_user_id
+    LEFT JOIN workflow_instances wi
+      ON wi.workflow_key = 'utilities_approval_flow'
+     AND wi.entity_type = 'utility_period'
+     AND wi.entity_id = up.id
+    LEFT JOIN users uu ON uu.id = up.updated_by_user_id
     LEFT JOIN employees ue ON ue.id = uu.employee_id
-    WHERE uma.facility_id = {{companyDbId}}
-      AND uma.period_month >= {{fromMonth}}
-      AND uma.period_month <= {{toMonth}}
-      AND uma.approval_status NOT IN ('approved', 'audited')
-    ORDER BY uma.period_month DESC, ut.name ASC, uma.meter_name ASC
+    WHERE up.facility_id = {{companyDbId}}
+      AND up.period_month >= {{fromMonth}}
+      AND up.period_month <= {{toMonth}}
+      AND COALESCE(wi.current_step_key, 'draft') NOT IN ('approved', 'audited')
+    ORDER BY up.period_month DESC, ut.name ASC, up.meter_name ASC
   `.trim();
 
   await query(

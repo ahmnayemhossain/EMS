@@ -52,9 +52,13 @@ export async function getUtilityWorkflowContext(input) {
   if (!record) throw createHttpError(404, "Utility record not found.");
 
   const approvalRes = await query(
-    `SELECT *
-       FROM utility_monthly_approvals
-      WHERE facility_id = $1 AND type = $2 AND meter_key = $3 AND period_month = $4`,
+    `SELECT up.*, wi.id AS workflow_instance_id, wi.current_step_key AS approval_status
+       FROM utility_periods up
+       LEFT JOIN workflow_instances wi
+         ON wi.workflow_key = 'utilities_approval_flow'
+        AND wi.entity_type = 'utility_period'
+        AND wi.entity_id = up.id
+      WHERE up.facility_id = $1 AND up.type = $2 AND up.meter_key = $3 AND up.period_month = $4`,
     [record.facility_id, record.type, record.meter_key, record.period_month],
   );
   const approval = approvalRes.rows[0];

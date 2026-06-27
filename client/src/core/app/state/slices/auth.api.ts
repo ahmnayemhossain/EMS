@@ -1,6 +1,7 @@
 import type { AuthUser } from "@/core/app/state/slices/auth";
 
 type SignInInput = { login: string; password: string };
+type ChangePasswordInput = { currentPassword: string; newPassword: string };
 
 export async function parseJsonResponse<T>(response: Response): Promise<T> {
   const data = await response.json().catch(() => null);
@@ -26,4 +27,17 @@ export async function signOutRequest(token: string) {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
   }).catch(() => undefined);
+}
+
+export async function changePasswordRequest(input: ChangePasswordInput, token: string) {
+  return parseJsonResponse<{ ok: true }>(
+    await fetch("/api/auth/change-password", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(input),
+    }),
+  );
 }
