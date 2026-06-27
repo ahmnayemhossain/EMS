@@ -24,7 +24,7 @@ export function UtilityRecordDetail({
         : "compliant";
 
   return (
-    <div className="overflow-hidden rounded-[18px] border border-border/70 bg-card/70">
+    <div className="overflow-hidden rounded-[20px] border border-border/70 bg-background shadow-sm">
       <DetailListRow label="Company" value={companyName} subvalue={record.meterName} />
       <DetailListRow
         label="Utility"
@@ -43,11 +43,7 @@ export function UtilityRecordDetail({
             {workflow.label}
           </StatusBadge>
         }
-        subvalue={
-          record.approvedBy
-            ? `Approved by ${record.approvedBy}`
-            : workflow.detail
-        }
+        subvalue={record.approvedBy ? `Approved by ${record.approvedBy}` : workflow.detail}
       />
       <DetailListRow
         label="Coverage"
@@ -74,11 +70,7 @@ export function UtilityRecordDetail({
       <DetailListRow
         label="Usage"
         value={`${formatNumber(record.value)} ${record.uom}`}
-        subvalue={
-          typeof record.dieselLiters === "number"
-            ? `Diesel: ${formatNumber(record.dieselLiters)} L`
-            : ""
-        }
+        subvalue={typeof record.dieselLiters === "number" ? `Diesel: ${formatNumber(record.dieselLiters)} L` : ""}
         icon={typeof record.dieselLiters === "number" ? <Droplets className="size-3.5" /> : undefined}
       />
       {typeof record.baselineValue === "number" ? (
@@ -109,12 +101,7 @@ export function UtilityRecordDetail({
                 <div key={file.name} className="flex items-center justify-end gap-2">
                   <FileText className="size-3.5 text-muted-foreground" />
                   {file.url ? (
-                    <a
-                      href={file.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-sm hover:underline"
-                    >
+                    <a href={file.url} target="_blank" rel="noreferrer" className="text-sm hover:underline">
                       {file.name}
                     </a>
                   ) : (
@@ -148,15 +135,13 @@ function DetailListRow({
 }) {
   return (
     <div className="flex items-start justify-between gap-4 border-b border-border/60 px-4 py-3 last:border-b-0">
-      <div className="text-muted-foreground pt-0.5 text-xs font-medium">{label}</div>
+      <div className="pt-0.5 text-xs font-medium text-muted-foreground">{label}</div>
       <div className="min-w-0 flex-1 text-right">
         <div className={multiline ? "break-words text-sm" : "flex items-center justify-end gap-2 text-sm font-medium"}>
           {icon ? <span className="text-muted-foreground">{icon}</span> : null}
           <span>{value}</span>
         </div>
-        {subvalue ? (
-          <div className="text-muted-foreground mt-1 text-xs">{subvalue}</div>
-        ) : null}
+        {subvalue ? <div className="mt-1 text-xs text-muted-foreground">{subvalue}</div> : null}
       </div>
     </div>
   );

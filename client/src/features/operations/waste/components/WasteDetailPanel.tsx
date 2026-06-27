@@ -153,13 +153,35 @@ export function WasteDetailPanel({
             </>
           ) : (
             <>
-              <div className="flex flex-wrap items-center gap-2">
-                <StatusBadge tone={toneForWasteType(record.type)}>{record.type.replace(/_/g, " ")}</StatusBadge>
-                <StatusBadge tone={toneForDisposal(record.disposalStatus)}>{record.disposalStatus}</StatusBadge>
-                <div className="text-muted-foreground text-xs">Qty {formatNumber(record.qtyKg)} kg</div>
+              <div className="rounded-2xl border border-border/70 bg-[radial-gradient(circle_at_top_left,rgba(245,158,11,0.08),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.94))] p-4 shadow-[0_14px_34px_rgba(15,23,42,0.08)] dark:bg-[radial-gradient(circle_at_top_left,rgba(245,158,11,0.12),transparent_24%),linear-gradient(180deg,rgba(15,23,42,0.94),rgba(15,23,42,0.90))]">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <StatusBadge tone={toneForWasteType(record.type)}>{record.type.replace(/_/g, " ")}</StatusBadge>
+                      <StatusBadge tone={toneForDisposal(record.disposalStatus)}>{record.disposalStatus}</StatusBadge>
+                      <div className="bg-muted rounded-full px-2.5 py-1 text-xs font-medium">
+                        Qty {formatNumber(record.qtyKg)} kg
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button type="button" variant="outline" className="rounded-xl" onClick={() => setEditing(true)}>
+                      <Pencil className="mr-2 size-4" />
+                      Edit
+                    </Button>
+                    <Button type="button" className="rounded-xl" onClick={() => setEditing(true)}>
+                      <Upload className="mr-2 size-4" />
+                      Add file
+                    </Button>
+                    <Button type="button" variant="destructive" className="rounded-xl" onClick={() => setConfirmDelete(true)}>
+                      <Trash2 className="mr-2 size-4" />
+                      Delete
+                    </Button>
+                  </div>
+                </div>
               </div>
 
-              <div className="grid gap-3 rounded-xl border p-4 sm:grid-cols-2">
+              <div className="grid gap-3 rounded-2xl border border-border/70 bg-background p-4 sm:grid-cols-2">
                 <DetailItem label="Company" value={getCompanyName(record.facilityId)} />
                 <DetailItem label="Date" value={formatDate(record.date)} />
                 <DetailItem label="Storage location" value={record.storageLocation} />
@@ -168,12 +190,12 @@ export function WasteDetailPanel({
                 <DetailItem label="Due by" value={record.dueBy ? formatDate(record.dueBy) : "-"} />
               </div>
 
-              <div className="rounded-xl border p-4">
+              <div className="rounded-2xl border border-border/70 bg-background p-4">
                 <div className="text-xs font-semibold">Notes</div>
                 <div className="text-muted-foreground mt-2 text-sm leading-6">{record.notes || "No notes added."}</div>
               </div>
 
-              <div className="rounded-xl border p-4">
+              <div className="rounded-2xl border border-border/70 bg-background p-4">
                 <div className="flex items-center gap-2">
                   <FileText className="size-4" />
                   <div className="text-xs font-semibold">Attachments</div>
@@ -183,7 +205,7 @@ export function WasteDetailPanel({
                     {record.files.map((file) => (
                       <div
                         key={`${file.id || file.storagePath || file.name}`}
-                        className="flex items-center justify-between gap-3 rounded-lg border px-3 py-2"
+                        className="flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/10 px-3 py-2"
                       >
                         <div className="min-w-0">
                           <div className="truncate text-sm font-medium">{file.name}</div>
@@ -205,22 +227,6 @@ export function WasteDetailPanel({
                 )}
               </div>
 
-              <div className="flex flex-wrap justify-between gap-2 border-t pt-4">
-                <Button type="button" variant="destructive" onClick={() => setConfirmDelete(true)}>
-                  <Trash2 className="mr-2 size-4" />
-                  Delete
-                </Button>
-                <div className="flex flex-wrap gap-2">
-                  <Button type="button" variant="outline" onClick={() => setEditing(true)}>
-                    <Pencil className="mr-2 size-4" />
-                    Edit
-                  </Button>
-                  <Button type="button" onClick={() => setEditing(true)}>
-                    <Upload className="mr-2 size-4" />
-                    Add file / update
-                  </Button>
-                </div>
-              </div>
             </>
           )}
         </div>
@@ -231,7 +237,7 @@ export function WasteDetailPanel({
 
 function DetailItem({ label, value }: { label: string; value: string }) {
   return (
-    <div>
+    <div className="rounded-xl border border-border/60 bg-muted/10 p-3">
       <div className="text-muted-foreground text-xs">{label}</div>
       <div className="mt-1 text-sm font-medium">{value}</div>
     </div>

@@ -67,9 +67,17 @@ export function WastewaterPage() {
         ]}
       />
 
-      <Card className="shadow-xs">
-        <CardHeader>
-          <CardTitle>Lab reports</CardTitle>
+      <Card className="shadow-xs overflow-hidden">
+        <CardHeader className="flex flex-row items-center justify-between gap-3 border-b pb-4">
+          <div className="min-w-0">
+            <CardTitle>Sample records</CardTitle>
+            <div className="text-muted-foreground mt-1 text-sm">
+              Open any row to review lab values, report file, and notes.
+            </div>
+          </div>
+          <div className="bg-muted text-foreground rounded-full px-3 py-1 text-xs font-semibold">
+            {page.rows.length} records
+          </div>
         </CardHeader>
         <CardContent className="pt-0">
           <DataTable

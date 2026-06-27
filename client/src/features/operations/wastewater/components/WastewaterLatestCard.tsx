@@ -10,13 +10,18 @@ type WastewaterLatestCardProps = {
 export function WastewaterLatestCard(props: WastewaterLatestCardProps) {
   return (
     <Card className="shadow-xs">
-      <CardHeader>
+      <CardHeader className="pb-3">
         <CardTitle>Latest sample</CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
         {props.record ? (
           <div className="space-y-3">
-            <div className="text-sm font-medium capitalize">{props.record.point}</div>
+            <div className="flex items-center justify-between gap-3">
+              <div className="text-sm font-semibold capitalize">{props.record.point}</div>
+              <div className="bg-muted rounded-full px-2.5 py-1 text-xs font-medium">
+                {formatDate(props.record.sampleDate)}
+              </div>
+            </div>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <DetailItem label="Date" value={formatDate(props.record.sampleDate)} />
               <DetailItem label="Company" value={props.companyName} />
@@ -36,9 +41,9 @@ export function WastewaterLatestCard(props: WastewaterLatestCardProps) {
 
 function DetailItem({ label, value }: { label: string; value: string }) {
   return (
-    <div>
+    <div className="rounded-xl border bg-muted/15 p-3">
       <div className="text-muted-foreground text-xs">{label}</div>
-      <div className="mt-1">{value}</div>
+      <div className="mt-1 font-medium">{value}</div>
     </div>
   );
 }

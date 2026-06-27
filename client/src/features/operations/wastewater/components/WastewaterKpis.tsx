@@ -23,7 +23,7 @@ export function WastewaterKpis({
   const exceedanceTone: StatusTone = exceedanceCount > 0 ? "critical" : "compliant";
 
   return (
-    <PageKpiGrid>
+    <PageKpiGrid columnsClassName="sm:grid-cols-2 xl:grid-cols-3">
       <KPIStatCard title="Samples logged" value={totalSamples} helper="Inlet and outlet" icon={Droplets} />
       <KPIStatCard title="Outlet samples" value={outletSamples} helper="Current visible records" icon={Droplets} />
       <KPIStatCard title="Latest pH" value={latestPh} />

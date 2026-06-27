@@ -20,7 +20,7 @@ export function ChemicalKpis({
   nonApproved: number;
 }) {
   return (
-    <PageKpiGrid>
+    <PageKpiGrid columnsClassName="sm:grid-cols-2 xl:grid-cols-3">
       <KPIStatCard title="Total chemicals" value={total} tone="info" />
       <KPIStatCard
         title="Restricted chemicals"

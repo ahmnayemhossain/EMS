@@ -7,11 +7,10 @@ import { Button } from "@/components/ui/primitives/button";
 import type { UtilityApprovalFlow, UtilityRecord } from "@/core/types/models/ems";
 import { formatDate, formatUtilityType } from "@/core/utils/format";
 import { UtilityRecordDetail } from "@/features/operations/utilities/components/UtilityRecordDetail";
-import { getStepName, getWorkflowStatus } from "@/features/operations/utilities/hooks/approval-flow";
-import { exportUtilityReport } from "@/features/operations/utilities/utils/export-utility-report";
 import { UtilityWorkflowTimeline } from "@/features/operations/utilities/components/UtilityWorkflowTimeline";
-import { buildApprovalTrail, buildRejectedSteps } from "@/features/operations/utilities/utils/utility-workflow-trail";
 import { WorkflowConfirmOverlay } from "@/features/operations/utilities/components/WorkflowConfirmOverlay";
+import { getStepName, getWorkflowStatus } from "@/features/operations/utilities/hooks/approval-flow";
+import { buildApprovalTrail, buildRejectedSteps } from "@/features/operations/utilities/utils/utility-workflow-trail";
 import {
   getOrderedWorkflowSteps,
   getStepIndex,
@@ -22,6 +21,7 @@ import {
   readWorkflowStatusLabel,
   splitTransitionsByDirection,
 } from "@/features/operations/utilities/utils/workflow-ui";
+import { exportUtilityReport } from "@/features/operations/utilities/utils/export-utility-report";
 
 type UtilityDetailDrawerProps = {
   selected: UtilityRecord | null;
@@ -60,8 +60,7 @@ export function UtilityDetailDrawer(props: UtilityDetailDrawerProps) {
       props.approvalFlow?.currentStepKey
         ? props.approvalFlow.transitions || []
         : (props.approvalFlow?.transitions || []).filter(
-            (transition) =>
-              normalizeWorkflowStepKey(props.approvalFlow, transition.fromStepKey) === currentStepKey,
+            (transition) => normalizeWorkflowStepKey(props.approvalFlow, transition.fromStepKey) === currentStepKey,
           ),
     [props.approvalFlow, currentStepKey],
   );
@@ -73,25 +72,17 @@ export function UtilityDetailDrawer(props: UtilityDetailDrawerProps) {
 
   const primaryTransition = forwardTransitions[0] || null;
   const reverseTransition = reverseTransitions[0] || null;
-  const pendingTransition =
-    actionTransitions.find((transition) => transition.key === confirmTransitionKey) || null;
-  const workflowStatus = props.selected
-    ? getWorkflowStatus(props.selected, props.approvalFlow)
-    : null;
+  const pendingTransition = actionTransitions.find((transition) => transition.key === confirmTransitionKey) || null;
+  const workflowStatus = props.selected ? getWorkflowStatus(props.selected, props.approvalFlow) : null;
   const actionBlockReason = readTransitionBlockReason(
     props.approvalFlow,
     currentStepKey,
     primaryTransition,
     props.selected,
   );
-  const orderedSteps = React.useMemo(
-    () => getOrderedWorkflowSteps(props.approvalFlow),
-    [props.approvalFlow],
-  );
+  const orderedSteps = React.useMemo(() => getOrderedWorkflowSteps(props.approvalFlow), [props.approvalFlow]);
   const currentStepIndex = getStepIndex(props.approvalFlow, currentStepKey);
-  const pendingStepIndex = pendingTransition
-    ? getStepIndex(props.approvalFlow, pendingTransition.toStepKey)
-    : -1;
+  const pendingStepIndex = pendingTransition ? getStepIndex(props.approvalFlow, pendingTransition.toStepKey) : -1;
   const approvalTrail = React.useMemo(
     () => buildApprovalTrail(props.selected, props.approvalFlow, orderedSteps),
     [props.selected, props.approvalFlow, orderedSteps],
@@ -122,29 +113,13 @@ export function UtilityDetailDrawer(props: UtilityDetailDrawerProps) {
       overlay={
         pendingTransition ? (
           <WorkflowConfirmOverlay
-            tone={
-              getTransitionDirection(props.approvalFlow, currentStepKey, pendingTransition) === "reverse"
-                ? "warning"
-                : "default"
-            }
-            title={readWorkflowConfirmTitle(
-              getTransitionDirection(props.approvalFlow, currentStepKey, pendingTransition),
-            )}
-            description={readWorkflowConfirmDescription(
-              props.approvalFlow,
-              currentStepKey,
-              pendingTransition.toStepKey,
-            )}
-            confirmLabel={
-              getTransitionDirection(props.approvalFlow, currentStepKey, pendingTransition) === "reverse"
-                ? "Reject"
-                : "Save"
-            }
+            tone={getTransitionDirection(props.approvalFlow, currentStepKey, pendingTransition) === "reverse" ? "warning" : "default"}
+            title={readWorkflowConfirmTitle(getTransitionDirection(props.approvalFlow, currentStepKey, pendingTransition))}
+            description={readWorkflowConfirmDescription(props.approvalFlow, currentStepKey, pendingTransition.toStepKey)}
+            confirmLabel={getTransitionDirection(props.approvalFlow, currentStepKey, pendingTransition) === "reverse" ? "Reject" : "Save"}
             note={confirmNote}
             onNoteChange={setConfirmNote}
-            requireNote={
-              getTransitionDirection(props.approvalFlow, currentStepKey, pendingTransition) === "reverse"
-            }
+            requireNote={getTransitionDirection(props.approvalFlow, currentStepKey, pendingTransition) === "reverse"}
             onCancel={() => {
               setConfirmTransitionKey("");
               setConfirmNote("");
@@ -160,16 +135,14 @@ export function UtilityDetailDrawer(props: UtilityDetailDrawerProps) {
     >
       {props.selected ? (
         <div className="space-y-4">
-          <div className="rounded-[24px] border border-border/60 bg-background/95 p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)]">
+          <div className="rounded-[24px] border border-border/60 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.08),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.94))] p-5 shadow-[0_14px_34px_rgba(15,23,42,0.08)] dark:bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.12),transparent_24%),linear-gradient(180deg,rgba(15,23,42,0.94),rgba(15,23,42,0.90))]">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <StatusBadge tone={workflowStatus?.tone || "neutral"} className="rounded-full">
                     {workflowStatus?.label || getStepName(props.approvalFlow, currentStepKey)}
                   </StatusBadge>
-                  <span className="text-sm font-medium">
-                    Current: {getStepName(props.approvalFlow, currentStepKey)}
-                  </span>
+                  <span className="text-sm font-medium">Current: {getStepName(props.approvalFlow, currentStepKey)}</span>
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -177,12 +150,7 @@ export function UtilityDetailDrawer(props: UtilityDetailDrawerProps) {
                   <Edit className="mr-2 size-4" />
                   Edit
                 </Button>
-                <Button
-                  variant="destructive"
-                  className="h-10 rounded-xl px-4"
-                  onClick={props.onDelete}
-                  disabled={!props.canDelete}
-                >
+                <Button variant="destructive" className="h-10 rounded-xl px-4" onClick={props.onDelete} disabled={!props.canDelete}>
                   <Trash2 className="mr-2 size-4" />
                   Delete
                 </Button>
@@ -204,25 +172,19 @@ export function UtilityDetailDrawer(props: UtilityDetailDrawerProps) {
             approvalFlow={props.approvalFlow}
           />
 
-          <div className="rounded-[20px] border border-border/55 bg-background/92 p-3">
+          <div className="rounded-[20px] border border-border/55 bg-background/92 p-3 shadow-[0_12px_28px_rgba(15,23,42,0.06)] backdrop-blur">
             <div className="flex flex-wrap items-center gap-2.5">
               <Button
                 type="button"
                 variant="outline"
                 className="h-10 rounded-xl px-4 shadow-sm"
-                onClick={() =>
-                  exportUtilityReport(
-                    props.selected!,
-                    props.getCompanyName(props.selected!.facilityId),
-                    props.approvalFlow,
-                  )
-                }
+                onClick={() => exportUtilityReport(props.selected!, props.getCompanyName(props.selected!.facilityId), props.approvalFlow)}
               >
                 <FileDown className="mr-2 size-4" />
                 Export report
               </Button>
               {primaryTransition || reverseTransition ? (
-                <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-border/65 bg-background/90 p-2 shadow-[0_12px_28px_rgba(15,23,42,0.06)]">
+                <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-border/65 bg-background/95 p-2 shadow-sm">
                   {primaryTransition ? (
                     <Button
                       variant="default"
@@ -232,9 +194,7 @@ export function UtilityDetailDrawer(props: UtilityDetailDrawerProps) {
                     >
                       <Check className="mr-2 size-4" />
                       <span className="mr-2 text-white/80">Ready to</span>
-                      <span className={readSelectedStatusChipClass(selectedStatusKey, true)}>
-                        {selectedStatusLabel}
-                      </span>
+                      <span className={readSelectedStatusChipClass(selectedStatusKey, true)}>{selectedStatusLabel}</span>
                     </Button>
                   ) : null}
                   <Button

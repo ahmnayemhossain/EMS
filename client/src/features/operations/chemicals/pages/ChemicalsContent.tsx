@@ -1,8 +1,9 @@
 import * as React from "react";
 
-import { Button } from "@/components/ui/primitives/button";
-import { DataTable } from "@/components/table/DataTable";
 import { DetailPanel } from "@/components/layout/primitives/DetailPanel";
+import { DataTable } from "@/components/table/DataTable";
+import { Button } from "@/components/ui/primitives/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/primitives/card";
 import type { Chemical } from "@/core/types/models/ems";
 
 import { ChemicalDetail } from "../components/ChemicalDetail";
@@ -37,15 +38,27 @@ export function ChemicalsContent({
 
   return (
     <>
-      <div className="space-y-3">
-        <DataTable rows={rows} columns={columns} rowKey={(chemical) => chemical.id} onRowClick={onSelect} />
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="text-muted-foreground text-xs">{rows.length} rows</div>
-          <Button variant="outline" size="sm" onClick={onClear}>
-            Clear filters
-          </Button>
-        </div>
-      </div>
+      <Card className="shadow-xs overflow-hidden">
+        <CardHeader className="flex flex-col gap-3 border-b pb-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <CardTitle>Chemical register</CardTitle>
+            <div className="text-muted-foreground mt-1 text-sm">
+              Review stock, SDS linkage, expiry, and approval state in one place.
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="bg-muted text-foreground rounded-full px-3 py-1 text-xs font-semibold">
+              {rows.length} records
+            </div>
+            <Button variant="outline" size="sm" onClick={onClear}>
+              Clear filters
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <DataTable rows={rows} columns={columns} rowKey={(chemical) => chemical.id} onRowClick={onSelect} />
+        </CardContent>
+      </Card>
 
       <DetailPanel
         open={Boolean(selected)}

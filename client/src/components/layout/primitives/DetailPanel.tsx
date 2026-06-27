@@ -60,29 +60,29 @@ export function DetailPanel({
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay
-          className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-40 bg-black/50"
+          className="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-40 bg-black/45 backdrop-blur-[2px]"
         />
         <DialogPrimitive.Content
           className={cn(
-            "bg-card text-foreground fixed inset-y-0 right-0 z-50 flex h-full w-full max-w-none flex-col border-l shadow-2xl outline-none sm:w-[min(540px,92vw)] lg:w-[580px]",
+            "bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.08),transparent_26%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.97))] text-foreground fixed inset-y-0 right-0 z-50 flex h-full w-full max-w-none flex-col border-l border-border/70 shadow-[0_28px_80px_rgba(15,23,42,0.24)] outline-none dark:bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.12),transparent_24%),linear-gradient(180deg,rgba(15,23,42,0.98),rgba(15,23,42,0.96))] sm:w-[min(580px,92vw)] lg:w-[660px]",
           )}
         >
-          <div className="relative shrink-0 border-b p-4 pr-12">
-            <DialogPrimitive.Title className="text-base font-semibold leading-none">
+          <div className="relative shrink-0 border-b border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.78),rgba(255,255,255,0.62))] px-5 py-5 pr-14 backdrop-blur dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.76),rgba(15,23,42,0.58))]">
+            <DialogPrimitive.Title className="text-lg font-semibold leading-none tracking-[-0.01em]">
               {title}
             </DialogPrimitive.Title>
             {description ? (
-              <DialogPrimitive.Description className="text-muted-foreground mt-1 text-sm">
+              <DialogPrimitive.Description className="text-muted-foreground mt-1.5 text-sm leading-6">
                 {description}
               </DialogPrimitive.Description>
             ) : null}
-            <DialogPrimitive.Close className="ring-offset-background focus:ring-ring absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none">
+            <DialogPrimitive.Close className="ring-offset-background focus:ring-ring absolute top-4 right-4 inline-flex size-9 items-center justify-center rounded-full border border-border/70 bg-background/90 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none">
               <XIcon className="size-4" />
               <span className="sr-only">Close</span>
             </DialogPrimitive.Close>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4 pt-4">
+          <div className="min-h-0 flex-1 overflow-y-auto bg-transparent px-5 pb-5 pt-5">
             <PanelErrorBoundary>{children}</PanelErrorBoundary>
           </div>
 

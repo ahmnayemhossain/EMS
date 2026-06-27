@@ -17,9 +17,17 @@ type WastePanelsProps = {
 export function WastePanels(props: WastePanelsProps) {
   return (
     <div className="grid gap-4 xl:grid-cols-3">
-      <Card className="shadow-xs xl:col-span-2">
-        <CardHeader>
-          <CardTitle>Waste table</CardTitle>
+      <Card className="shadow-xs overflow-hidden xl:col-span-2">
+        <CardHeader className="flex flex-row items-center justify-between gap-3 border-b pb-4">
+          <div className="min-w-0">
+            <CardTitle>Waste records</CardTitle>
+            <div className="text-muted-foreground mt-1 text-sm">
+              Track stream, quantity, storage, vendor, and disposal status.
+            </div>
+          </div>
+          <div className="bg-muted text-foreground rounded-full px-3 py-1 text-xs font-semibold">
+            {props.rows.length} records
+          </div>
         </CardHeader>
         <CardContent className="pt-0">
           <DataTable
